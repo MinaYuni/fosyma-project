@@ -18,6 +18,12 @@ import eu.su.mas.dedaleEtu.mas.behaviours.UnreadableException;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 
+// jai modifier list_voisins qui est devenu dict_voisins (voir FSMAgent.java)
+// (car dans StateMailboxFSMBehaviours.java (c'est state C), dans message ACK-MAP (vers les ligne 65), jai besoin de connaitre les etats de l'agent par rapport au Receveur)
+// jai fini d'adapter les changements de dico_voisin pour ce behviours
+
+
+//Behaviours/comportement au state C
 public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 	private static final long serialVersionUID = 8567689731499797661L;
 	
@@ -32,7 +38,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 	}
 	
 	public void action() {	
-		//check si l'agent a reçu une carte de ses voisins 
+		// 1) ACTION : Check si l'agent a reçu une carte de ses voisins 
 		MessageTemplate msgMap = MessageTemplate.and(
 				MessageTemplate.MatchProtocol("SHARE-MAP"),
 				MessageTemplate.MatchPerformative(ACLMessage.INFORM));
@@ -48,57 +54,90 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 				e.printStackTrace();
 			}
 			this.myMap.mergeMap(mapReceived);
+
+			// MAJ dict_voisins : on change etat "" de l'agent par rapport a Expediteur 
+			String nameExpediteur = msgMapReceived.getContent(); //au state B, on a mis le nom dans message avec 'setContent'
+
+			Dictionary<String, bool> etat = this.agent.dict_voisins.get(nameExpediteur) //dico des actions de l'agent par rapport a Expediteur
+			String key = "recoit_carte"
+			
+			etat.put(key,true); //met VRAI pour action "recoit_carte2" (elle cree la cle avec value=TRUE ou update la value a TRUE)
+			
+
 			exitValue = 2; // aller en D : "Envoie ACK"
 		}
 		
-		//check si l'agent a reçu un ACK (de la caret qu'il a envoyé) de ses voisins 
+		// 2) ACTION : check si l'agent a reçu un ACK (de la carte qu'il a envoyé) de ses voisins 
 		MessageTemplate msgACK = MessageTemplate.and(
 				MessageTemplate.MatchProtocol("ACK-MAP"),
 				MessageTemplate.MatchPerformative(ACLMessage.INFORM));
 		
 		ACLMessage msgACKMapReceived = this.myAgent.receive(msgACK);
 		
-		if (msgACKMapReceived != null) {
-			// TODO
+		if (msgACKMapReceived != null) { //on a recu un ACK-MAP
+			// Garde en memoire ACK recu
+			// MAJ dict_voisins : on change etat "recoit_ACK1" de l'agent par rapport a Expediteur => recupere le dico etat puis mettre a TRUE avec key : "recoit_ACK1" 
+			
+			// Remarque : pour l'instant, Content contient que un String
+			// car on a envoye QUE le nom de l'expediteur dans le message (voir state D, fichier pas encore creer)
+			String nameExpediteur = msgACKMapReceived.getContent() //retourne une chaine de caractere 
+			
+			//recupere le dico etat
+			Dictionary<String, bool> etat = this.myAgent.dict_voisins.get(nameExpediteur) // cest le dico des actions de agent par rapport a Expediteur
+			 
+			String key = "recoit_ACK"
+			etat.put(key, true) //met VRAI pour action "recoit_carte2" (elle cree la cle avec value=TRUE ou update la value a TRUE)
+			//FIN MAJ dict_voisins
 		}
-		
-		// TODO (les lignes suivantes ne sont pas correctes)
-		int nb_voisins = this.myAgent.list_voisins.size();
-		String myName = this.myAgent.getLocalName();
-		
-		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-		msg.setProtocol("SHARE-MAP");
-		msg.setContent(myName); // met son nom dans le message envoyé 
-		msg.setSender(this.myAgent.getAID());
-		
-		// envoyer un à tous les agents (sauf moi-même)
-		for (int i=0; i < nb_voisins; i++) {
-			String receiverAgent = this.myAgent.list_voisins.get(i);
-			msg.addReceiver(new AID(receiverAgent,false));	
-		}
-		
-		SerializableSimpleGraph<String, MapAttribute> mapSent=this.myMap.getSerializableGraph();
-		try {					
-			msg.setContentObject(mapSent);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		((AbstractDedaleAgent)this.myAgent).sendMessage(msg);
-		exitValue = 1;
-		
-		//At each time step, the agent check if he received a message from a teammate. 	
-		MessageTemplate msgPing = MessageTemplate.and(
-				MessageTemplate.MatchProtocol("PING"),
+
+
+		// 3) ACTION : Check si l'agent  a reçu une carte de ses voisins 
+		MessageTemplate msgMap = MessageTemplate.and(
+				MessageTemplate.MatchProtocol("SHARE-MAP"),
 				MessageTemplate.MatchPerformative(ACLMessage.INFORM));
 		
-		ACLMessage msgPingReceived = this.myAgent.receive(msgPing);
+		ACLMessage msgMapReceived = this.myAgent.receive(msgMap);
 		
-		if (msgPingReceived != null) {
-			this.myAgent.list_voisins.add(msgPingReceived.getContent()); // récupère le nom de la personne qui a envoyé le ping 
-			exitValue = 1; // aller en B : "Envoie carte"
+		if (msgMapReceived != null) {
+			SerializableSimpleGraph<String, MapAttribute> mapReceived=null;
+			try {
+				sgreceived = (SerializableSimpleGraph<String, MapAttribute>)mapReceived.getContentObject();
+			} catch (UnreadableException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			this.myMap.mergeMap(mapReceived);
+
+			// MAJ dict_voisins : on change etat "" de l'agent par rapport a Expediteur 
+			String nameExpediteur = msgMapReceived.getContent(); //au state B, on a mis le nom dans message avec 'setContent'
+
+			Dictionary<String, bool> etat = this.agent.dict_voisins.get(nameExpediteur) //dico des actions de l'agent par rapport a Expediteur
+			String key = "recoit_carte"
+			
+			etat.put(key,true); //met VRAI pour action "recoit_carte2" (elle cree la cle avec value=TRUE ou update la value a TRUE)
+			
+
+			exitValue = 2; // aller en D : "Envoie ACK"
+		}
+
+
+		// 4) Verifie si on a eu tous les ACK de la carte envoye par l'agent
+		String key = "recoit_ACK"
+		Bool haveAllACK = true
+		Set<String> setOfKeys = this.myAgent.dict_voisins.keySet(); // recueere tous les cles donc tous les noms des voisins 
+        for(String nameNeighbor: setOfKeys){	
+			etat = this.myAgent.dict_voisins.get(nameNeighbor) //dico des actions de l'agent par rapport a son voisin nameNeighbor
+
+			if ! etat.get(key){ //pas recu de ACK venant de l'agent nameNeighbor
+				haveAllACK = false	
+				break
+			}
+		}
+
+		if haveAllACK {
+			exitValue = 3 // aller en A : "Exploration" (agent a recu tous les ACK donc continue son exploration)
+		}else{
+			exitValue = 1 // reste en C, car on a pas recu tous les ACK
 		}
 	}
-	
-	public int onEnd() {return exitValue;}
 }

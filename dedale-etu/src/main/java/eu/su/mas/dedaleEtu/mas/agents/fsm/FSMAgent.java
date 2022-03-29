@@ -21,9 +21,21 @@ public class FSMAgent extends AbstractDedaleAgent {
 	
 	private static final long serialVersionUID = -6431752865590433727L;
 	private MapRepresentation myMap;
-	List<String> list_agentNames = new ArrayList<String>();
-	List<String> list_voisins = new ArrayList<String>();
+	List<String> list_agentNames = new ArrayList<String>(); 
+	//List<String> list_voisins = new ArrayList<String>();
 	
+	// le dictionnaire etat_agent nous informe sur les etats de l'agent par rapport aux autres agents,
+	// le dico possede :
+	//		une cle de type String 
+	// 			=> exemple de cle possible : "envoie_carte1", "recoit_ACK1", "recoit_carte2", "envoie_ACK2"
+	//		une valeur booleenne, si oui ou non, on a fait les actions (cle correspond a des actions)
+	Dictionary<String, bool> etat_agent = new Hashtable<String, bool>() 
+	//cette elem va representer toutes les etats de l'agent par rapport a un autre agent 
+	// ==> Cest pr garder en memoire : ACK recu, etc... (voir description state C, ou fichier StateMailboxFSMBehaviour.java)
+
+	// list_voisin est un dico avec key nom_agent(type String) et value dico_etat
+	Dictionary<String, Dictionary<String, bool>> > dict_voisins = new Hashtable<String, etat_agent>() 
+			
 	private static final String A = "Exploration en cours"; 
 	private static final String B = "Envoie carte"; 
 	private static final String C = "Attente ACK et check Mailbox"; 

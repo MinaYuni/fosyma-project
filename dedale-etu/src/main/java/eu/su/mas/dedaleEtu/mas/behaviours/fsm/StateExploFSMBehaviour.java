@@ -18,6 +18,12 @@ import eu.su.mas.dedaleEtu.mas.behaviours.UnreadableException;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 
+// jai modifier list_voisin qui est devenu dict_voisin (voir FSMAgent.java)
+// (car dans StateMailboxFSMBehaviours.java (c'est state C), dans message ACK-MAP (vers les ligne 65), jai besoin de connaitre les etats de l'agent par rapport au Receveur)
+// jai fini d'adapter les changements de dico_voisin pour ce behviours
+
+
+// Behaviour/comportement du state A (exploration)
 public class StateExploFSMBehaviour extends OneShotBehaviour {
 	private static final long serialVersionUID = 8567689731499787661L;
 	
@@ -36,7 +42,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 		if(this.myMap==null) {
 			this.myMap= new MapRepresentation();
 		}
-
+		
 		//0) Retrieve the current position
 		String myPosition=((AbstractDedaleAgent)this.myAgent).getCurrentPosition();
 
@@ -70,7 +76,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 			}
 
 			//3) while openNodes is not empty, continues.
-			if (!this.myMap.hasOpenNode()){
+			if (!this.myMap.hasOpenNode()){ 
 				//Explo finished
 				exitValue = 2; // aller en F : "Exploration finie"
 				System.out.println(this.myAgent.getLocalName()+" - Exploration successufully done, behaviour removed.");
@@ -88,37 +94,52 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 				}
 				//4) At each time step, the agent blindly send all its graph to its surrounding to illustrate how to share its knowledge (the topology currently) with the the others agents. 	
 				// If it was written properly, this sharing action should be in a dedicated behaviour set, the receivers be automatically computed, and only a subgraph would be shared.
+							
 				int n = this.list_agentNames.size();
 				String myName = this.myAgent.getLocalName();
 				
+				// ACTION : Envoie un message PING avec le nomAgent
 				ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+				// les informations contenu dans le message (qu'on va envoyer) 
 				msg.setProtocol("PING");
 				msg.setContent(myName); // met son nom dans le ping envoyé 
-				msg.setSender(this.myAgent.getAID());
+				msg.setSender(this.myAgent.getAID()); //mettre une expediteur au message 
 				
-				// envoyer un ping à tous les agents (sauf moi-même)
+				// ajout des receveus du messsages (sauf moi meme)
 				for (int i=0; i < n; i++) {
 					String receiverAgent = this.list_agentNames.get(i);
 					if (myName != receiverAgent) { // si c'est pas moi
-						msg.addReceiver(new AID(receiverAgent,false));	
+						msg.addReceiver(new AID(receiverAgent,false));	//mettre une receveur du message 
 					}
 				}
-				
+				// envoyer un ping à tous les agents (sauf moi-même)
 				((AbstractDedaleAgent)this.myAgent).sendMessage(msg);
 
 				//5) At each time step, the agent check if he received a ping from a teammate. 	
+				// ACTION : Check reception PING
 				MessageTemplate msgPing = MessageTemplate.and(
 						MessageTemplate.MatchProtocol("PING"),
 						MessageTemplate.MatchPerformative(ACLMessage.INFORM));
 				
 				ACLMessage msgPingReceived = this.myAgent.receive(msgPing);
 				
-				if (msgPingReceived != null) {
-					this.myAgent.list_voisins.add(msgPingReceived.getContent()); // récupère le nom de la personne qui a envoyé le ping 
+				if (msgPingReceived != null) { //on a recu un PING donc on a agent a proximite donc MAJ list_voisin/dict_voisin de l'agent
+					//ajouter le voisin a la liste (voir type de list_voisin dans FSMAgent.java)
+					String nameRecever = msgPingReceived.getContent() //retourne String, ici on récupère le nameAgent de la personne qui a envoyé le ping 
+					
+					if not dict_voisin.containsKey(nameRecever) : //on a trouver un nouveau voisin => on l'ajoute dans dict_voisin 
+			
+						Dictionary<String, bool>> etat = new Hashtable<String, bool>() //etat de Agent par rapport a Recever, dico est vide car il a rien fait (on peut aussi tout initialiser a False) 
+			
+						//ajout Receveur (key de type String) et etat (value de type dico) dans le dico des voisins
+						this.myAgent.dict_voisins.put(nameRecever, etat); 
+					
 					exitValue = 1; // aller en B : "Envoie carte"
 				}
-
-				((AbstractDedaleAgent)this.myAgent).moveTo(nextNode);
+				else { //pas recu de message (PING) donc continuer a avancer dans la map
+					((AbstractDedaleAgent)this.myAgent).moveTo(nextNode);
+			
+				}
 			}
 
 		}
