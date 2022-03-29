@@ -301,7 +301,7 @@ public class MapRepresentation implements Serializable {
 				addEdge(n.getNodeId(),s);
 			}
 		}
-		//System.out.println("Merge done");
+		System.out.println("Merge done");
 	}
 
 	/**

@@ -176,5 +176,9 @@ public class ExploSoloBehaviour extends SimpleBehaviour {
 	public boolean done() {
 		return finished;
 	}
+	
+	public int onEnd() {
+		return 1;
+	}
 
 }

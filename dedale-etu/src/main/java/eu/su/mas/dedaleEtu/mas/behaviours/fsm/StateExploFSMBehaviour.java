@@ -1,76 +1,40 @@
-package eu.su.mas.dedaleEtu.mas.behaviours;
+package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
+import jade.core.behaviours.OneShotBehaviour;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.lang.Math;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
-import java.util.Set;
 
-import dataStructures.serializableGraph.SerializableSimpleGraph;
-import dataStructures.tuple.Couple;
-import eu.su.mas.dedale.env.Observation;
-import eu.su.mas.dedale.mas.AbstractDedaleAgent;
-
-import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
-import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
+import eu.su.mas.dedaleEtu.mas.behaviours.ACLMessage;
+import eu.su.mas.dedaleEtu.mas.behaviours.AID;
+import eu.su.mas.dedaleEtu.mas.behaviours.AbstractDedaleAgent;
+import eu.su.mas.dedaleEtu.mas.behaviours.Couple;
+import eu.su.mas.dedaleEtu.mas.behaviours.MessageTemplate;
+import eu.su.mas.dedaleEtu.mas.behaviours.Observation;
+import eu.su.mas.dedaleEtu.mas.behaviours.SerializableSimpleGraph;
 import eu.su.mas.dedaleEtu.mas.behaviours.ShareMapBehaviour;
+import eu.su.mas.dedaleEtu.mas.behaviours.UnreadableException;
+import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
+import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 
-
-import jade.core.AID;
-import jade.core.behaviours.Behaviour;
-import jade.core.behaviours.SimpleBehaviour;
-import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
-import jade.lang.acl.UnreadableException;
-
-
-/**
- * <pre>
- * This behaviour allows an agent to explore the environment and learn the associated topological map.
- * The algorithm is a pseudo - DFS computationally consuming because its not optimised at all.
- * 
- * When all the nodes around him are visited, the agent randomly select an open node and go there to restart its dfs. 
- * This (non optimal) behaviour is done until all nodes are explored. 
- * 
- * Warning, this behaviour does not save the content of visited nodes, only the topology.
- * Warning, the sub-behaviour ShareMap periodically share the whole map
- * </pre>
- * @author hc
- *
- */
-public class ExploCoopBehaviour extends SimpleBehaviour {
-
-	private static final long serialVersionUID = 8567689731496787661L;
-
-	private boolean finished = false;
-
-	/**
-	 * Current knowledge of the agent regarding the environment
-	 */
+public class StateExploFSMBehaviour extends OneShotBehaviour {
+	private static final long serialVersionUID = 8567689731499787661L;
+	
 	private MapRepresentation myMap;
-
 	private List<String> list_agentNames;
-
-/**
- * 
- * @param myagent
- * @param myMap known map of the world the agent is living in
- * @param agentNames name of the agents to share the map with
- */
-	public ExploCoopBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap,List<String> agentNames) {
+	private int exitValue;
+	
+	public StateExploFSMBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap, List<String> agentNames()) {
 		super(myagent);
 		this.myMap=myMap;
 		this.list_agentNames=agentNames;
 	}
-
-	@Override
+	
 	public void action() {
 
 		if(this.myMap==null) {
 			this.myMap= new MapRepresentation();
-			this.myAgent.addBehaviour(new ShareMapBehaviour(this.myAgent,500,this.myMap,list_agentNames));
 		}
 
 		//0) Retrieve the current position
@@ -108,7 +72,7 @@ public class ExploCoopBehaviour extends SimpleBehaviour {
 			//3) while openNodes is not empty, continues.
 			if (!this.myMap.hasOpenNode()){
 				//Explo finished
-				finished=true;
+				exitValue = 2; // aller en F : "Exploration finie"
 				System.out.println(this.myAgent.getLocalName()+" - Exploration successufully done, behaviour removed.");
 			}else{
 				//4) select next move.
@@ -124,38 +88,34 @@ public class ExploCoopBehaviour extends SimpleBehaviour {
 				}
 				//4) At each time step, the agent blindly send all its graph to its surrounding to illustrate how to share its knowledge (the topology currently) with the the others agents. 	
 				// If it was written properly, this sharing action should be in a dedicated behaviour set, the receivers be automatically computed, and only a subgraph would be shared.
-
+				int n = this.list_agentNames.size();
+				String myName = this.myAgent.getLocalName();
+				
 				ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-				msg.setProtocol("SHARE-TOPO");
+				msg.setProtocol("PING");
+				msg.setContent(myName); // met son nom dans le ping envoyé 
 				msg.setSender(this.myAgent.getAID());
-				if (this.myAgent.getLocalName().equals("1stAgent")) {
-					msg.addReceiver(new AID("2ndAgent",false));
-				}else {
-					msg.addReceiver(new AID("1stAgent",false));
+				
+				// envoyer un ping à tous les agents (sauf moi-même)
+				for (int i=0; i < n; i++) {
+					String receiverAgent = this.list_agentNames.get(i);
+					if (myName != receiverAgent) { // si c'est pas moi
+						msg.addReceiver(new AID(receiverAgent,false));	
+					}
 				}
-				SerializableSimpleGraph<String, MapAttribute> sg=this.myMap.getSerializableGraph();
-				try {					
-					msg.setContentObject(sg);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				
 				((AbstractDedaleAgent)this.myAgent).sendMessage(msg);
 
-				//5) At each time step, the agent check if he received a graph from a teammate. 	
-				// If it was written properly, this sharing action should be in a dedicated behaviour set.
-				MessageTemplate msgTemplate=MessageTemplate.and(
-						MessageTemplate.MatchProtocol("SHARE-TOPO"),
+				//5) At each time step, the agent check if he received a ping from a teammate. 	
+				MessageTemplate msgPing = MessageTemplate.and(
+						MessageTemplate.MatchProtocol("PING"),
 						MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-				ACLMessage msgReceived=this.myAgent.receive(msgTemplate);
-				if (msgReceived!=null) {
-					SerializableSimpleGraph<String, MapAttribute> sgreceived=null;
-					try {
-						sgreceived = (SerializableSimpleGraph<String, MapAttribute>)msgReceived.getContentObject();
-					} catch (UnreadableException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					this.myMap.mergeMap(sgreceived);
+				
+				ACLMessage msgPingReceived = this.myAgent.receive(msgPing);
+				
+				if (msgPingReceived != null) {
+					this.myAgent.list_voisins.add(msgPingReceived.getContent()); // récupère le nom de la personne qui a envoyé le ping 
+					exitValue = 1; // aller en B : "Envoie carte"
 				}
 
 				((AbstractDedaleAgent)this.myAgent).moveTo(nextNode);
@@ -163,10 +123,6 @@ public class ExploCoopBehaviour extends SimpleBehaviour {
 
 		}
 	}
-
-	@Override
-	public boolean done() {
-		return finished;
-	}
-
+	
+	public int onEnd() {return exitValue;}
 }
