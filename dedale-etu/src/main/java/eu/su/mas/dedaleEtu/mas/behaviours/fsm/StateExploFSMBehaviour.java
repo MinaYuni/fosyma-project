@@ -18,10 +18,6 @@ import eu.su.mas.dedaleEtu.mas.behaviours.UnreadableException;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 
-// jai modifier list_voisin qui est devenu dict_voisin (voir FSMAgent.java)
-// (car dans StateMailboxFSMBehaviours.java (c'est state C), dans message ACK-MAP (vers les ligne 65), jai besoin de connaitre les etats de l'agent par rapport au Receveur)
-// jai fini d'adapter les changements de dico_voisin pour ce behviours
-
 
 // Behaviour/comportement du state A (exploration)
 public class StateExploFSMBehaviour extends OneShotBehaviour {
@@ -43,26 +39,23 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 			this.myMap= new MapRepresentation();
 		}
 		
-		//0) Retrieve the current position
+		//0) Retrieve the current position 
 		String myPosition=((AbstractDedaleAgent)this.myAgent).getCurrentPosition();
 
 		if (myPosition!=null){
 			//List of observable from the agent's current position
-			List<Couple<String,List<Couple<Observation,Integer>>>> lobs=((AbstractDedaleAgent)this.myAgent).observe();//myPosition
+			List<Couple<String,List<Couple<Observation,Integer>>>> lobs=((AbstractDedaleAgent)this.myAgent).observe(); //myPosition
 
-			/**
-			 * Just added here to let you see what the agent is doing, otherwise he will be too quick
-			 */
 			try {
 				this.myAgent.doWait(1000);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 
-			//1) remove the current node from openlist and add it to closedNodes.
+			//1) remove the current node from openlist and add it to closedNodes
 			this.myMap.addNode(myPosition, MapAttribute.closed);
 
-			//2) get the surrounding nodes and, if not in closedNodes, add them to open nodes.
+			//2) get the surrounding nodes and, if not in closedNodes, add them to open nodes
 			String nextNode=null;
 			Iterator<Couple<String, List<Couple<Observation, Integer>>>> iter=lobs.iterator();
 			while(iter.hasNext()){
@@ -75,47 +68,43 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 				}
 			}
 
-			//3) while openNodes is not empty, continues.
-			if (!this.myMap.hasOpenNode()){ 
-				//Explo finished
+			//3) while openNodes is not empty, continues
+			if (!this.myMap.hasOpenNode()){ // si exploration fini
 				exitValue = 2; // aller en F : "Exploration finie"
-				System.out.println(this.myAgent.getLocalName()+" - Exploration successufully done, behaviour removed.");
-			}else{
-				//4) select next move.
-				//4.1 If there exist one open node directly reachable, go for it,
-				//	 otherwise choose one from the openNode list, compute the shortestPath and go for it
-				if (nextNode==null){
-					//no directly accessible openNode
-					//chose one, compute the path and take the first step.
-					nextNode=this.myMap.getShortestPathToClosestOpenNode(myPosition).get(0);//getShortestPath(myPosition,this.openNodes.get(0)).get(0);
+				System.out.println(this.myAgent.getLocalName()+" - Exploration successufully done.");
+			} else{
+				
+				//3.1) Select next move
+				// there exist one open node directly reachable, go for it,
+				// otherwise choose one from the openNode list, compute the shortestPath and go for it
+				if (nextNode==null){ // if no directly accessible openNode
+					// chose one, compute the path and take the first step
+					nextNode = this.myMap.getShortestPathToClosestOpenNode(myPosition).get(0); //getShortestPath(myPosition,this.openNodes.get(0)).get(0);
 					System.out.println(this.myAgent.getLocalName()+"-currentPosition: "+myPosition+" -- list= "+this.myMap.getOpenNodes()+"| nextNode: "+nextNode);
 				}else {
 					System.out.println("nextNode notNUll - "+this.myAgent.getLocalName()+"-- list= "+this.myMap.getOpenNodes()+"\n -- nextNode: "+nextNode);
 				}
-				//4) At each time step, the agent blindly send all its graph to its surrounding to illustrate how to share its knowledge (the topology currently) with the the others agents. 	
-				// If it was written properly, this sharing action should be in a dedicated behaviour set, the receivers be automatically computed, and only a subgraph would be shared.
-							
+				
+				//3.2) ACTION : envoie PING à chaque déplacement
 				int n = this.list_agentNames.size();
 				String myName = this.myAgent.getLocalName();
 				
-				// ACTION : Envoie un message PING avec le nomAgent
 				ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-				// les informations contenu dans le message (qu'on va envoyer) 
 				msg.setProtocol("PING");
-				msg.setContent(myName); // met son nom dans le ping envoyé 
+				msg.setContent(myName); // mettre son nom dans le ping envoyé 
 				msg.setSender(this.myAgent.getAID()); //mettre une expediteur au message 
 				
-				// ajout des receveus du messsages (sauf moi meme)
+				// ajout des destinataires du ping (tous les autres agents, sauf moi meme)
 				for (int i=0; i < n; i++) {
 					String receiverAgent = this.list_agentNames.get(i);
 					if (myName != receiverAgent) { // si c'est pas moi
 						msg.addReceiver(new AID(receiverAgent,false));	//mettre une receveur du message 
 					}
 				}
-				// envoyer un ping à tous les agents (sauf moi-même)
+				// envoie du ping à tous les agents
 				((AbstractDedaleAgent)this.myAgent).sendMessage(msg);
 
-				//5) At each time step, the agent check if he received a ping from a teammate. 	
+				//3.3) At each time step, the agent check if he received a ping from a teammate 	
 				// ACTION : Check reception PING
 				MessageTemplate msgPing = MessageTemplate.and(
 						MessageTemplate.MatchProtocol("PING"),
@@ -123,25 +112,27 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 				
 				ACLMessage msgPingReceived = this.myAgent.receive(msgPing);
 				
-				if (msgPingReceived != null) { //on a recu un PING donc on a agent a proximite donc MAJ list_voisin/dict_voisin de l'agent
-					//ajouter le voisin a la liste (voir type de list_voisin dans FSMAgent.java)
-					String nameRecever = msgPingReceived.getContent() //retourne String, ici on récupère le nameAgent de la personne qui a envoyé le ping 
+				// si reception PING, aller en B (envoyer sa carte), 
+				// sinon continuer déplacement 
+				if (msgPingReceived != null) { // réception PING, donc un autre agent est à proximite, donc MàJ dict_voisins de l'agent
+					// ajouter le voisin au dico (voir type de list_voisin dans FSMAgent.java)
+					String namePingReceived = msgPingReceived.getContent() // récupérer le nom du voisin (nom donnée dans le message du ping reçu)
 					
-					if not dict_voisin.containsKey(nameRecever) : //on a trouver un nouveau voisin => on l'ajoute dans dict_voisin 
+					// si l'agent n'a pas encore rencontré l'envoyeur du ping, il est ajouté dans le dictionnaire (dict_voisins)
+					if !(this.myAgent.dict_voisins.containsKey(namePingReceived)): // 
+						Dictionary<String, bool>> etat = new Hashtable<String, bool>() 
+						// état de l'agent par rapport à l'envoyeur du ping : dico est vide car il n'a rien fait (on peut aussi tout initialiser a False) 
 			
-						Dictionary<String, bool>> etat = new Hashtable<String, bool>() //etat de Agent par rapport a Recever, dico est vide car il a rien fait (on peut aussi tout initialiser a False) 
-			
-						//ajout Receveur (key de type String) et etat (value de type dico) dans le dico des voisins
-						this.myAgent.dict_voisins.put(nameRecever, etat); 
+						// ajout de l'envoyeur et son etat dans le dico des voisins
+						this.myAgent.dict_voisins.put(namePingReceived, etat); 
 					
-					exitValue = 1; // aller en B : "Envoie carte"
+						exitValue = 1; // aller en B : "Envoie carte"
 				}
-				else { //pas recu de message (PING) donc continuer a avancer dans la map
+				else { // pas recu de message (PING) donc continuer a avancer dans la map
 					((AbstractDedaleAgent)this.myAgent).moveTo(nextNode);
 			
 				}
 			}
-
 		}
 	}
 	

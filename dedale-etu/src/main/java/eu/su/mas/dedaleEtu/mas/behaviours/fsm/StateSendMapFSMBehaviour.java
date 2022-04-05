@@ -23,7 +23,7 @@ import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 // jai fini d'adapter les changements de dico_voisin pour ce behviours
 
 
-// comportement du state B
+// comportement du state B (Envoie carte)
 public class StateSendMapFSMBehaviour extends OneShotBehaviour {
 	private static final long serialVersionUID = 8567689731499797661L;
 	
@@ -47,8 +47,8 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
 		msg.setContent(myName); // met son nom dans le message envoyé 
 		msg.setSender(this.myAgent.getAID());
 		
-		//ajouter les noms des receveurs (ici les noms des voisins) du message
-		Set<String> setOfKeys = this.myAgent.dict_voisins.keySet(); // recueere tous les cles donc tous les noms des voisins 
+		// ajouter les noms des destinataires (ici les noms des voisins) du message
+		Set<String> setOfKeys = this.myAgent.dict_voisins.keySet(); // recuperer tous les cles donc tous les noms des voisins 
         for(String receiverAgent: setOfKeys){
 			msg.addReceiver(new AID(receiverAgent,false));	
 
