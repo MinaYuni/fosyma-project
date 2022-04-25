@@ -1,22 +1,25 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 import jade.core.behaviours.OneShotBehaviour;
 
-import java.io.IOException;
-import java.lang.Math;
+import jade.core.AID;
 import java.util.Iterator;
 import java.util.List;
+import java.io.IOException;
+import java.lang.Math;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
+import jade.lang.acl.UnreadableException;
+import jade.lang.acl.UnreadableException;
 
-import eu.su.mas.dedaleEtu.mas.behaviours.ACLMessage;
-import eu.su.mas.dedaleEtu.mas.behaviours.AID;
-import eu.su.mas.dedaleEtu.mas.behaviours.AbstractDedaleAgent;
-import eu.su.mas.dedaleEtu.mas.behaviours.Couple;
-import eu.su.mas.dedaleEtu.mas.behaviours.MessageTemplate;
-import eu.su.mas.dedaleEtu.mas.behaviours.Observation;
-import eu.su.mas.dedaleEtu.mas.behaviours.SerializableSimpleGraph;
+import dataStructures.serializableGraph.SerializableSimpleGraph;
+import dataStructures.tuple.Couple;
+
+import eu.su.mas.dedale.env.Observation;
+import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.behaviours.ShareMapBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.UnreadableException;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
+
 
 // jai modifier list_voisins qui est devenu dict_voisins (voir FSMAgent.java)
 // (car dans StateMailboxFSMBehaviours.java (c'est state C), dans message ACK-MAP (vers les ligne 65), jai besoin de connaitre les etats de l'agent par rapport au Receveur)
@@ -31,7 +34,7 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
 	private List<String> list_agentNames;
 	private int exitValue;
 	
-	public StateSendMapFSMBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap, List<String> agentNames()) {
+	public StateSendMapFSMBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap, List<String> agentNames) {
 		super(myagent);
 		this.myMap=myMap;
 		this.list_agentNames=agentNames;

@@ -1,22 +1,25 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 import jade.core.behaviours.OneShotBehaviour;
 
-import java.io.IOException;
-import java.lang.Math;
+import jade.core.AID;
 import java.util.Iterator;
 import java.util.List;
+import java.io.IOException;
+import java.lang.Math;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
+import jade.lang.acl.UnreadableException;
+import jade.lang.acl.UnreadableException;
 
-import eu.su.mas.dedaleEtu.mas.behaviours.ACLMessage;
-import eu.su.mas.dedaleEtu.mas.behaviours.AID;
-import eu.su.mas.dedaleEtu.mas.behaviours.AbstractDedaleAgent;
-import eu.su.mas.dedaleEtu.mas.behaviours.Couple;
-import eu.su.mas.dedaleEtu.mas.behaviours.MessageTemplate;
-import eu.su.mas.dedaleEtu.mas.behaviours.Observation;
-import eu.su.mas.dedaleEtu.mas.behaviours.SerializableSimpleGraph;
+import dataStructures.serializableGraph.SerializableSimpleGraph;
+import dataStructures.tuple.Couple;
+
+import eu.su.mas.dedale.env.Observation;
+import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.behaviours.ShareMapBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.UnreadableException;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
+
 
 // jai modifier list_voisins qui est devenu dict_voisins (voir FSMAgent.java)
 // (car dans StateMailboxFSMBehaviours.java (c'est state C), dans message ACK-MAP (vers les ligne 65), jai besoin de connaitre les etats de l'agent par rapport au Receveur)
@@ -31,7 +34,7 @@ public class StateSendACKFSMBehaviour extends OneShotBehaviour {
 	private List<String> list_agentNames;
 	private int exitValue;
 	
-	public StateMailboxFSMBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap, List<String> agentNames()) {
+	public StateSendACKFSMBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap, List<String> agentNames) {
 		super(myagent);
 		this.myMap=myMap;
 		this.list_agentNames=agentNames;
@@ -54,15 +57,15 @@ public class StateSendACKFSMBehaviour extends OneShotBehaviour {
             
             if (myName != receiverAgent) { // si c'est pas moi
 			    
-                Dictionary<String, bool> etat = this.agent.dict_voisins.get(receiverAgent) //dico des actions de l'agent par rapport a Recever
+                Dictionary<String, bool> etat = this.agent.dict_voisins.get(receiverAgent); //dico des actions de l'agent par rapport a Recever
         
-                if (etat.get("recoit_carte"))) { //agent a bien recu carte de ReceiverAgent
+                if (etat.get("recoit_carte")) { //agent a bien recu carte de ReceiverAgent
 
-                    if (! etat.get("envoie_ACK") { //agent a jamais envoyer de ACK pour de sa carte
+                    if (! etat.get("envoie_ACK")) { //agent a jamais envoyer de ACK pour de sa carte
                         msg.addReceiver(new AID(receiverAgent,false));	//mettre une receveur du message 
 
                         //MAJ dict_voisin
-                        etat.put("envoie_ACK", true) //evite de renvoyer un ACK a chaque voisin dont agent a deja envoie un ACK 
+                        etat.put("envoie_ACK", true); //evite de renvoyer un ACK a chaque voisin dont agent a deja envoie un ACK
                     }
                 }            
             }
@@ -71,6 +74,6 @@ public class StateSendACKFSMBehaviour extends OneShotBehaviour {
         // envoyer un ACK MAP à tous les agents dont jai recu la carte et pas encore envoyer de ACK auparavant
         ((AbstractDedaleAgent)this.myAgent).sendMessage(msg);
 
-        exitValue = 1 // aller en C : "Attente ACK"
+        exitValue = 1; // aller en C : "Attente ACK"
     }
 }

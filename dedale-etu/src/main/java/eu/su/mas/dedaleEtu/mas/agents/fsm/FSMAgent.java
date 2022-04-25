@@ -8,7 +8,7 @@ import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateFSMBehaviourStartEnd;
 import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateExploFSMBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateSendMapFSMBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateMailboxFSMBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.SendPingBehaviour;
+//import eu.su.mas.dedaleEtu.mas.behaviours.SendPingBehaviour;
 
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedale.mas.agent.behaviours.startMyBehaviours;
@@ -17,7 +17,7 @@ import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.FSMBehaviour;
-import jade.core.ThreadedBehaviourFactory;
+import jade.core.behaviours.ThreadedBehaviourFactory;
 
 public class FSMAgent extends AbstractDedaleAgent {
 	
@@ -36,8 +36,10 @@ public class FSMAgent extends AbstractDedaleAgent {
 	// 		dictionnaire etat_msg permet de vérfier quels sont les messages qui a été envoyé ou pas 
 	// 		key (String) : messagé envoyé ou reçu  
 	// 			=> exemple : "recepition_carte", "envoie_carte", "reception_ACK", "envoie_ACK"
-	// 		value (bool) : si on a fait les actions correspondant à la clef 
-	Dictionary<String, Dictionary<String, bool>> dict_voisins_messages = new Hashtable<String, new Hashtable<String, bool>()>();
+	// 		value (bool) : si on a fait les actions correspondant à la clef
+
+	Dictionary<String, bool> message = new Hashtable<String, bool>();
+	Dictionary<String, Dictionary<String, bool>> dict_voisins_messages = new Hashtable<String, message >();
 	
 	// dictionnaire pour garder en mémoire les cartes qui a été envoyé aux autres agents
 	Dictionary<String, MapRepresensation> dict_map_envoye = new Hashtable<String, MapRepresentation>();

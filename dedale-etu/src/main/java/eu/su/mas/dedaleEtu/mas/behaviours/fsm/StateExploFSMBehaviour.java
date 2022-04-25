@@ -1,22 +1,25 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 import jade.core.behaviours.OneShotBehaviour;
 
-import java.io.IOException;
-import java.lang.Math;
+import jade.core.AID;
 import java.util.Iterator;
 import java.util.List;
+import java.io.IOException;
+import java.lang.Math;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
+import jade.lang.acl.UnreadableException;
+import jade.lang.acl.UnreadableException;
 
-import eu.su.mas.dedaleEtu.mas.behaviours.ACLMessage;
-import eu.su.mas.dedaleEtu.mas.behaviours.AID;
-import eu.su.mas.dedaleEtu.mas.behaviours.AbstractDedaleAgent;
-import eu.su.mas.dedaleEtu.mas.behaviours.Couple;
-import eu.su.mas.dedaleEtu.mas.behaviours.MessageTemplate;
-import eu.su.mas.dedaleEtu.mas.behaviours.Observation;
-import eu.su.mas.dedaleEtu.mas.behaviours.SerializableSimpleGraph;
+import dataStructures.serializableGraph.SerializableSimpleGraph;
+import dataStructures.tuple.Couple;
+
+import eu.su.mas.dedale.env.Observation;
+import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.behaviours.ShareMapBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.UnreadableException;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
+
 
 
 // Behaviour/comportement du state A (exploration)
@@ -27,7 +30,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 	private List<String> list_agentNames;
 	private int exitValue;
 	
-	public StateExploFSMBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap, List<String> agentNames()) {
+	public StateExploFSMBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap, List<String> agentNames) {
 		super(myagent);
 		this.myMap=myMap;
 		this.list_agentNames=agentNames;
@@ -116,16 +119,16 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 				// sinon continuer déplacement 
 				if (msgPingReceived != null) { // réception PING, donc un autre agent est à proximite, donc MàJ dict_voisins de l'agent
 					// ajouter le voisin au dico (voir type de list_voisin dans FSMAgent.java)
-					String namePingReceived = msgPingReceived.getContent() // récupérer le nom du voisin (nom donnée dans le message du ping reçu)
+					String namePingReceived = msgPingReceived.getContent(); // récupérer le nom du voisin (nom donnée dans le message du ping reçu)
 					
 					// si l'agent n'a pas encore rencontré l'envoyeur du ping, il est ajouté dans le dictionnaire (dict_voisins)
-					if !(this.myAgent.dict_voisins.containsKey(namePingReceived)): // 
-						Dictionary<String, bool>> etat = new Hashtable<String, bool>() 
+					if (!(this.myAgent.dict_voisins.containsKey(namePingReceived))) { //
+						Dictionary<String, bool> etat = new Hashtable<String, bool>();
 						// état de l'agent par rapport à l'envoyeur du ping : dico est vide car il n'a rien fait (on peut aussi tout initialiser a False) 
-			
+
 						// ajout de l'envoyeur et son etat dans le dico des voisins
-						this.myAgent.dict_voisins.put(namePingReceived, etat); 
-					
+						this.myAgent.dict_voisins.put(namePingReceived, etat);
+					}
 						exitValue = 1; // aller en B : "Envoie carte"
 				}
 				else { // pas recu de message (PING) donc continuer a avancer dans la map

@@ -1,22 +1,25 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 import jade.core.behaviours.OneShotBehaviour;
 
-import java.io.IOException;
-import java.lang.Math;
+import jade.core.AID;
 import java.util.Iterator;
 import java.util.List;
+import java.io.IOException;
+import java.lang.Math;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
+import jade.lang.acl.UnreadableException;
+import jade.lang.acl.UnreadableException;
 
-import eu.su.mas.dedaleEtu.mas.behaviours.ACLMessage;
-import eu.su.mas.dedaleEtu.mas.behaviours.AID;
-import eu.su.mas.dedaleEtu.mas.behaviours.AbstractDedaleAgent;
-import eu.su.mas.dedaleEtu.mas.behaviours.Couple;
-import eu.su.mas.dedaleEtu.mas.behaviours.MessageTemplate;
-import eu.su.mas.dedaleEtu.mas.behaviours.Observation;
-import eu.su.mas.dedaleEtu.mas.behaviours.SerializableSimpleGraph;
+import dataStructures.serializableGraph.SerializableSimpleGraph;
+import dataStructures.tuple.Couple;
+
+import eu.su.mas.dedale.env.Observation;
+import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.behaviours.ShareMapBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.UnreadableException;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
+
 
 // jai modifier list_voisins qui est devenu dict_voisins (voir FSMAgent.java)
 // (car dans StateMailboxFSMBehaviours.java (c'est state C), dans message ACK-MAP (vers les ligne 65), jai besoin de connaitre les etats de l'agent par rapport au Receveur)
@@ -31,7 +34,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 	private List<String> list_agentNames;
 	private int exitValue;
 	
-	public StateMailboxFSMBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap, List<String> agentNames()) {
+	public StateMailboxFSMBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap, List<String> agentNames) {
 		super(myagent);
 		this.myMap=myMap;
 		this.list_agentNames=agentNames;
@@ -58,8 +61,8 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			// MAJ dict_voisins : on change etat "" de l'agent par rapport a Expediteur 
 			String nameExpediteur = msgMapReceived.getContent(); //au state B, on a mis le nom dans message avec 'setContent'
 
-			Dictionary<String, bool> etat = this.agent.dict_voisins.get(nameExpediteur) //dico des actions de l'agent par rapport a Expediteur
-			String key = "recoit_carte"
+			Dictionary<String, bool> etat = this.agent.dict_voisins.get(nameExpediteur); //dico des actions de l'agent par rapport a Expediteur
+			String key = "recoit_carte";
 			
 			etat.put(key,true); //met VRAI pour action "recoit_carte2" (elle cree la cle avec value=TRUE ou update la value a TRUE)
 			
@@ -80,13 +83,13 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			
 			// Remarque : pour l'instant, Content contient que un String
 			// car on a envoye QUE le nom de l'expediteur dans le message (voir state D, fichier pas encore creer)
-			String nameExpediteur = msgACKMapReceived.getContent() //retourne une chaine de caractere 
+			String nameExpediteur = msgACKMapReceived.getContent(); //retourne une chaine de caractere
 			
 			//recupere le dico etat
-			Dictionary<String, bool> etat = this.myAgent.dict_voisins.get(nameExpediteur) // cest le dico des actions de agent par rapport a Expediteur
+			Dictionary<String, bool> etat = this.myAgent.dict_voisins.get(nameExpediteur); // cest le dico des actions de agent par rapport a Expediteur
 			 
-			String key = "recoit_ACK"
-			etat.put(key, true) //met VRAI pour action "recoit_carte2" (elle cree la cle avec value=TRUE ou update la value a TRUE)
+			String key = "recoit_ACK";
+			etat.put(key, true); //met VRAI pour action "recoit_carte2" (elle cree la cle avec value=TRUE ou update la value a TRUE)
 			//FIN MAJ dict_voisins
 		}
 
@@ -111,8 +114,8 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			// MAJ dict_voisins : on change etat "" de l'agent par rapport a Expediteur 
 			String nameExpediteur = msgMapReceived.getContent(); //au state B, on a mis le nom dans message avec 'setContent'
 
-			Dictionary<String, bool> etat = this.agent.dict_voisins.get(nameExpediteur) //dico des actions de l'agent par rapport a Expediteur
-			String key = "recoit_carte"
+			Dictionary<String, bool> etat = this.agent.dict_voisins.get(nameExpediteur); //dico des actions de l'agent par rapport a Expediteur
+			String key = "recoit_carte";
 			
 			etat.put(key,true); //met VRAI pour action "recoit_carte2" (elle cree la cle avec value=TRUE ou update la value a TRUE)
 			
@@ -122,22 +125,22 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 
 
 		// 4) Verifie si on a eu tous les ACK de la carte envoye par l'agent
-		String key = "recoit_ACK"
-		Bool haveAllACK = true
+		String key = "recoit_ACK";
+		Bool haveAllACK = true;
 		Set<String> setOfKeys = this.myAgent.dict_voisins.keySet(); // recueere tous les cles donc tous les noms des voisins 
         for(String nameNeighbor: setOfKeys){	
-			etat = this.myAgent.dict_voisins.get(nameNeighbor) //dico des actions de l'agent par rapport a son voisin nameNeighbor
+			etat = this.myAgent.dict_voisins.get(nameNeighbor) ;//dico des actions de l'agent par rapport a son voisin nameNeighbor
 
-			if ! etat.get(key){ //pas recu de ACK venant de l'agent nameNeighbor
-				haveAllACK = false	
-				break
+			if (! etat.get(key)){ //pas recu de ACK venant de l'agent nameNeighbor
+				haveAllACK = false	;
+				break;
 			}
 		}
 
-		if haveAllACK {
-			exitValue = 3 // aller en A : "Exploration" (agent a recu tous les ACK donc continue son exploration)
+		if (haveAllACK) {
+			exitValue = 3; // aller en A : "Exploration" (agent a recu tous les ACK donc continue son exploration)
 		}else{
-			exitValue = 1 // reste en C, car on a pas recu tous les ACK
+			exitValue = 1; // reste en C, car on a pas recu tous les ACK
 		}
 	}
 }
