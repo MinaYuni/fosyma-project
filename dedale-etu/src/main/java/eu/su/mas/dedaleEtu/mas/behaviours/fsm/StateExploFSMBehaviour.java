@@ -2,6 +2,8 @@ package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 import jade.core.behaviours.OneShotBehaviour;
 
 import jade.core.AID;
+
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.io.IOException;
@@ -114,7 +116,6 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 						MessageTemplate.MatchPerformative(ACLMessage.INFORM));
 				
 				ACLMessage msgPingReceived = this.myAgent.receive(msgPing);
-				
 				// si reception PING, aller en B (envoyer sa carte), 
 				// sinon continuer déplacement 
 				if (msgPingReceived != null) { // réception PING, donc un autre agent est à proximite, donc MàJ dict_voisins de l'agent
@@ -122,12 +123,12 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 					String namePingReceived = msgPingReceived.getContent(); // récupérer le nom du voisin (nom donnée dans le message du ping reçu)
 					
 					// si l'agent n'a pas encore rencontré l'envoyeur du ping, il est ajouté dans le dictionnaire (dict_voisins)
-					if (!(this.myAgent.dict_voisins.containsKey(namePingReceived))) { //
-						Dictionary<String, bool> etat = new Hashtable<String, bool>();
+					if (!(this.myAgent.dict_voisins_messages.containsKey(namePingReceived))) { //
+						Hashtable<String, Boolean> etat = new Hashtable<String, Boolean>();
 						// état de l'agent par rapport à l'envoyeur du ping : dico est vide car il n'a rien fait (on peut aussi tout initialiser a False) 
 
 						// ajout de l'envoyeur et son etat dans le dico des voisins
-						this.myAgent.dict_voisins.put(namePingReceived, etat);
+						this.myAgent.dict_voisins_messages.put(namePingReceived, etat);
 					}
 						exitValue = 1; // aller en B : "Envoie carte"
 				}

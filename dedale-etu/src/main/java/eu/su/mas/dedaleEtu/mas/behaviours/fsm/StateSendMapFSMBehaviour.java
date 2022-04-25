@@ -51,7 +51,7 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
 		msg.setSender(this.myAgent.getAID());
 		
 		// ajouter les noms des destinataires (ici les noms des voisins) du message
-		Set<String> setOfKeys = this.myAgent.dict_voisins.keySet(); // recuperer tous les cles donc tous les noms des voisins 
+		Set<String> setOfKeys = this.myAgent.dict_voisins_messages.keySet(); // recuperer tous les cles donc tous les noms des voisins
         for(String receiverAgent: setOfKeys){
 			msg.addReceiver(new AID(receiverAgent,false));	
 

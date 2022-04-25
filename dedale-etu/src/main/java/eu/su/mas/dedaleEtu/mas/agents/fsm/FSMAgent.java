@@ -2,6 +2,8 @@ package eu.su.mas.dedaleEtu.mas.agents.fsm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Dictionary;
+import java.util.Hashtable;
 
 import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateFSMBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateFSMBehaviourStartEnd;
@@ -38,11 +40,10 @@ public class FSMAgent extends AbstractDedaleAgent {
 	// 			=> exemple : "recepition_carte", "envoie_carte", "reception_ACK", "envoie_ACK"
 	// 		value (bool) : si on a fait les actions correspondant à la clef
 
-	Dictionary<String, bool> message = new Hashtable<String, bool>();
-	Dictionary<String, Dictionary<String, bool>> dict_voisins_messages = new Hashtable<String, message >();
+	Hashtable<String, Hashtable<String, Boolean>> dict_voisins_messages = new Hashtable<String,  Hashtable<String, Boolean> >();
 	
 	// dictionnaire pour garder en mémoire les cartes qui a été envoyé aux autres agents
-	Dictionary<String, MapRepresensation> dict_map_envoye = new Hashtable<String, MapRepresentation>();
+	Dictionary<String, MapRepresentation> dict_map_envoye = new Hashtable<String, MapRepresentation >();
 			
 	private static final String A = "Exploration en cours"; 
 	private static final String B = "Envoie carte"; 
@@ -72,8 +73,6 @@ public class FSMAgent extends AbstractDedaleAgent {
 	
 	// D: envoie ACK de la carte qu'il a reçu 
 	//		--> C (arc 1)
-	
-	
 	protected void setup() {
 		// FMS behaviour
 		FSMBehaviour fsm = new FSMBehaviour(this);
@@ -83,7 +82,7 @@ public class FSMAgent extends AbstractDedaleAgent {
 		fsm. registerState (new StateSendMapFSMBehaviour(this,this.myMap,list_agentNames), B);
 		fsm. registerState (new StateMailboxFSMBehaviour(this,this.myMap,list_agentNames), C);
 		fsm. registerState (new StateFSMBehaviour(5), D);
-		fsm. registerLastState (new StateExploFSMBehaviour(), F);
+		fsm. registerLastState (new StateExploFSMBehaviour(this, myMap, list_agentNames), F);
 		
 		// Register the transitions
 		fsm. registerDefaultTransition (A,A); //Default
@@ -101,4 +100,42 @@ public class FSMAgent extends AbstractDedaleAgent {
 		
 		System.out.println("the  agent "+this.getLocalName()+ " is started");
 	}
+
+
+	// ------------------- Methode get et set --------------------- //
+	public Hashtable<String, Hashtable<String, Boolean>> get_dict_voisins_messages(){
+		// Return the dictionary with agent (key) and dictionary_aciton (value)
+		// Retourne le dictionnaire dont (clé = agent) et (value = dico_action)
+		return this.dict_voisins_messages;
+	}
+
+	public void set_dict_voisins_messages(Hashtable<String, Hashtable<String, Boolean>> dico){
+		// Replace the dictionary
+		// Remplace le dictionnaire dont (clé = agent) et (value = dico_action) par dico
+		this.dict_voisins_messages = dico;
+	}
+
+	public Hashtable<String, Boolean> get_dict_voisins_messages_agent(String agent){
+		// Return the agent's dictionary_action with action (key) and bool (value)
+		// Retourne le dictionnaire d'un agent agent dont (clé = action) et (value = bool)
+		return this.dict_voisins_messages.get(agent);
+	}
+
+	public void set_dict_voisins_messages_agent(String agent, Hashtable<String, Boolean> dico){
+		// Replace the dictionary
+		// Remplace le dictionnaire d'un agent dont (clé = agent) et (value = dico_action) par dico
+		this.dict_voisins_messages.get(agent) = dico;
+	}
+
+	public Hashtable<String, Boolean> get_dict_voisins_messages_agent(String agent, String action){
+		// Retourne la valeur booleen du dictionnaire d'un agent de l'action action
+		return this.dict_voisins_messages.get(agent).get(action);
+	}
+
+	public void set_dict_voisins_messages_agent(String agent, String action, Boolean bool){
+		// Remplace la valeur booleen du dictionnaire d'un agent a l'action action par bool
+		this.dict_voisins_messages.get(agent).get(action) = bool;
+	}
+
+
 }

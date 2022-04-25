@@ -2,6 +2,8 @@ package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 import jade.core.behaviours.OneShotBehaviour;
 
 import jade.core.AID;
+
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.io.IOException;
@@ -61,7 +63,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			// MAJ dict_voisins : on change etat "" de l'agent par rapport a Expediteur 
 			String nameExpediteur = msgMapReceived.getContent(); //au state B, on a mis le nom dans message avec 'setContent'
 
-			Dictionary<String, bool> etat = this.agent.dict_voisins.get(nameExpediteur); //dico des actions de l'agent par rapport a Expediteur
+			Hashtable <String, Boolean> etat = this.myAgent.dict_voisins_messages.get(nameExpediteur); //dico des actions de l'agent par rapport a Expediteur
 			String key = "recoit_carte";
 			
 			etat.put(key,true); //met VRAI pour action "recoit_carte2" (elle cree la cle avec value=TRUE ou update la value a TRUE)
@@ -86,7 +88,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			String nameExpediteur = msgACKMapReceived.getContent(); //retourne une chaine de caractere
 			
 			//recupere le dico etat
-			Dictionary<String, bool> etat = this.myAgent.dict_voisins.get(nameExpediteur); // cest le dico des actions de agent par rapport a Expediteur
+			Hashtable<String, Boolean> etat = this.myAgent.dict_voisins_messages.get(nameExpediteur); // cest le dico des actions de agent par rapport a Expediteur
 			 
 			String key = "recoit_ACK";
 			etat.put(key, true); //met VRAI pour action "recoit_carte2" (elle cree la cle avec value=TRUE ou update la value a TRUE)
@@ -114,7 +116,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			// MAJ dict_voisins : on change etat "" de l'agent par rapport a Expediteur 
 			String nameExpediteur = msgMapReceived.getContent(); //au state B, on a mis le nom dans message avec 'setContent'
 
-			Dictionary<String, bool> etat = this.agent.dict_voisins.get(nameExpediteur); //dico des actions de l'agent par rapport a Expediteur
+			Hashtable<String, Boolean> etat = this.myAgent.dict_voisins_messages.get(nameExpediteur); //dico des actions de l'agent par rapport a Expediteur
 			String key = "recoit_carte";
 			
 			etat.put(key,true); //met VRAI pour action "recoit_carte2" (elle cree la cle avec value=TRUE ou update la value a TRUE)
@@ -126,10 +128,10 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 
 		// 4) Verifie si on a eu tous les ACK de la carte envoye par l'agent
 		String key = "recoit_ACK";
-		Bool haveAllACK = true;
-		Set<String> setOfKeys = this.myAgent.dict_voisins.keySet(); // recueere tous les cles donc tous les noms des voisins 
+		Boolean haveAllACK = true;
+		Set<String> setOfKeys = this.myAgent.dict_voisins_messages.keySet(); // recueere tous les cles donc tous les noms des voisins
         for(String nameNeighbor: setOfKeys){	
-			etat = this.myAgent.dict_voisins.get(nameNeighbor) ;//dico des actions de l'agent par rapport a son voisin nameNeighbor
+			etat = this.myAgent.dict_voisins_messages.get(nameNeighbor) ;//dico des actions de l'agent par rapport a son voisin nameNeighbor
 
 			if (! etat.get(key)){ //pas recu de ACK venant de l'agent nameNeighbor
 				haveAllACK = false	;

@@ -2,6 +2,8 @@ package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 import jade.core.behaviours.OneShotBehaviour;
 
 import jade.core.AID;
+
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.io.IOException;
@@ -16,6 +18,7 @@ import dataStructures.tuple.Couple;
 
 import eu.su.mas.dedale.env.Observation;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
+import eu.su.mas.dedaleEtu.mas.agents.fsm.FSMAgent;
 import eu.su.mas.dedaleEtu.mas.behaviours.ShareMapBehaviour;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
@@ -56,9 +59,10 @@ public class StateSendACKFSMBehaviour extends OneShotBehaviour {
             String receiverAgent = this.list_agentNames.get(i); //recupere le nom d'un agent
             
             if (myName != receiverAgent) { // si c'est pas moi
-			    
-                Dictionary<String, bool> etat = this.agent.dict_voisins.get(receiverAgent); //dico des actions de l'agent par rapport a Recever
-        
+
+                //Hashtable<String, Boolean> etat = this.myAgent.dico_voisins_messages.get(receiverAgent); //dico des actions de l'agent par rapport a Recever
+                Hashtable<String, Boolean> etat = this.myAgent.get_dict_voisins_messages().get(receiverAgent); //dico des actions de l'agent par rapport a Recever
+
                 if (etat.get("recoit_carte")) { //agent a bien recu carte de ReceiverAgent
 
                     if (! etat.get("envoie_ACK")) { //agent a jamais envoyer de ACK pour de sa carte
@@ -66,6 +70,7 @@ public class StateSendACKFSMBehaviour extends OneShotBehaviour {
 
                         //MAJ dict_voisin
                         etat.put("envoie_ACK", true); //evite de renvoyer un ACK a chaque voisin dont agent a deja envoie un ACK
+                        this.myAgent.dict_voisins_messages.put(receiverAgent,etat);
                     }
                 }            
             }
