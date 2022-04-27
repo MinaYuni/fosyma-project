@@ -2,21 +2,15 @@ package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 import jade.core.behaviours.OneShotBehaviour;
 
 import jade.core.AID;
-import java.util.Iterator;
-import java.util.List;
+
+import java.util.*;
 import java.io.IOException;
-import java.lang.Math;
+
 import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
-import jade.lang.acl.UnreadableException;
-import jade.lang.acl.UnreadableException;
 
 import dataStructures.serializableGraph.SerializableSimpleGraph;
-import dataStructures.tuple.Couple;
 
-import eu.su.mas.dedale.env.Observation;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
-import eu.su.mas.dedaleEtu.mas.behaviours.ShareMapBehaviour;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 
@@ -29,15 +23,17 @@ import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 // comportement du state B (Envoie carte)
 public class StateSendMapFSMBehaviour extends OneShotBehaviour {
 	private static final long serialVersionUID = 8567689731499797661L;
-	
+
 	private MapRepresentation myMap;
 	private List<String> list_agentNames;
+	private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
 	private int exitValue;
 	
-	public StateSendMapFSMBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap, List<String> agentNames) {
+	public StateSendMapFSMBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap, List<String> agentNames, HashMap<String, HashMap<String, Boolean>> dico) {
 		super(myagent);
 		this.myMap=myMap;
 		this.list_agentNames=agentNames;
+		this.dictVoisinsMessages = dico;
 	}
 	
 	public void action() {	
@@ -51,7 +47,7 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
 		msg.setSender(this.myAgent.getAID());
 		
 		// ajouter les noms des destinataires (ici les noms des voisins) du message
-		Set<String> setOfKeys = this.myAgent.dict_voisins_messages.keySet(); // recuperer tous les cles donc tous les noms des voisins
+		Set<String> setOfKeys = this.dictVoisinsMessages.keySet(); // recuperer tous les cles donc tous les noms des voisins
         for(String receiverAgent: setOfKeys){
 			msg.addReceiver(new AID(receiverAgent,false));	
 

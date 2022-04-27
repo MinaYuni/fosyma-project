@@ -4,22 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.HashMap;
 
 import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateFSMBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateFSMBehaviourStartEnd;
 import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateExploFSMBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateSendMapFSMBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateMailboxFSMBehaviour;
 //import eu.su.mas.dedaleEtu.mas.behaviours.SendPingBehaviour;
 
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
-import eu.su.mas.dedale.mas.agent.behaviours.startMyBehaviours;
 
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 
-import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.FSMBehaviour;
-import jade.core.behaviours.ThreadedBehaviourFactory;
 
 public class FSMAgent extends AbstractDedaleAgent {
 	
@@ -40,10 +37,10 @@ public class FSMAgent extends AbstractDedaleAgent {
 	// 			=> exemple : "recepition_carte", "envoie_carte", "reception_ACK", "envoie_ACK"
 	// 		value (bool) : si on a fait les actions correspondant à la clef
 
-	Hashtable<String, Hashtable<String, Boolean>> dict_voisins_messages = new Hashtable<String,  Hashtable<String, Boolean> >();
+	HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages = new HashMap<String,  HashMap<String, Boolean> >();
 	
 	// dictionnaire pour garder en mémoire les cartes qui a été envoyé aux autres agents
-	Dictionary<String, MapRepresentation> dict_map_envoye = new Hashtable<String, MapRepresentation >();
+	HashMap<String, MapRepresentation> dict_map_envoye = new HashMap<String, MapRepresentation >();
 			
 	private static final String A = "Exploration en cours"; 
 	private static final String B = "Envoie carte"; 
@@ -78,11 +75,11 @@ public class FSMAgent extends AbstractDedaleAgent {
 		FSMBehaviour fsm = new FSMBehaviour(this);
 	
 		// Define the different states and behaviours
-		fsm. registerFirstState (new StateExploFSMBehaviour(this,this.myMap,list_agentNames), A);
-		fsm. registerState (new StateSendMapFSMBehaviour(this,this.myMap,list_agentNames), B);
-		fsm. registerState (new StateMailboxFSMBehaviour(this,this.myMap,list_agentNames), C);
+		fsm. registerFirstState (new StateExploFSMBehaviour(this,this.myMap,this.list_agentNames, this.dictVoisinsMessages), A);
+		fsm. registerState (new StateSendMapFSMBehaviour(this,this.myMap,this.list_agentNames, this.dictVoisinsMessages), B);
+		fsm. registerState (new StateMailboxFSMBehaviour(this,this.myMap,this.list_agentNames, this.dictVoisinsMessages), C);
 		fsm. registerState (new StateFSMBehaviour(5), D);
-		fsm. registerLastState (new StateExploFSMBehaviour(this, myMap, list_agentNames), F);
+		fsm. registerLastState (new StateExploFSMBehaviour(this, myMap,this.list_agentNames, this.dictVoisinsMessages), F);
 		
 		// Register the transitions
 		fsm. registerDefaultTransition (A,A); //Default
@@ -103,38 +100,41 @@ public class FSMAgent extends AbstractDedaleAgent {
 
 
 	// ------------------- Methode get et set --------------------- //
-	public Hashtable<String, Hashtable<String, Boolean>> get_dict_voisins_messages(){
+	public HashMap<String, HashMap<String, Boolean>> getDictVoisinsMessages(){
 		// Return the dictionary with agent (key) and dictionary_aciton (value)
 		// Retourne le dictionnaire dont (clé = agent) et (value = dico_action)
-		return this.dict_voisins_messages;
+		return this.dictVoisinsMessages;
 	}
 
-	public void set_dict_voisins_messages(Hashtable<String, Hashtable<String, Boolean>> dico){
+	public void set_dict_voisins_messages(HashMap<String, HashMap<String, Boolean>> dico){
 		// Replace the dictionary
 		// Remplace le dictionnaire dont (clé = agent) et (value = dico_action) par dico
-		this.dict_voisins_messages = dico;
+		this.dictVoisinsMessages = dico;
 	}
 
-	public Hashtable<String, Boolean> get_dict_voisins_messages_agent(String agent){
+	public HashMap<String, Boolean> get_dict_voisins_messages_agent(String agent){
 		// Return the agent's dictionary_action with action (key) and bool (value)
 		// Retourne le dictionnaire d'un agent agent dont (clé = action) et (value = bool)
-		return this.dict_voisins_messages.get(agent);
+		return this.dictVoisinsMessages.get(agent);
 	}
 
-	public void set_dict_voisins_messages_agent(String agent, Hashtable<String, Boolean> dico){
+	public void set_dict_voisins_messages_agent(String agent, HashMap<String, Boolean> dico){
 		// Replace the dictionary
 		// Remplace le dictionnaire d'un agent dont (clé = agent) et (value = dico_action) par dico
-		this.dict_voisins_messages.get(agent) = dico;
+		this.dictVoisinsMessages.put(agent, dico);
 	}
 
-	public Hashtable<String, Boolean> get_dict_voisins_messages_agent(String agent, String action){
+	public Boolean get_dict_voisins_messages_agent(String agent, String action){
 		// Retourne la valeur booleen du dictionnaire d'un agent de l'action action
-		return this.dict_voisins_messages.get(agent).get(action);
+		HashMap<String, Boolean> dico = this.dictVoisinsMessages.get(agent);
+		return dico.get(action);
 	}
 
 	public void set_dict_voisins_messages_agent(String agent, String action, Boolean bool){
 		// Remplace la valeur booleen du dictionnaire d'un agent a l'action action par bool
-		this.dict_voisins_messages.get(agent).get(action) = bool;
+		HashMap<String, Boolean> dico = this.dictVoisinsMessages.get(agent);
+		dico.put(action, bool);
+		this.dictVoisinsMessages.put(agent, dico);
 	}
 
 

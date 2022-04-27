@@ -1,24 +1,15 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 import jade.core.behaviours.OneShotBehaviour;
 
-import jade.core.AID;
+import java.util.*;
 
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.io.IOException;
-import java.lang.Math;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
-import jade.lang.acl.UnreadableException;
 
 import dataStructures.serializableGraph.SerializableSimpleGraph;
-import dataStructures.tuple.Couple;
 
-import eu.su.mas.dedale.env.Observation;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
-import eu.su.mas.dedaleEtu.mas.behaviours.ShareMapBehaviour;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 
@@ -31,15 +22,17 @@ import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 //Behaviours/comportement au state C
 public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 	private static final long serialVersionUID = 8567689731499797661L;
-	
+
 	private MapRepresentation myMap;
 	private List<String> list_agentNames;
+	private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
 	private int exitValue;
 	
-	public StateMailboxFSMBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap, List<String> agentNames) {
+	public StateMailboxFSMBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap, List<String> agentNames, HashMap<String, HashMap<String, Boolean>> dico ) {
 		super(myagent);
 		this.myMap=myMap;
 		this.list_agentNames=agentNames;
+		this.dictVoisinsMessages = dico;
 	}
 	
 	public void action() {	
@@ -51,9 +44,10 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 		ACLMessage msgMapReceived = this.myAgent.receive(msgMap);
 		
 		if (msgMapReceived != null) {
-			SerializableSimpleGraph<String, MapAttribute> mapReceived=null;
+			SerializableSimpleGraph<String, MapAttribute> mapReceived = null;
+			SerializableSimpleGraph<String, MapAttribute> allInformation = null;
 			try {
-				sgreceived = (SerializableSimpleGraph<String, MapAttribute>)mapReceived.getContentObject();
+				allInformation = (SerializableSimpleGraph<String, MapAttribute>) msgMapReceived.getContentObject();
 			} catch (UnreadableException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -63,7 +57,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			// MAJ dict_voisins : on change etat "" de l'agent par rapport a Expediteur 
 			String nameExpediteur = msgMapReceived.getContent(); //au state B, on a mis le nom dans message avec 'setContent'
 
-			Hashtable <String, Boolean> etat = this.myAgent.dict_voisins_messages.get(nameExpediteur); //dico des actions de l'agent par rapport a Expediteur
+			HashMap <String, Boolean> etat = this.dictVoisinsMessages.get(nameExpediteur); //dico des actions de l'agent par rapport a Expediteur
 			String key = "recoit_carte";
 			
 			etat.put(key,true); //met VRAI pour action "recoit_carte2" (elle cree la cle avec value=TRUE ou update la value a TRUE)
@@ -88,7 +82,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			String nameExpediteur = msgACKMapReceived.getContent(); //retourne une chaine de caractere
 			
 			//recupere le dico etat
-			Hashtable<String, Boolean> etat = this.myAgent.dict_voisins_messages.get(nameExpediteur); // cest le dico des actions de agent par rapport a Expediteur
+			HashMap<String, Boolean> etat = this.dictVoisinsMessages.get(nameExpediteur); // cest le dico des actions de agent par rapport a Expediteur
 			 
 			String key = "recoit_ACK";
 			etat.put(key, true); //met VRAI pour action "recoit_carte2" (elle cree la cle avec value=TRUE ou update la value a TRUE)
@@ -96,17 +90,19 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 		}
 
 
-		// 3) ACTION : Check si l'agent  a reçu une carte de ses voisins 
-		MessageTemplate msgMap = MessageTemplate.and(
+		// 3) ACTION : Check si l'agent  a reçu une carte de ses voisins
+		// msgMap : MessageTemplate
+		msgMap = MessageTemplate.and(
 				MessageTemplate.MatchProtocol("SHARE-MAP"),
 				MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-		
-		ACLMessage msgMapReceived = this.myAgent.receive(msgMap);
+		//msgMapReceived : ACLMessage
+		msgMapReceived = this.myAgent.receive(msgMap);
 		
 		if (msgMapReceived != null) {
 			SerializableSimpleGraph<String, MapAttribute> mapReceived=null;
+			SerializableSimpleGraph<String, MapAttribute> allInformation = null;
 			try {
-				sgreceived = (SerializableSimpleGraph<String, MapAttribute>)mapReceived.getContentObject();
+				allInformation = (SerializableSimpleGraph<String, MapAttribute>) msgMapReceived.getContentObject();
 			} catch (UnreadableException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -116,7 +112,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			// MAJ dict_voisins : on change etat "" de l'agent par rapport a Expediteur 
 			String nameExpediteur = msgMapReceived.getContent(); //au state B, on a mis le nom dans message avec 'setContent'
 
-			Hashtable<String, Boolean> etat = this.myAgent.dict_voisins_messages.get(nameExpediteur); //dico des actions de l'agent par rapport a Expediteur
+			HashMap<String, Boolean> etat = this.dictVoisinsMessages.get(nameExpediteur); //dico des actions de l'agent par rapport a Expediteur
 			String key = "recoit_carte";
 			
 			etat.put(key,true); //met VRAI pour action "recoit_carte2" (elle cree la cle avec value=TRUE ou update la value a TRUE)
@@ -129,9 +125,9 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 		// 4) Verifie si on a eu tous les ACK de la carte envoye par l'agent
 		String key = "recoit_ACK";
 		Boolean haveAllACK = true;
-		Set<String> setOfKeys = this.myAgent.dict_voisins_messages.keySet(); // recueere tous les cles donc tous les noms des voisins
+		Set<String> setOfKeys = this.dictVoisinsMessages.keySet(); // recueere tous les cles donc tous les noms des voisins
         for(String nameNeighbor: setOfKeys){	
-			etat = this.myAgent.dict_voisins_messages.get(nameNeighbor) ;//dico des actions de l'agent par rapport a son voisin nameNeighbor
+			HashMap<String, Boolean> etat = this.dictVoisinsMessages.get(nameNeighbor) ;//dico des actions de l'agent par rapport a son voisin nameNeighbor
 
 			if (! etat.get(key)){ //pas recu de ACK venant de l'agent nameNeighbor
 				haveAllACK = false	;

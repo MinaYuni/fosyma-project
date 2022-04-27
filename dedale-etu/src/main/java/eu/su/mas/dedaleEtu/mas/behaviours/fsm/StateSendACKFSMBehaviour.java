@@ -2,8 +2,7 @@ package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 import jade.core.behaviours.OneShotBehaviour;
 
 import jade.core.AID;
-
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.io.IOException;
@@ -32,15 +31,17 @@ import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 //Behaviours/comportement au state D : "Envoie ACK"
 public class StateSendACKFSMBehaviour extends OneShotBehaviour {
 	private static final long serialVersionUID = 8567689731499797661L;
-	
-	private MapRepresentation myMap;
+
+    private MapRepresentation myMap;
 	private List<String> list_agentNames;
+    private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
 	private int exitValue;
 	
-	public StateSendACKFSMBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap, List<String> agentNames) {
+	public StateSendACKFSMBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap, List<String> agentNames,HashMap<String, HashMap<String, Boolean>> dico) {
 		super(myagent);
 		this.myMap=myMap;
 		this.list_agentNames=agentNames;
+        this.dictVoisinsMessages = dico;
 	}
 	
 	public void action() {	
@@ -61,7 +62,7 @@ public class StateSendACKFSMBehaviour extends OneShotBehaviour {
             if (myName != receiverAgent) { // si c'est pas moi
 
                 //Hashtable<String, Boolean> etat = this.myAgent.dico_voisins_messages.get(receiverAgent); //dico des actions de l'agent par rapport a Recever
-                Hashtable<String, Boolean> etat = this.myAgent.get_dict_voisins_messages().get(receiverAgent); //dico des actions de l'agent par rapport a Recever
+                HashMap<String, Boolean> etat = this.dictVoisinsMessages.get(receiverAgent); //dico des actions de l'agent par rapport a Recever
 
                 if (etat.get("recoit_carte")) { //agent a bien recu carte de ReceiverAgent
 
@@ -70,7 +71,7 @@ public class StateSendACKFSMBehaviour extends OneShotBehaviour {
 
                         //MAJ dict_voisin
                         etat.put("envoie_ACK", true); //evite de renvoyer un ACK a chaque voisin dont agent a deja envoie un ACK
-                        this.myAgent.dict_voisins_messages.put(receiverAgent,etat);
+                        this.dictVoisinsMessages.put(receiverAgent,etat);
                     }
                 }            
             }
