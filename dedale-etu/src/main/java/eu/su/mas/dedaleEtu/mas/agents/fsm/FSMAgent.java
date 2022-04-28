@@ -6,6 +6,8 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.HashMap;
 
+import eu.su.mas.dedale.mas.agent.behaviours.startMyBehaviours;
+import eu.su.mas.dedaleEtu.mas.behaviours.ExploSoloBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateFSMBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateExploFSMBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateSendMapFSMBehaviour;
@@ -16,6 +18,7 @@ import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 
+import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.FSMBehaviour;
 
 public class FSMAgent extends AbstractDedaleAgent {
@@ -73,28 +76,29 @@ public class FSMAgent extends AbstractDedaleAgent {
 	protected void setup() {
 		// FMS behaviour
 		FSMBehaviour fsm = new FSMBehaviour(this);
-	
+
 		// Define the different states and behaviours
 		fsm. registerFirstState (new StateExploFSMBehaviour(this,this.myMap,this.list_agentNames, this.dictVoisinsMessages), A);
 		fsm. registerState (new StateSendMapFSMBehaviour(this,this.myMap,this.list_agentNames, this.dictVoisinsMessages), B);
 		fsm. registerState (new StateMailboxFSMBehaviour(this,this.myMap,this.list_agentNames, this.dictVoisinsMessages), C);
 		fsm. registerState (new StateFSMBehaviour(5), D);
 		fsm. registerLastState (new StateExploFSMBehaviour(this, myMap,this.list_agentNames, this.dictVoisinsMessages), F);
-		
+
 		// Register the transitions
 		fsm. registerDefaultTransition (A,A); //Default
-		fsm. registerTransition (A,B, 1) ; 
-		fsm. registerTransition (A,F, 2) ; 
-		fsm. registerTransition (B,C, 1) ; 
-		fsm. registerTransition (C,D, 2) ; 
-		fsm. registerTransition (C,C, 1) ; 
-		fsm. registerTransition (C,A, 3) ; 
-		fsm. registerTransition (C,B, 4) ;
-		fsm. registerTransition (D,C, 1) ; 
-		
-		this.addBehaviour(fsm);
-		// this.addBehaviour(tbf.wrap(envoiePing));
-		
+		fsm. registerTransition (A,B, 1);
+		fsm. registerTransition (A,F, 2);
+		fsm. registerTransition (B,C, 1);
+		fsm. registerTransition (C,D, 2);
+		fsm. registerTransition (C,C, 1);
+		fsm. registerTransition (C,A, 3);
+		fsm. registerTransition (C,B, 4);
+		fsm. registerTransition (D,C, 1);
+
+		lb.add(fsm);
+
+		addBehaviour(new startMyBehaviours(this,lb));
+
 		System.out.println("the  agent "+this.getLocalName()+ " is started");
 	}
 

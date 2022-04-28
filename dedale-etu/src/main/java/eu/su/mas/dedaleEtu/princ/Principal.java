@@ -21,6 +21,7 @@ import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 
+import javafx.embed.swing.JFXPanel;
 import org.junit.Assert;
 import jade.wrapper.AgentContainer;
 
@@ -335,34 +336,34 @@ public class Principal {
 		/*********
 		 * AGENT Explo1
 		 *********/
-		//1) Get the container where the agent will appear
-		c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
-		Assert.assertNotNull("This container does not exist",c);
-
-		//2) Give the name of your agent, MUST be the same as the one given in the entities file.
-		agentName="Explo1";
-
-		//3) If you want to give specific parameters to your agent, add them here
-		Object [] entityParametersExplo1={"My parameters"};
-
-		//4) Give the class name of your agent to let the system instantiate it
-		//ag=createNewDedaleAgent(c, agentName,DummyMovingAgent.class.getName(), entityParametersExplo1);
-		ag=createNewDedaleAgent(c, agentName, ExploreSoloAgent.class.getName(), entityParametersExplo1);//ExploreSoloAgent
-		agentList.add(ag);
+//		//1) Get the container where the agent will appear
+//		c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
+//		Assert.assertNotNull("This container does not exist",c);
+//
+//		//2) Give the name of your agent, MUST be the same as the one given in the entities file.
+//		agentName="Explo1";
+//
+//		//3) If you want to give specific parameters to your agent, add them here
+//		Object [] entityParametersExplo1={"My parameters"};
+//
+//		//4) Give the class name of your agent to let the system instantiate it
+//		//ag=createNewDedaleAgent(c, agentName,DummyMovingAgent.class.getName(), entityParametersExplo1);
+//		ag=createNewDedaleAgent(c, agentName, ExploreSoloAgent.class.getName(), entityParametersExplo1);//ExploreSoloAgent
+//		agentList.add(ag);
 
 		/*********
 		 * AGENT Explo2
 		 *********/
 //		//1) Get the container where the agent will appear
-		c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
-		Assert.assertNotNull("This container does not exist",c);
-//		
+//		c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
+//		Assert.assertNotNull("This container does not exist",c);
+//
 //		//2) Give the name of your agent, MUST be the same as the one given in the entities file.
 //		agentName="Explo2";
-//		
+//
 //		//3) If you want to give specific parameters to your agent, add them here
-		Object [] entityParametersExplo2={"My parameters"};
-//		
+//		Object [] entityParametersExplo2={"My parameters"};
+//
 //		//4) Give the class name of your agent to let the system instantiate it
 //		ag=createNewDedaleAgent(c, agentName, ExploreSoloAgent.class.getName(), entityParametersExplo2);//ExploreSoloAgent
 //		agentList.add(ag);
@@ -424,16 +425,16 @@ public class Principal {
 		/*********
 		 * AGENT FSM
 		 *********/
-//		c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
-//		Assert.assertNotNull("This container does not exist",c);
-//
-//		agentName="AgentFSM_1";
-//
-//		Object [] entityParametersExplo={"My parameters"};
-//
-//		ag=createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExplo);
-//
-//		agentList.add(ag);
+		c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
+		Assert.assertNotNull("This container does not exist",c);
+
+		agentName="AgentFSM_1";
+
+		Object [] entityParametersExplo={"My parameters"};
+
+		ag=createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExplo);
+
+		agentList.add(ag);
 		
 		/***********************************************************************
 		 * Type of agents used when you collect and gather treasures on the map
@@ -503,12 +504,13 @@ public class Principal {
 	 * @param agentList
 	 */
 	private static void startAgents(List<AgentController> agentList){
+		JFXPanel panel = new JFXPanel(); // JavaFX Runtime to avoid initialization exception when the application is started
 
 		System.out.println("Starting agents...");
 
-
 		for(final AgentController ac: agentList){
 			try {
+				//System.out.println(ac);
 				ac.start();
 			} catch (StaleProxyException e) {
 				e.printStackTrace();
