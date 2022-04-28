@@ -74,6 +74,10 @@ public class FSMAgent extends AbstractDedaleAgent {
 	// D: envoie ACK de la carte qu'il a reçu 
 	//		--> C (arc 1)
 	protected void setup() {
+		super.setup();
+
+		List<Behaviour> lb=new ArrayList<Behaviour>();
+
 		// FMS behaviour
 		FSMBehaviour fsm = new FSMBehaviour(this);
 

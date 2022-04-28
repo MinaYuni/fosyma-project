@@ -44,6 +44,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 		
 		//0) Retrieve the current position 
 		String myPosition=((AbstractDedaleAgent)this.myAgent).getCurrentPosition();
+		//System.out.println("agent in position "+ myPosition);
 
 		if (myPosition!=null){
 			//List of observable from the agent's current position
@@ -73,6 +74,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 
 			//3) while openNodes is not empty, continues
 			if (!this.myMap.hasOpenNode()){ // si exploration fini
+				System.out.println("Fin exploration");
 				exitValue = 2; // aller en F : "Exploration finie"
 				System.out.println(this.myAgent.getLocalName()+" - Exploration successufully done.");
 			} else{
