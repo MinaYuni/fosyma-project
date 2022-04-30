@@ -97,11 +97,12 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 				ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 				msg.setProtocol("PING");
 				msg.setContent(myName); // mettre son nom dans le ping envoyé 
-				msg.setSender(this.myAgent.getAID()); //mettre une expediteur au message 
+				msg.setSender(this.myAgent.getAID()); //mettre une expediteur au message
 				
-				// ajout des destinataires du ping (tous les autres agents, sauf moi meme)
+				// ajout des destinataires du ping (tous les autres agents, sauf moi_meme)
 				for (int i=0; i < n; i++) {
 					String receiverAgent = this.list_agentNames.get(i);
+					System.out.println("myName: "+myName+"\treceiverAgent: "+receiverAgent);
 					if (myName != receiverAgent) { // si c'est pas moi
 						msg.addReceiver(new AID(receiverAgent,false));	//mettre une receveur du message 
 					}

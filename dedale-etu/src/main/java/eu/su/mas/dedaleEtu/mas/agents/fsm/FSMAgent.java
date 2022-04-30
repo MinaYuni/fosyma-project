@@ -2,13 +2,10 @@ package eu.su.mas.dedaleEtu.mas.agents.fsm;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Dictionary;
-import java.util.Hashtable;
 import java.util.HashMap;
 
 import eu.su.mas.dedale.mas.agent.behaviours.startMyBehaviours;
-import eu.su.mas.dedaleEtu.mas.behaviours.ExploSoloBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateFSMBehaviour;
+import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateFSMBehaviourTest;
 import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateExploFSMBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateSendMapFSMBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateMailboxFSMBehaviour;
@@ -25,8 +22,6 @@ public class FSMAgent extends AbstractDedaleAgent {
 	
 	private static final long serialVersionUID = -6431752865590433727L;
 	private MapRepresentation myMap;
-	List<String> list_agentNames = new ArrayList<String>(); 
-	//List<String> list_voisins = new ArrayList<String>();
 	
 	// Repartition des ressources de manière équitable : 
 	// max du min 
@@ -74,7 +69,23 @@ public class FSMAgent extends AbstractDedaleAgent {
 	// D: envoie ACK de la carte qu'il a reçu 
 	//		--> C (arc 1)
 	protected void setup() {
+		//get the parameters added to the agent at creation (if any)
+		final Object[] args = getArguments();
+
+		List<String> list_agentNames = new ArrayList<String>();
+
 		super.setup();
+
+		if (args.length == 0) {
+			System.err.println("Error while creating the agent, names of agent to contact expected");
+			System.exit(-1);
+		} else {
+			int i = 2;// WARNING YOU SHOULD ALWAYS START AT 2. This will be corrected in the next release.
+			while (i < args.length) {
+				list_agentNames.add((String)args[i]);
+				i++;
+			}
+		}
 
 		List<Behaviour> lb=new ArrayList<Behaviour>();
 
@@ -82,11 +93,11 @@ public class FSMAgent extends AbstractDedaleAgent {
 		FSMBehaviour fsm = new FSMBehaviour(this);
 
 		// Define the different states and behaviours
-		fsm. registerFirstState (new StateExploFSMBehaviour(this,this.myMap,this.list_agentNames, this.dictVoisinsMessages), A);
-		fsm. registerState (new StateSendMapFSMBehaviour(this,this.myMap,this.list_agentNames, this.dictVoisinsMessages), B);
-		fsm. registerState (new StateMailboxFSMBehaviour(this,this.myMap,this.list_agentNames, this.dictVoisinsMessages), C);
-		fsm. registerState (new StateFSMBehaviour(5), D);
-		fsm. registerLastState (new StateExploFSMBehaviour(this, myMap,this.list_agentNames, this.dictVoisinsMessages), F);
+		fsm. registerFirstState (new StateExploFSMBehaviour(this,this.myMap,list_agentNames, this.dictVoisinsMessages), A);
+		fsm. registerState (new StateSendMapFSMBehaviour(this,this.myMap,list_agentNames, this.dictVoisinsMessages), B);
+		fsm. registerState (new StateMailboxFSMBehaviour(this,this.myMap,list_agentNames, this.dictVoisinsMessages), C);
+		fsm. registerState (new StateFSMBehaviourTest(5), D);
+		fsm. registerLastState (new StateExploFSMBehaviour(this, myMap,list_agentNames, this.dictVoisinsMessages), F);
 
 		// Register the transitions
 		fsm. registerDefaultTransition (A,A); //Default
