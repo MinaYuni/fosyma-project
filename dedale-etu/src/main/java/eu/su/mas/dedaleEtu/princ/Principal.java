@@ -103,7 +103,7 @@ public class Principal {
      *
      * @param rt The reference to the main container
      * @return a H-map associating the name of a container and its object reference.
-     * <br/>
+     *
      * note: there is a smarter way to find a container with its name, but we go fast to the goal here. Cf jade's doc.
      */
     private static HashMap<String, ContainerController> createContainers(Runtime rt) {
@@ -269,7 +269,7 @@ public class Principal {
          * Any agent added here should have its associated configuration available in the entities file
          */
 
-        // ---------- User controlled agent (with N(ext) and O(k)) ----------
+        // ---------- User controlled agent (with N(ext) and O(k)) ---------- //
 /*
         //1) Get the container where the agent will appear
         c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
@@ -287,7 +287,7 @@ public class Principal {
 */
 
 
-        // ---------- GOLEM ----------
+        // ---------- GOLEM ---------- //
 /*
         //1) Get the container where the agent will appear
         c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
@@ -319,7 +319,7 @@ public class Principal {
 */
 
 
-        // ---------- AGENT Explo1 ----------
+        // ---------- AGENT Explo1 ---------- //
 /*
         //1) Get the container where the agent will appear
         c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
@@ -337,7 +337,7 @@ public class Principal {
         agentList.add(ag);
 */
 
-        // ---------- AGENT Explo2 ----------
+        // ---------- AGENT Explo2 ---------- //
 /*
         //1) Get the container where the agent will appear
         c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
@@ -354,7 +354,7 @@ public class Principal {
         agentList.add(ag);
 */
 
-        // ---------- AGENT Explo3 ----------
+        // ---------- AGENT Explo3 ---------- //
 /*
         //1) Get the container where the agent will appear
         c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
@@ -372,7 +372,7 @@ public class Principal {
         agentList.add(ag);
 */
 
-        // ---------- AGENT Explo4 ----------
+        // ---------- AGENT Explo4 ---------- //
 /*
         //1) Get the container where the agent will appear
         c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
@@ -390,7 +390,7 @@ public class Principal {
         agentList.add(ag);
 */
 
-        // ---------- AGENT Explo5 ----------
+        // ---------- AGENT Explo5 ---------- //
 /*
         //1) Get the container where the agent will appear
         c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
@@ -409,7 +409,7 @@ public class Principal {
 */
 
 
-        // ---------- AGENT FSM ----------
+        // ---------- AGENT FSM ---------- //
         c = Principal.containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
         Assert.assertNotNull("This container does not exist", c);
 
@@ -442,7 +442,7 @@ public class Principal {
          * Type of agents used when you collect and gather treasures on the map
          */
 
-        // ---------- AGENT Collect 1 ----------
+        // ---------- AGENT Collect 1 ---------- //
 /*
         //1) Get the container where the agent will appear
         c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
@@ -459,7 +459,7 @@ public class Principal {
         agentList.add(ag);
 */
 
-        // ---------- AGENT Tanker ----------
+        // ---------- AGENT Tanker ---------- //
 /*
         //1) Get the container where the agent will appear
         c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
