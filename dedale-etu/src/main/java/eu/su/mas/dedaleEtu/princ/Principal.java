@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import eu.su.mas.dedaleEtu.mas.agents.dummies.DummyMovingAgent;
-import eu.su.mas.dedaleEtu.mas.agents.dummies.DummyTankerAgent;
-import eu.su.mas.dedaleEtu.mas.agents.dummies.ExploreSoloAgent;
-import eu.su.mas.dedaleEtu.mas.agents.dummies.explo.ExploreCoopAgent;
+//import eu.su.mas.dedaleEtu.mas.agents.dummies.DummyMovingAgent;
+//import eu.su.mas.dedaleEtu.mas.agents.dummies.DummyTankerAgent;
+//import eu.su.mas.dedaleEtu.mas.agents.dummies.ExploreSoloAgent;
+//import eu.su.mas.dedaleEtu.mas.agents.dummies.explo.ExploreCoopAgent;
 import eu.su.mas.dedaleEtu.mas.agents.fsm.FSMAgent;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedale.mas.agents.GateKeeperAgent;
-import eu.su.mas.dedale.mas.agents.dedaleDummyAgents.DummyWumpusShift;
-import eu.su.mas.dedale.mas.agents.dedaleDummyAgents.DummyWumpusShift2;
-import eu.su.mas.dedale.mas.agents.dedaleDummyAgents.Controlled.ControlledAgent;
+//import eu.su.mas.dedale.mas.agents.dedaleDummyAgents.DummyWumpusShift;
+//import eu.su.mas.dedale.mas.agents.dedaleDummyAgents.DummyWumpusShift2;
+//import eu.su.mas.dedale.mas.agents.dedaleDummyAgents.Controlled.ControlledAgent;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
@@ -37,7 +37,6 @@ import jade.wrapper.AgentContainer;
  *
  */
 public class Principal {
-
 
 	private static HashMap<String, ContainerController> containerList=new HashMap<String, ContainerController>();// container's name - container's ref
 	private static List<AgentController> agentList;// agents's ref
@@ -430,7 +429,18 @@ public class Principal {
 
 		agentName="AgentFSM_1";
 
-		Object [] entityParametersExplo={"My parameters"};
+		Object [] entityParametersExplo = {"My parameters"};
+
+		ag=createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExplo);
+
+		agentList.add(ag);
+
+
+		//Agent FSM 2
+		c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
+		Assert.assertNotNull("This container does not exist",c);
+
+		agentName="AgentFSM_2";
 
 		ag=createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExplo);
 
