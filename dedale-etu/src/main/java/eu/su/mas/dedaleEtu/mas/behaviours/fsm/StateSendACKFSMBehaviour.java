@@ -22,12 +22,6 @@ import eu.su.mas.dedaleEtu.mas.behaviours.ShareMapBehaviour;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 
-
-// jai modifier list_voisins qui est devenu dict_voisins (voir FSMAgent.java)
-// (car dans StateMailboxFSMBehaviours.java (c'est state C), dans message ACK-MAP (vers les ligne 65), jai besoin de connaitre les etats de l'agent par rapport au Receveur)
-// jai fini d'adapter les changements de dico_voisin pour ce behviours
-
-
 //Behaviours/comportement au state D : "Envoie ACK"
 public class StateSendACKFSMBehaviour extends OneShotBehaviour {
 	private static final long serialVersionUID = 8567689731499797661L;
@@ -44,8 +38,10 @@ public class StateSendACKFSMBehaviour extends OneShotBehaviour {
         this.dictVoisinsMessages = dico;
 	}
 	
-	public void action() {	
-		int n = this.list_agentNames.size();
+	public void action() {
+        System.out.println("BEGIN : StateSendACKFSMBehaviour (state D), " + this.myAgent.getLocalName()+" - Begin state D");
+
+        int n = this.list_agentNames.size();
         String myName = this.myAgent.getLocalName();
         
         // ACTION : Envoie un message PING avec le nomAgent
@@ -81,5 +77,6 @@ public class StateSendACKFSMBehaviour extends OneShotBehaviour {
         ((AbstractDedaleAgent)this.myAgent).sendMessage(msg);
 
         exitValue = 1; // aller en C : "Attente ACK"
+        System.out.println("END : StateSendACKFSMBehaviour (state D), " + this.myAgent.getLocalName()+" - finish state D, go in state C ");
     }
 }

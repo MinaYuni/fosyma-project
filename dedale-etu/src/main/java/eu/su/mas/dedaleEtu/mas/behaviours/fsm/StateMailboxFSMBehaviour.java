@@ -35,7 +35,9 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 		this.dictVoisinsMessages = dico;
 	}
 	
-	public void action() {	
+	public void action() {
+		System.out.println("BEGIN : StateMailboxFSMBehaviour (state C), " + this.myAgent.getLocalName()+" - Begin state C ");
+
 		// 1) ACTION : Check si l'agent a reçu une carte de ses voisins 
 		MessageTemplate msgMap = MessageTemplate.and(
 				MessageTemplate.MatchProtocol("SHARE-MAP"),
@@ -64,6 +66,8 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			
 
 			exitValue = 2; // aller en D : "Envoie ACK"
+			System.out.println("CHANGE STATE D : StateMailboxFSMBehaviour (state C), " + this.myAgent.getLocalName()+" - go in state D ");
+
 		}
 		
 		// 2) ACTION : check si l'agent a reçu un ACK (de la carte qu'il a envoyé) de ses voisins 
@@ -119,6 +123,8 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			
 
 			exitValue = 2; // aller en D : "Envoie ACK"
+			System.out.println("CHANGE STATE D : StateMailboxFSMBehaviour (state C), " + this.myAgent.getLocalName()+" - GO in state D ");
+
 		}
 
 
@@ -137,8 +143,12 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 
 		if (haveAllACK) {
 			exitValue = 3; // aller en A : "Exploration" (agent a recu tous les ACK donc continue son exploration)
+			System.out.println("Change in state A : StateMailboxFSMBehaviour (state C), " + this.myAgent.getLocalName()+" - Begin state A ");
+
 		}else{
 			exitValue = 1; // reste en C, car on a pas recu tous les ACK
+			System.out.println("RESTE IN STATE C : StateMailboxFSMBehaviour (state C), " + this.myAgent.getLocalName()+" - rest in the state C");
+
 		}
 	}
 }

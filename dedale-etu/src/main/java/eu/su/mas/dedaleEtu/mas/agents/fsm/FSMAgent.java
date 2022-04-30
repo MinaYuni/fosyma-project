@@ -91,7 +91,7 @@ public class FSMAgent extends AbstractDedaleAgent {
         }
 
         // liste des behaviours
-        List<Behaviour> lb = new ArrayList<Behaviour>();
+        List<Behaviour> listBehaviours = new ArrayList<Behaviour>();
 
         // FMS behaviour
         FSMBehaviour fsm = new FSMBehaviour(this);
@@ -114,9 +114,11 @@ public class FSMAgent extends AbstractDedaleAgent {
         fsm.registerTransition(C, B, 4);
         fsm.registerTransition(D, C, 1);
 
-        lb.add(fsm);
+        // Ajout de FSMBehaviour dans la liste des comportements
+        listBehaviours.add(fsm);
 
-        addBehaviour(new startMyBehaviours(this, lb));
+        //Agent va executer la liste des comportements
+        addBehaviour(new startMyBehaviours(this, listBehaviours));
 
         System.out.println("the  agent " + this.getLocalName() + " is started");
     }
@@ -160,4 +162,9 @@ public class FSMAgent extends AbstractDedaleAgent {
         dico.put(action, bool);
         this.dictVoisinsMessages.put(agent, dico);
     }
+
+    public void setMyMap(MapRepresentation map) {
+        this.myMap = map;
+    }
+
 }

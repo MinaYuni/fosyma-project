@@ -33,6 +33,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
     }
 
     public void action() {
+        System.out.println("BEGIN : StateExploFSMBehaviour (state A), " + this.myAgent.getLocalName()+" - Begin exploration ");
 
         if (this.myMap == null) {
             this.myMap = new MapRepresentation();
@@ -69,9 +70,9 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 
             //3) while openNodes is not empty, continues
             if (!this.myMap.hasOpenNode()) { // si exploration fini
-                System.out.println("Fin exploration");
                 exitValue = 2; // aller en F : "Exploration finie"
                 System.out.println(this.myAgent.getLocalName() + " - Exploration successfully done.");
+                System.out.println("END : StateExploFSMBehaviour (state A), " + this.myAgent.getLocalName()+" - finish exploration, go to state F");
             } else {
 
                 //3.1) Select next move
@@ -98,11 +99,13 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 for (String receiverAgent : this.list_agentNames) {
                     //System.out.println("myName: " + myName + "\treceiverAgent: " + receiverAgent);
                     if (!Objects.equals(myName, receiverAgent)) { // si c'est pas moi
+                        System.out.println("STATE A : " + this.myAgent.getLocalName()+" -will send msg to " + receiverAgent);
                         msg.addReceiver(new AID(receiverAgent, false));    //mettre une receveur du message
                     }
                 }
                 // envoie du ping à tous les agents
                 ((AbstractDedaleAgent) this.myAgent).sendMessage(msg);
+                System.out.println("STATE A : " + this.myAgent.getLocalName()+" - FINISH SEND PING ");
 
                 //3.3) At each time step, the agent check if he received a ping from a teammate
                 // ACTION : Check reception PING
@@ -126,12 +129,16 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                         this.dicoVoisinsMessages.put(namePingReceived, etat);
                     }
                     exitValue = 1; // aller en B : "Envoie carte"
+                    //this.myAgent.setMyMap(this.myMap);
+                    System.out.println("Change state A to state B : StateSendACKFSMBehaviour (state A), " + this.myAgent.getLocalName()+" - go in state B (send MAP) ");
+
                 } else { // pas reçu de message (PING) donc continuer a avancer dans la map
                     ((AbstractDedaleAgent) this.myAgent).moveTo(nextNode);
 
                 }
             }
         }
+
     }
 
     public int onEnd() {
