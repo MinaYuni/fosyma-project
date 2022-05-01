@@ -27,7 +27,7 @@ public class StateSendACKFSMBehaviour extends OneShotBehaviour {
 	private static final long serialVersionUID = 8567689731499797661L;
 
     private MapRepresentation myMap;
-	private List<String> list_agentNames;
+	private final List<String> list_agentNames;
     private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
 	private int exitValue;
 	

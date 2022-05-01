@@ -5,10 +5,7 @@ import java.util.List;
 import java.util.HashMap;
 
 import eu.su.mas.dedale.mas.agent.behaviours.startMyBehaviours;
-import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateFSMBehaviourTest;
-import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateExploFSMBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateSendMapFSMBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.fsm.StateMailboxFSMBehaviour;
+import eu.su.mas.dedaleEtu.mas.behaviours.fsm.*;
 //import eu.su.mas.dedaleEtu.mas.behaviours.SendPingBehaviour;
 
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
@@ -100,8 +97,8 @@ public class FSMAgent extends AbstractDedaleAgent {
         fsm.registerFirstState(new StateExploFSMBehaviour(this, this.myMap, list_agentNames, this.dictVoisinsMessages), A);
         fsm.registerState(new StateSendMapFSMBehaviour(this, this.myMap, list_agentNames, this.dictVoisinsMessages), B);
         fsm.registerState(new StateMailboxFSMBehaviour(this, this.myMap, list_agentNames, this.dictVoisinsMessages), C);
-        fsm.registerState(new StateFSMBehaviourTest(5), D);
-        fsm.registerLastState(new StateExploFSMBehaviour(this, myMap, list_agentNames, this.dictVoisinsMessages), F);
+        fsm.registerState(new StateSendACKFSMBehaviour(this, this.myMap, list_agentNames, this.dictVoisinsMessages), D);
+        fsm.registerLastState(new StateStopFSMBehaviour(this, myMap, list_agentNames, this.dictVoisinsMessages), F);
 
         // Register the transitions
         fsm.registerDefaultTransition(A, A); //Default

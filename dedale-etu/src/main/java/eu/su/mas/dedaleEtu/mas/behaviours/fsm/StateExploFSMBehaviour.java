@@ -130,7 +130,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                     }
                     exitValue = 1; // aller en B : "Envoie carte"
                     //this.myAgent.setMyMap(this.myMap);
-                    System.out.println("Change state A to state B : StateSendACKFSMBehaviour (state A), " + this.myAgent.getLocalName()+" - go in state B (send MAP) ");
+                    System.out.println("Change state A to state B : StateSendMapFSMBehaviour (state A), " + this.myAgent.getLocalName()+" - go in state B (send MAP) ");
 
                 } else { // pas reçu de message (PING) donc continuer a avancer dans la map
                     ((AbstractDedaleAgent) this.myAgent).moveTo(nextNode);
