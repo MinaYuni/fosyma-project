@@ -64,7 +64,9 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			String key = "recoit_carte";
 			
 			etat.put(key,true); //met VRAI pour action "recoit_carte2" (elle cree la cle avec value=TRUE ou update la value a TRUE)
-			
+
+			//on a modifier le dico etat => utilise la methode 'setDictVoisinsMessagesAgent' pour udapte !
+			((FSMAgent)this.myAgent).setDictVoisinsMessagesAgent(nameExpediteur, etat);
 
 			exitValue = 2; // aller en D : "Envoie ACK"
 			System.out.println("CHANGE STATE D : StateMailboxFSMBehaviour (state C), " + this.myAgent.getLocalName()+" - go in state D ");

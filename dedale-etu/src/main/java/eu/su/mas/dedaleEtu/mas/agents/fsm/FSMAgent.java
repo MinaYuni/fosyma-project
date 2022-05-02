@@ -129,31 +129,31 @@ public class FSMAgent extends AbstractDedaleAgent {
         return this.dictVoisinsMessages;
     }
 
-    public void set_dict_voisins_messages(HashMap<String, HashMap<String, Boolean>> dico) {
+    public void setDictVoisinsMessages(HashMap<String, HashMap<String, Boolean>> dico) {
         // Replace the dictionary
         // Remplace le dictionnaire dont (clé = agent) et (value = dico_action) par dico
         this.dictVoisinsMessages = dico;
     }
 
-    public HashMap<String, Boolean> get_dict_voisins_messages_agent(String agent) {
+    public HashMap<String, Boolean> getDictVoisinsMessagesAgent(String agent) {
         // Return the agent's dictionary_action with action (key) and bool (value)
         // Retourne le dictionnaire d'un agent agent dont (clé = action) et (value = bool)
         return this.dictVoisinsMessages.get(agent);
     }
 
-    public void set_dict_voisins_messages_agent(String agent, HashMap<String, Boolean> dico) {
+    public void setDictVoisinsMessagesAgent(String agent, HashMap<String, Boolean> dico) {
         // Replace the dictionary
         // Remplace le dictionnaire d'un agent dont (clé = agent) et (value = dico_action) par dico
         this.dictVoisinsMessages.put(agent, dico);
     }
 
-    public Boolean get_dict_voisins_messages_agent(String agent, String action) {
+    public Boolean getDictVoisinsMessagesAgentAction(String agent, String action) {
         // Retourne la valeur boolean du dictionnaire d'un agent de l'action action
         HashMap<String, Boolean> dico = this.dictVoisinsMessages.get(agent);
         return dico.get(action);
     }
 
-    public void set_dict_voisins_messages_agent(String agent, String action, Boolean bool) {
+    public void setDictVoisinsMessagesAgentAction(String agent, String action, Boolean bool) {
         // Remplace la valeur boolean du dictionnaire d'un agent a l'action action par bool
         HashMap<String, Boolean> dico = this.dictVoisinsMessages.get(agent);
         dico.put(action, bool);

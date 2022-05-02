@@ -126,12 +126,14 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                     String namePingReceived = msgPingReceived.getContent(); // récupérer le nom du voisin (nom donnée dans le message du ping reçu)
 
                     // si l'agent n'a pas encore rencontré l'envoyeur du ping, il est ajouté dans le dictionnaire (dict_voisins)
-                    if (!this.dicoVoisinsMessages.containsKey(namePingReceived)) { //
+                    if (!this.dictVoisinsMessages.containsKey(namePingReceived)) { //
                         HashMap<String, Boolean> etat = new HashMap<String, Boolean>();
                         // état de l'agent par rapport à l'envoyeur du ping : dico est vide car il n'a rien fait (on peut aussi tout initialiser a False)
 
                         // ajout de l'envoyeur et son état dans le dico des voisins
-                        this.dicoVoisinsMessages.put(namePingReceived, etat);
+                        this.dictVoisinsMessages.put(namePingReceived, etat);
+                        //on a modifier le dico dictVoisinsMessages => utilise la methode 'setDictVoisinsMessages' pour udapte !
+                        ((FSMAgent)this.myAgent).setDictVoisinsMessages(this.dictVoisinsMessages);
                     }
 
                     //MAJ MAP
