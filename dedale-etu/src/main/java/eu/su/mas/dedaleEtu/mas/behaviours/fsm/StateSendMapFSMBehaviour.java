@@ -52,7 +52,7 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
 		Set<String> setOfKeys = this.dictVoisinsMessages.keySet(); // recuperer tous les cles donc tous les noms des voisins
         for(String receiverAgent: setOfKeys){
 			msg.addReceiver(new AID(receiverAgent,false));
-			System.out.println("STATE B " + this.myAgent.getLocalName()+" sends MAP to "+ receiverAgent );
+			System.out.println("STATE B : " + this.myAgent.getLocalName()+" sends MAP to "+ receiverAgent );
 		}
 		//ajout de la carte de Agent dans le message
 		//SerializableSimpleGraph<String, MapAttribute> mapSent=(((FSMAgent)this.myAgent).getMyMap()).getSerializableGraph();
