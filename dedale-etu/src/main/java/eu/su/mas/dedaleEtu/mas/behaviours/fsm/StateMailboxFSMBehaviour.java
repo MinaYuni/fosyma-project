@@ -67,7 +67,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			
 			// Remarque : pour l'instant, Content contient que un String
 			// car on a envoye QUE le nom de l'expediteur dans le message (voir state D, fichier pas encore creer)
-			String nameExpediteur = msgACKMapReceived.getContent(); //retourne une chaine de caractere
+			String nameExpediteur = msgACKMapReceived.getSender().getLocalName(); //retourne une chaine de caractere
 			
 			//recupere le dico etat
 			HashMap<String, Boolean> etat = this.dictVoisinsMessages.get(nameExpediteur); // cest le dico des actions de agent par rapport a Expediteur
@@ -103,7 +103,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			this.myMap.mergeMap(mapReceived);
 
 			// MAJ dict_voisins : on change etat "recoit_carte" de l'agent par rapport a Expediteur
-			String nameExpediteur = msgMapReceived.getContent(); //au state B, on a mis le nom dans message avec 'setContent'
+			String nameExpediteur = msgMapReceived.getSender().getLocalName(); //au state B, on a mis le nom dans message avec 'setContent'
 
 			HashMap <String, Boolean> etat = this.dictVoisinsMessages.get(nameExpediteur); //dico des actions de l'agent par rapport a Expediteur
 			String key = "recoit_carte";
