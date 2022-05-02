@@ -128,6 +128,10 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                         // ajout de l'envoyeur et son état dans le dico des voisins
                         this.dicoVoisinsMessages.put(namePingReceived, etat);
                     }
+
+                    //MAJ MAP
+                    //myAgent.setMyMap(this.myMap);
+
                     exitValue = 1; // aller en B : "Envoie carte"
                     //this.myAgent.setMyMap(this.myMap);
                     System.out.println("Change state A to state B : StateSendMapFSMBehaviour (state A), " + this.myAgent.getLocalName()+" - go in state B (send MAP) ");

@@ -135,9 +135,9 @@ public final class ConfigurationFile {
     /*
      * Mustn't be null as it describes the native agents' capabilities
      */
-    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagent";
-
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = null;
+
+    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagent";
 
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentExplo";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentExplo-2";

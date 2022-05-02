@@ -49,11 +49,10 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
 			System.out.println("STATE B " + this.myAgent.getLocalName()+" send MAP to "+ receiverAgent );
 
 		}
-		System.out.println("----- STATE B : ajout carte dans message, fait par " + this.myAgent.getLocalName());
+		System.out.println("----- STATE B DEBUT : ajout carte dans message, fait par " + this.myAgent.getLocalName());
 
 		//ajout de la carte de Agent dans le message 
 		SerializableSimpleGraph<String, MapAttribute> mapSent=this.myMap.getSerializableGraph();
-		System.out.println("-----STATE B : ajout carte dans message, fait par " + this.myAgent.getLocalName());
 
 		try {
 			msg.setContentObject(mapSent);
@@ -61,6 +60,7 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
 			e.printStackTrace();
 		}
 
+		System.out.println("-----STATE B FIN : ajout carte dans message, fait par " + this.myAgent.getLocalName());
 		//envoie en cours de la carte a tous les voisins
 		((AbstractDedaleAgent)this.myAgent).sendMessage(msg);
 
