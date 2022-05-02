@@ -45,7 +45,7 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
 		// ACTION : Envoyer sa carte à tous ses voisins
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.setProtocol("SHARE-MAP");
-		msg.setSender(this.myAgent.getAID());	//mettre un expediteur
+		msg.setSender(this.myAgent.getAID()); //mettre un expediteur
 		msg.setContent(myName); // met son nom dans le message envoyé
 
 		// ajouter les noms des destinataires (ici les noms des voisins) du message
