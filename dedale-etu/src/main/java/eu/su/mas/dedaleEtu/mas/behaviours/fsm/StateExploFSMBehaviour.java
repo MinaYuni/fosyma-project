@@ -97,7 +97,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 
                 ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
                 msg.setProtocol("PING");
-                msg.setContent(myName); // mettre son nom dans le ping envoyé
+                //msg.setContent(myName); // mettre son nom dans le ping envoyé
                 msg.setSender(this.myAgent.getAID()); // mettre une expéditeur au message
 
                 // ajout des destinataires du ping (tous les autres agents, sauf moi_meme)
@@ -123,7 +123,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 // sinon continuer déplacement
                 if (msgPingReceived != null) { // réception PING, donc un autre agent est à proximité, donc MàJ dict_voisins de l'agent
                     // ajouter le voisin au dico (voir type de list_voisin dans FSMAgent.java)
-                    String namePingReceived = msgPingReceived.getContent(); // récupérer le nom du voisin (nom donnée dans le message du ping reçu)
+                    String namePingReceived = msgPingReceived.getSender().getLocalName(); // récupérer le nom du voisin (nom donnée dans le message du ping reçu)
 
                     // si l'agent n'a pas encore rencontré l'envoyeur du ping, il est ajouté dans le dictionnaire (dict_voisins)
                     if (!this.dictVoisinsMessages.containsKey(namePingReceived)) { //

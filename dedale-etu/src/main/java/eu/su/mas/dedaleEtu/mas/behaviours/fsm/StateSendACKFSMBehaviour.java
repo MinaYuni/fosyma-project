@@ -55,7 +55,7 @@ public class StateSendACKFSMBehaviour extends OneShotBehaviour {
         // les informations contenu dans le message (qu'on va envoyer) 
         msg.setProtocol("ACK-MAP");
         msg.setSender(this.myAgent.getAID()); //mettre une expediteur au message
-        msg.setContent(myName); // met son nom dans le ping envoyé
+        //msg.setContent(myName); // met son nom dans le ping envoyé
 
         // ajout des receveus du messsages (sauf moi meme)
         for (int i=0; i < n; i++) {

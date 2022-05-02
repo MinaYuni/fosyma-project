@@ -46,7 +46,7 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.setProtocol("SHARE-MAP");
 		msg.setSender(this.myAgent.getAID()); //mettre un expediteur
-		msg.setContent(myName); // met son nom dans le message envoyé
+		//msg.setContent(myName); // met son nom dans le message envoyé
 
 		// ajouter les noms des destinataires (ici les noms des voisins) du message
 		Set<String> setOfKeys = this.dictVoisinsMessages.keySet(); // recuperer tous les cles donc tous les noms des voisins
