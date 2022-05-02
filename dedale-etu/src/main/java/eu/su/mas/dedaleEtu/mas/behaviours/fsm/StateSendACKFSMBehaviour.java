@@ -73,10 +73,12 @@ public class StateSendACKFSMBehaviour extends OneShotBehaviour {
 
                         //MAJ dict_voisin
                         etat.put("envoie_ACK", true); //evite de renvoyer un ACK a chaque voisin dont agent a deja envoie un ACK
-                        this.dictVoisinsMessages.put(receiverAgent,etat);
+                        //this.dictVoisinsMessages.put(receiverAgent,etat);
 
                         //on a modifier le dico dictVoisinsMessages => utilise la methode 'setDictVoisinsMessages' pour udapte !
-                        ((FSMAgent)this.myAgent).setDictVoisinsMessages(this.dictVoisinsMessages);
+                        //((FSMAgent)this.myAgent).setDictVoisinsMessages(this.dictVoisinsMessages);
+                        ((FSMAgent)this.myAgent).setDictVoisinsMessagesAgent(receiverAgent, etat);
+
                     }
                 }            
             }

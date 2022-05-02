@@ -51,13 +51,14 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			SerializableSimpleGraph<String, MapAttribute> allInformation = null;
 			try {
 				allInformation = (SerializableSimpleGraph<String, MapAttribute>) msgMapReceived.getContentObject();
+				mapReceived = allInformation; //Pour l'instant, on n'a qu'une carte, mais apres on pourra envoyer d'autre information
 			} catch (UnreadableException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			this.myMap.mergeMap(mapReceived);
 
-			// MAJ dict_voisins : on change etat "" de l'agent par rapport a Expediteur 
+			// MAJ dict_voisins : on change etat "recoit_carte" de l'agent par rapport a Expediteur
 			String nameExpediteur = msgMapReceived.getContent(); //au state B, on a mis le nom dans message avec 'setContent'
 
 			HashMap <String, Boolean> etat = this.dictVoisinsMessages.get(nameExpediteur); //dico des actions de l'agent par rapport a Expediteur
@@ -137,22 +138,23 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 
 		// 4) Verifie si on a eu tous les ACK de la carte envoye par l'agent
 		String key = "recoit_ACK";
-		Boolean haveAllACK = true;
+		Boolean haveAllACK = false; //on part du principe qu'il a recu 0 ACK (mais du coup il faudra ajouter un timer sinon il attendra à l'infini)
 		Set<String> setOfKeys = this.dictVoisinsMessages.keySet(); // recueere tous les cles donc tous les noms des voisins
         for(String nameNeighbor: setOfKeys){	
 			HashMap<String, Boolean> etat = this.dictVoisinsMessages.get(nameNeighbor) ;//dico des actions de l'agent par rapport a son voisin nameNeighbor
 
 			if (! etat.get(key)){ //pas recu de ACK venant de l'agent nameNeighbor
+				// il existe un agent dont on n'a pas recu de ACK
 				haveAllACK = false	;
 				break;
 			}
 		}
 
-		if (haveAllACK) {
+		if (haveAllACK) { //on a recu tous les ACK => on va en state A
 			exitValue = 3; // aller en A : "Exploration" (agent a recu tous les ACK donc continue son exploration)
 			System.out.println("Change in state A : StateMailboxFSMBehaviour (state C), " + this.myAgent.getLocalName()+" - Begin state A ");
 
-		}else{
+		}else{ //il existe un agent dont on n'a pas recu de ACK => on reste au state C
 			exitValue = 1; // reste en C, car on a pas recu tous les ACK
 			System.out.println("RESTE IN STATE C : StateMailboxFSMBehaviour (state C), " + this.myAgent.getLocalName()+" - rest in the state C");
 

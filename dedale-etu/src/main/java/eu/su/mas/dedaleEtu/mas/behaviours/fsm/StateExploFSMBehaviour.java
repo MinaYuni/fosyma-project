@@ -101,7 +101,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 msg.setSender(this.myAgent.getAID()); // mettre une expéditeur au message
 
                 // ajout des destinataires du ping (tous les autres agents, sauf moi_meme)
-                for (String receiverAgent : this.list_agentNames) {
+                for (String receiverAgent : this.list_agentNames) { //pbl qd un autre agent meurt => ya une boucle infini
                     //System.out.println("myName: " + myName + "\treceiverAgent: " + receiverAgent);
                     if (!Objects.equals(myName, receiverAgent)) { // si c'est pas moi
                         System.out.println("STATE A : " + this.myAgent.getLocalName()+" -will send msg to " + receiverAgent);
