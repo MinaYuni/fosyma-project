@@ -93,6 +93,10 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			 
 			String key = "recoit_ACK";
 			etat.put(key, true); //met VRAI pour action "recoit_carte2" (elle cree la cle avec value=TRUE ou update la value a TRUE)
+			//on a modifier le dico etat => utilise la methode 'setDictVoisinsMessagesAgent' pour udapte !
+			((FSMAgent)this.myAgent).setDictVoisinsMessagesAgent(nameExpediteur, etat);
+
+
 			//FIN MAJ dict_voisins
 		}
 
