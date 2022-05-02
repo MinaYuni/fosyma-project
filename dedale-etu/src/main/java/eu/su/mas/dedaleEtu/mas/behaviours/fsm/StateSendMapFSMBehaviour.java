@@ -32,6 +32,7 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
 	
 	public void action() {
 		System.out.println("BEGIN : StateSendMapFSMBehaviour (state B), " + this.myAgent.getLocalName()+" - Begin send MAP ");
+
 		//int nb_voisins = this.myAgent.list_voisins.size();
 		String myName = this.myAgent.getLocalName();
 

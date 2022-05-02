@@ -1,5 +1,7 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 
+
+import eu.su.mas.dedaleEtu.mas.agents.fsm.FSMAgent;
 import jade.core.behaviours.OneShotBehaviour;
 
 import jade.core.AID;
@@ -130,7 +132,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                     }
 
                     //MAJ MAP
-                    //myAgent.setMyMap(this.myMap);
+                    //this.myAgent.setMap(this.myMap);
 
                     exitValue = 1; // aller en B : "Envoie carte"
                     //this.myAgent.setMyMap(this.myMap);

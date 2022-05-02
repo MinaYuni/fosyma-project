@@ -64,9 +64,10 @@ public class FSMAgent extends AbstractDedaleAgent {
             => exemple : "reception_carte", "envoie_carte", "reception_ACK", "envoie_ACK"
         value (bool) : si on a fait les actions correspondant à la clef
     */
-    HashMap<String, MapRepresentation> dict_map_envoye = new HashMap<String, MapRepresentation>();
+    HashMap<String, MapRepresentation> dictMapEnvoye = new HashMap<String, MapRepresentation>();
 
     private MapRepresentation myMap;
+
 
     protected void setup() {
         super.setup();
@@ -160,8 +161,25 @@ public class FSMAgent extends AbstractDedaleAgent {
         this.dictVoisinsMessages.put(agent, dico);
     }
 
+
+    public MapRepresentation getMyMap() {
+        return this.myMap;
+    }
     public void setMyMap(MapRepresentation map) {
         this.myMap = map;
+    }
+
+    public HashMap<String, MapRepresentation> getDictMapEnvoye() {
+        return this.dictMapEnvoye;
+    }
+
+    public void setDictMapEnvoye(String agent, MapRepresentation map) {
+        /*
+            FMSAgent fait la mis a jour de sa connaissance sur la carte d'un autre agent (appelé agent)
+
+            /!\ map doit etre la connaissance totale => une carte entiere
+        */
+        this.dictMapEnvoye.put(agent, map);
     }
 
 }
