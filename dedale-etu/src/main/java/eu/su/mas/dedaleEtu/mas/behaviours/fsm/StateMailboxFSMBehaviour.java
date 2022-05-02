@@ -44,11 +44,11 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 				MessageTemplate.MatchProtocol("PING"),
 				MessageTemplate.MatchPerformative(ACLMessage.INFORM));
 		
-		ACLMessage msgReceived = this.myAgent.receive(msgPing);
+		ACLMessage msgPingReceived = this.myAgent.receive(msgPing);
 		
-		if (msgReceived != null) {
+		if (msgPingReceived != null) {
 			System.out.println("STATE C : " + this.myAgent.getLocalName()+" received PING");
-			exitValue = 4; // aller en B : "Envoie ACK"
+			exitValue = 4; // aller en B : "Envoie MAP"
 			System.out.println("CHANGE C to B (StateSendMapFSMBehaviour): " + this.myAgent.getLocalName()+" goes to state B ");
 		}
 		
@@ -126,6 +126,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 
 			if (! etat.get(key)){ //pas recu de ACK venant de l'agent nameNeighbor
 				// il existe un agent dont on n'a pas recu de ACK
+				haveAllACK = false;
 				break;
 			} else {
 				haveAllACK = true;
