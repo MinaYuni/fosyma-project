@@ -1,6 +1,6 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 import jade.core.behaviours.OneShotBehaviour;
-
+import eu.su.mas.dedaleEtu.mas.agents.fsm.FSMAgent;
 import java.util.*;
 
 import jade.lang.acl.ACLMessage;
@@ -12,11 +12,6 @@ import dataStructures.serializableGraph.SerializableSimpleGraph;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
-
-
-// jai modifier list_voisins qui est devenu dict_voisins (voir FSMAgent.java)
-// (car dans StateMailboxFSMBehaviours.java (c'est state C), dans message ACK-MAP (vers les ligne 65), jai besoin de connaitre les etats de l'agent par rapport au Receveur)
-// jai fini d'adapter les changements de dico_voisin pour ce behviours
 
 
 //Behaviours/comportement au state C

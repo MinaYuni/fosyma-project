@@ -68,7 +68,6 @@ public class FSMAgent extends AbstractDedaleAgent {
 
     private MapRepresentation myMap;
 
-
     protected void setup() {
         super.setup();
 
@@ -165,9 +164,6 @@ public class FSMAgent extends AbstractDedaleAgent {
     public MapRepresentation getMyMap() {
         return this.myMap;
     }
-    public void setMyMap(MapRepresentation map) {
-        this.myMap = map;
-    }
 
     public HashMap<String, MapRepresentation> getDictMapEnvoye() {
         return this.dictMapEnvoye;
@@ -182,4 +178,7 @@ public class FSMAgent extends AbstractDedaleAgent {
         this.dictMapEnvoye.put(agent, map);
     }
 
+    public void setMyMap(MapRepresentation myMap) {
+        this.myMap=myMap;
+    }
 }

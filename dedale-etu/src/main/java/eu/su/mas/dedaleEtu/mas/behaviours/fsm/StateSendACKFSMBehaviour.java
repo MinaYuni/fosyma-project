@@ -1,6 +1,6 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 import jade.core.behaviours.OneShotBehaviour;
-
+import eu.su.mas.dedaleEtu.mas.agents.fsm.FSMAgent;
 import jade.core.AID;
 import java.util.HashMap;
 import java.util.Iterator;

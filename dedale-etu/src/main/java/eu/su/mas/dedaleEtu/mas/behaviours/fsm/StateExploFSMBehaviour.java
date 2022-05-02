@@ -37,9 +37,13 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
     public void action() {
         System.out.println("BEGIN : StateExploFSMBehaviour (state A), " + this.myAgent.getLocalName()+" - Begin exploration ");
 
+
         if (this.myMap == null) {
+
             this.myMap = new MapRepresentation();
         }
+
+
 
         //0) Retrieve the current position
         String myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
@@ -132,7 +136,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                     }
 
                     //MAJ MAP
-                    //this.myAgent.setMap(this.myMap);
+                    ((FSMAgent)this.myAgent).setMyMap(this.myMap);
 
                     exitValue = 1; // aller en B : "Envoie carte"
                     //this.myAgent.setMyMap(this.myMap);
