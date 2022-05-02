@@ -25,6 +25,7 @@ public class StateStopFSMBehaviour extends OneShotBehaviour {
     }
 
     public void action() {
-        System.out.println("StateStopFSMBehaviour (state F) : " + this.myAgent.getLocalName());
+        System.out.println("START state F (StateStopFSMBehaviour): " + this.myAgent.getLocalName());
+        System.out.println("There is nothing yet in state F");
     }
 }

@@ -32,7 +32,7 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
 	}
 	
 	public void action() {
-		System.out.println("BEGIN : StateSendMapFSMBehaviour (state B), " + this.myAgent.getLocalName()+" - Begin send MAP ");
+		System.out.println("START state B (StateSendMapFSMBehaviour): " + this.myAgent.getLocalName()+" starts sending MAP ");
 
 		//int nb_voisins = this.myAgent.list_voisins.size();
 		String myName = this.myAgent.getLocalName();
@@ -52,7 +52,7 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
 		Set<String> setOfKeys = this.dictVoisinsMessages.keySet(); // recuperer tous les cles donc tous les noms des voisins
         for(String receiverAgent: setOfKeys){
 			msg.addReceiver(new AID(receiverAgent,false));
-			System.out.println("STATE B " + this.myAgent.getLocalName()+" send MAP to "+ receiverAgent );
+			System.out.println("STATE B " + this.myAgent.getLocalName()+" sends MAP to "+ receiverAgent );
 		}
 		//ajout de la carte de Agent dans le message
 		//SerializableSimpleGraph<String, MapAttribute> mapSent=(((FSMAgent)this.myAgent).getMyMap()).getSerializableGraph();
@@ -68,7 +68,7 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
 		((AbstractDedaleAgent)this.myAgent).sendMessage(msg);
 
 		exitValue = 1; //  aller en C = "Attente ACK et check Mailbox"
-		System.out.println("END : StateSendMapFSMBehaviour (state B), " + this.myAgent.getLocalName()+" - Finish to send MAP, go state C ");
+		System.out.println("END state B (StateSendMapFSMBehaviour): " + this.myAgent.getLocalName()+" finished sending MAP, goes to state C ");
 	}
 	
 	public int onEnd() {return exitValue;}

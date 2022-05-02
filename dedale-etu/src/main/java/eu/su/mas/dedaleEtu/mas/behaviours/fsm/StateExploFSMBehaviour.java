@@ -35,7 +35,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
     }
 
     public void action() {
-        System.out.println("BEGIN : StateExploFSMBehaviour (state A), " + this.myAgent.getLocalName()+" - Begin exploration ");
+        System.out.println("START state A (StateExploFSMBehaviour): " + this.myAgent.getLocalName() + " starts exploration");
 
         //update information
         if (this.myMap == null) {
@@ -76,8 +76,8 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
             //3) while openNodes is not empty, continues
             if (!this.myMap.hasOpenNode()) { // si exploration fini
                 exitValue = 2; // aller en F : "Exploration finie"
-                System.out.println(this.myAgent.getLocalName() + " - Exploration successfully done.");
-                System.out.println("END : StateExploFSMBehaviour (state A), " + this.myAgent.getLocalName()+" - finish exploration, go to state F");
+                System.out.println(this.myAgent.getLocalName() + " - Exploration successfully done");
+                System.out.println("END state A (StateExploFSMBehaviour): " + this.myAgent.getLocalName() + " finished exploring, goes to state F");
             } else {
 
                 //3.1) Select next move
@@ -104,13 +104,13 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 for (String receiverAgent : this.list_agentNames) { //pbl qd un autre agent meurt => ya une boucle infini
                     //System.out.println("myName: " + myName + "\treceiverAgent: " + receiverAgent);
                     if (!Objects.equals(myName, receiverAgent)) { // si c'est pas moi
-                        System.out.println("STATE A : " + this.myAgent.getLocalName()+" -will send msg to " + receiverAgent);
+                        System.out.println("STATE A : " + this.myAgent.getLocalName()+" will send msg to " + receiverAgent);
                         msg.addReceiver(new AID(receiverAgent, false));    //mettre une receveur du message
                     }
                 }
                 // envoie du ping à tous les agents
                 ((AbstractDedaleAgent) this.myAgent).sendMessage(msg);
-                System.out.println("STATE A : " + this.myAgent.getLocalName()+" - FINISH SEND PING ");
+                System.out.println("STATE A : " + this.myAgent.getLocalName()+" FINISHED SENDING PING");
 
                 //3.3) At each time step, the agent check if he received a ping from a teammate
                 // ACTION : Check reception PING
@@ -141,7 +141,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 
                     exitValue = 1; // aller en B : "Envoie carte"
                     //this.myAgent.setMyMap(this.myMap);
-                    System.out.println("Change state A to state B : StateSendMapFSMBehaviour (state A), " + this.myAgent.getLocalName()+" - go in state B (send MAP) ");
+                    System.out.println("CHANGE A to B (StateSendMapFSMBehaviour): " + this.myAgent.getLocalName()+" goes to state B (send MAP)");
 
                 } else { // pas reçu de message (PING) donc continuer a avancer dans la map
                     ((AbstractDedaleAgent) this.myAgent).moveTo(nextNode);

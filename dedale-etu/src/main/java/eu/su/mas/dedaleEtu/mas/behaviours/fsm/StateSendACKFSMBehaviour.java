@@ -39,7 +39,7 @@ public class StateSendACKFSMBehaviour extends OneShotBehaviour {
 	}
 	
 	public void action() {
-        System.out.println("BEGIN : StateSendACKFSMBehaviour (state D), " + this.myAgent.getLocalName()+" - Begin state D");
+        System.out.println("START state D (StateSendACKFSMBehaviour): " + this.myAgent.getLocalName()+" starts state D");
 
         int n = this.list_agentNames.size();
         String myName = this.myAgent.getLocalName();
@@ -88,6 +88,6 @@ public class StateSendACKFSMBehaviour extends OneShotBehaviour {
         ((AbstractDedaleAgent)this.myAgent).sendMessage(msg);
 
         exitValue = 1; // aller en C : "Attente ACK"
-        System.out.println("END : StateSendACKFSMBehaviour (state D), " + this.myAgent.getLocalName()+" - finish state D, go in state C ");
+        System.out.println("END state D (StateSendACKFSMBehaviour): " + this.myAgent.getLocalName()+" ends state D, goes to state C ");
     }
 }

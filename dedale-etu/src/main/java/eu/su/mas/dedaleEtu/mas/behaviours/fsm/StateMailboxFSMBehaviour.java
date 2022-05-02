@@ -31,7 +31,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 	}
 	
 	public void action() {
-		System.out.println("BEGIN : StateMailboxFSMBehaviour (state C), " + this.myAgent.getLocalName()+" - Begin state C ");
+		System.out.println("START state C (StateMailboxFSMBehaviour): " + this.myAgent.getLocalName()+" starts state C ");
 
 		if (this.myMap==null){
 			this.myMap = ((FSMAgent)this.myAgent).getMyMap();
@@ -70,7 +70,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			((FSMAgent)this.myAgent).setDictVoisinsMessagesAgent(nameExpediteur, etat);
 
 			exitValue = 2; // aller en D : "Envoie ACK"
-			System.out.println("CHANGE STATE D : StateMailboxFSMBehaviour (state C), " + this.myAgent.getLocalName()+" - go in state D ");
+			System.out.println("CHANGE C to D (StateSendACKFSMBehaviour): " + this.myAgent.getLocalName()+" goes to state D ");
 
 		}
 		
@@ -131,7 +131,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			
 
 			exitValue = 2; // aller en D : "Envoie ACK"
-			System.out.println("CHANGE STATE D : StateMailboxFSMBehaviour (state C), " + this.myAgent.getLocalName()+" - GO in state D ");
+			System.out.println("CHANGE C to D (StateSendACKFSMBehaviour): " + this.myAgent.getLocalName()+" goes to state D");
 
 		}
 
@@ -152,11 +152,11 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 
 		if (haveAllACK) { //on a recu tous les ACK => on va en state A
 			exitValue = 3; // aller en A : "Exploration" (agent a recu tous les ACK donc continue son exploration)
-			System.out.println("Change in state A : StateMailboxFSMBehaviour (state C), " + this.myAgent.getLocalName()+" - Begin state A ");
+			System.out.println("CHANGE C to A (StateExploFSMBehaviour): " + this.myAgent.getLocalName()+" goes to state A");
 
 		}else{ //il existe un agent dont on n'a pas recu de ACK => on reste au state C
 			exitValue = 1; // reste en C, car on a pas recu tous les ACK
-			System.out.println("RESTE IN STATE C : StateMailboxFSMBehaviour (state C), " + this.myAgent.getLocalName()+" - rest in the state C");
+			System.out.println("STAY in state C (StateMailboxFSMBehaviour): " + this.myAgent.getLocalName()+" reminds in state C");
 
 		}
 	}
