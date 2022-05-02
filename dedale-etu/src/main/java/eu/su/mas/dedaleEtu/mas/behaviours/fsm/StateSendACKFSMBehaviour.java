@@ -43,14 +43,20 @@ public class StateSendACKFSMBehaviour extends OneShotBehaviour {
 
         int n = this.list_agentNames.size();
         String myName = this.myAgent.getLocalName();
-        
+
+        if (this.myMap==null){
+            this.myMap = ((FSMAgent)this.myAgent).getMyMap();
+        }
+        this.dictVoisinsMessages = ((FSMAgent)this.myAgent).getDictVoisinsMessages();
+
+
         // ACTION : Envoie un message PING avec le nomAgent
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
         // les informations contenu dans le message (qu'on va envoyer) 
         msg.setProtocol("ACK-MAP");
-        msg.setContent(myName); // met son nom dans le ping envoyé 
-        msg.setSender(this.myAgent.getAID()); //mettre une expediteur au message 
-        
+        msg.setSender(this.myAgent.getAID()); //mettre une expediteur au message
+        msg.setContent(myName); // met son nom dans le ping envoyé
+
         // ajout des receveus du messsages (sauf moi meme)
         for (int i=0; i < n; i++) {
             String receiverAgent = this.list_agentNames.get(i); //recupere le nom d'un agent

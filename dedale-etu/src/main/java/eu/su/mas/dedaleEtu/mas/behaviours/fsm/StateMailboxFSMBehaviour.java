@@ -33,6 +33,12 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 	public void action() {
 		System.out.println("BEGIN : StateMailboxFSMBehaviour (state C), " + this.myAgent.getLocalName()+" - Begin state C ");
 
+		if (this.myMap==null){
+			this.myMap = ((FSMAgent)this.myAgent).getMyMap();
+		}
+		this.dictVoisinsMessages = ((FSMAgent)this.myAgent).getDictVoisinsMessages();
+
+
 		// 1) ACTION : Check si l'agent a reçu une carte de ses voisins 
 		MessageTemplate msgMap = MessageTemplate.and(
 				MessageTemplate.MatchProtocol("SHARE-MAP"),

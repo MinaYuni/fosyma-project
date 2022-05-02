@@ -23,7 +23,7 @@ import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 public class StateExploFSMBehaviour extends OneShotBehaviour {
     private static final long serialVersionUID = 8567689731499787661L;
     private final List<String> list_agentNames;
-    private final HashMap<String, HashMap<String, Boolean>> dicoVoisinsMessages;
+    private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
     private MapRepresentation myMap;
     private int exitValue;
 
@@ -31,18 +31,17 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
         super(myagent);
         this.myMap = myMap;
         this.list_agentNames = agentNames;
-        this.dicoVoisinsMessages = dico;
+        this.dictVoisinsMessages = dico;
     }
 
     public void action() {
         System.out.println("BEGIN : StateExploFSMBehaviour (state A), " + this.myAgent.getLocalName()+" - Begin exploration ");
 
-
+        //update information
         if (this.myMap == null) {
-
             this.myMap = new MapRepresentation();
         }
-
+        this.dictVoisinsMessages = ((FSMAgent)this.myAgent).getDictVoisinsMessages();
 
 
         //0) Retrieve the current position
