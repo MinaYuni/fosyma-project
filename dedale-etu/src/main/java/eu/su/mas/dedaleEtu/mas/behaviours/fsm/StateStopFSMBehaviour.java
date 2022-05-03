@@ -54,7 +54,7 @@ public class StateStopFSMBehaviour extends OneShotBehaviour {
             List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
             System.out.println("STATE F : " + myName + " -- list of observables: " + lobs);
 
-/*
+
             // ACTION : random deplacement
             // chose a random next node to go to
             Random r = new Random();
@@ -62,8 +62,7 @@ public class StateStopFSMBehaviour extends OneShotBehaviour {
             String nextNode = lobs.get(moveId).getLeft();
             System.out.println("STATE F : " + myName + " will move to " + nextNode);
             ((AbstractDedaleAgent) this.myAgent).moveTo(nextNode);
-*/
-
+/*
             // ACTION : Check reception PING
             MessageTemplate msgPing = MessageTemplate.and(
                     MessageTemplate.MatchProtocol("PING"),
@@ -102,9 +101,10 @@ public class StateStopFSMBehaviour extends OneShotBehaviour {
                 // envoie en cours de la carte à tous les voisins
                 ((AbstractDedaleAgent) this.myAgent).sendMessage(msgSendingMap);
                 System.out.println("STATE F : " + myName + " send MAP to " + namePingReceived );
+                */
             }
 
-        }
+
     }
 
     public int onEnd() {

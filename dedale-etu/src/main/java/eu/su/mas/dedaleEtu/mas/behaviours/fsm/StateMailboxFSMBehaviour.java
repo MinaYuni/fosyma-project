@@ -17,17 +17,20 @@ import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 //Behaviours/comportement au state C
 public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 	private static final long serialVersionUID = 3567689731496787661L;
+	private final long TimeMax = 10000000;
 
 	private MapRepresentation myMap;
 	private List<String> list_agentNames;
 	private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
+	private int timer;
 	private int exitValue;
-	
+
 	public StateMailboxFSMBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap, List<String> agentNames, HashMap<String, HashMap<String, Boolean>> dico ) {
 		super(myagent);
 		this.myMap=myMap;
 		this.list_agentNames=agentNames;
 		this.dictVoisinsMessages = dico;
+		this.timer = 0;
 	}
 	
 	public void action() {
@@ -42,6 +45,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			this.myMap = ((FSMAgent)this.myAgent).getMyMap();
 		}
 		this.dictVoisinsMessages = ((FSMAgent)this.myAgent).getDictVoisinsMessages();
+		this.timer += 1;
 
 		// 1) ACTION : Check si l'agent a reçu un ping d'un nouveau voisin
 		MessageTemplate msgPing = MessageTemplate.and(
@@ -53,6 +57,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 		if (msgPingReceived != null) {
 			System.out.println("STATE C : " + myName + " received PING");
 			exitValue = 4; // aller en B : "Envoie MAP"
+			this.timer = 0;
 			System.out.println("-CHANGE C to B (StateSendMapFSMBehaviour): " + myName + " goes to state B ");
 		}
 		
@@ -63,7 +68,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 		
 		ACLMessage msgACKMapReceived = this.myAgent.receive(msgACK);
 		
-		if (msgACKMapReceived != null && exitValue == -1) { // si l'agent a reçu un ACK-MAP et il n'a rien à faire
+		if (msgACKMapReceived != null && exitValue == -1 && this.timer < TimeMax) { // si l'agent a reçu un ACK-MAP et il n'a rien à faire
 			System.out.println("STATE C : " + myName + " received ACK");
 
 			// Garde en memoire du ACK reçu
@@ -86,7 +91,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 
 		ACLMessage msgMapReceived = this.myAgent.receive(msgMap);
 
-		if (msgMapReceived != null && exitValue == -1) { // si l'agent a reçu une MAP et il n'a rien à faire
+		if (msgMapReceived != null && exitValue == -1 && this.timer < TimeMax) { // si l'agent a reçu une MAP et il n'a rien à faire
 			System.out.println("STATE C : " + myName + " received MAP");
 			String nameExpediteur = msgMapReceived.getSender().getLocalName(); //au state B, on a mis le nom dans message avec 'setContent'
 
@@ -113,11 +118,12 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			((FSMAgent)this.myAgent).setDictVoisinsMessagesAgent(nameExpediteur, etat);
 
 			exitValue = 2; // aller en D : "Envoie ACK"
+			this.timer = 0;
 			System.out.println("-CHANGE C to D (StateSendACKFSMBehaviour): " + myName + " goes to state D ");
 		}
 
 		// 4) Vérification si l'agent a reçu tous les ACK de la carte qu'il a envoyé
-		String key = "recoit_ACK";
+		//String key = "recoit_ACK";
 		boolean haveAllACK = false; // on part du principe qu'il a reçu 0 ACK (mais du coup il faudra ajouter un timer sinon il risque d'attendre à l'infini)
 		Set<String> setOfKeys = this.dictVoisinsMessages.keySet(); // on recupère toutes les clés (les noms des voisins)
 
@@ -125,27 +131,39 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			HashMap<String, Boolean> etat = this.dictVoisinsMessages.get(nameNeighbor); //dico des actions de l'agent par rapport a son voisin nameNeighbor
 			//System.out.println("STATE C (step 4): " + this.myAgent.getLocalName()+", etat: " + etat.get(key));
 
-			if (etat.get(key) != null) { // peut être null si l'agent n'a jamais envoyé de ACK
-				if (! etat.get(key)){ // il n'a pas reçu de ACK venant de l'agent nameNeighbor
+			if (etat.get("recoit_ACK") != null) { // peut être null si l'agent n'a jamais envoyé de ACK
+				if (! etat.get("recoit_ACK")){ // il n'a pas reçu de ACK venant de l'agent nameNeighbor
 					haveAllACK = false; // donc il existe un agent dont on n'a pas reçu de ACK
 					break;
 				} else {
 					haveAllACK = true;
+					if (etat.get("recoit_carte")) { //on a recu sa carte donc on peut le supprimer
+						this.dictVoisinsMessages.remove(nameNeighbor);
+						((FSMAgent) this.myAgent).setDictVoisinsMessages(this.dictVoisinsMessages);
+					}
 				}
 			}
 		}
 
-		if (exitValue == -1) { // si l'agent n'a rien à faire
+		if (exitValue == -1 && this.timer < TimeMax) { // si l'agent n'a rien à faire
 			if (haveAllACK) {  // si l'agent a reçu tous les ACK, alors il va en state A
 				exitValue = 3; // aller en A : "Exploration" (l'agent a reçu tous les ACK donc il continue son exploration)
+				this.timer = 0;
 				System.out.println("-CHANGE C to A (StateExploFSMBehaviour): " + myName + " goes to state A");
 
 			} else { // sinon il existe un agent dont on n'a pas reçu de ACK, alors on reste au state C pour attendre son ACK
 				exitValue = 1; // rester en C
+				this.timer = 0;
 				System.out.println("-STAY in state C (StateMailboxFSMBehaviour): " + myName + " reminds in state C");
 			}
 		}
 
+		if (this.timer == TimeMax){
+			exitValue = 10;
+			System.out.println("TIMER : STATE C, temps dépassé !!!! "+ myName + ", EXIT VALUE: " + exitValue);
+			this.timer = 0;
+		}
+		// mettre un wait au lieu de timer ?
 		System.out.println("STATE C : " + myName + ", EXIT VALUE: " + exitValue);
 	}
 
