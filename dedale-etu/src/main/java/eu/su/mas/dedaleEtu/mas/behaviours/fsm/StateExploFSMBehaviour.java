@@ -134,7 +134,8 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 msg.setProtocol("PING");
                 msg.setSender(this.myAgent.getAID()); // mettre une expéditeur au message
 
-                //msg.setContent( this.myMap.getNbNodes().toString() ); //mets le nombre de sommets visités
+                //pr resoudre interblocage
+                //msg.setContent( myPosition ); //envoie position
 
                 // ajout des destinataires du ping (tous les autres agents, sauf moi_meme)
                 for (String receiverAgent : this.list_agentNames) { // PROBLEME : quand un autre agent meurt => il y a une boucle infinie
