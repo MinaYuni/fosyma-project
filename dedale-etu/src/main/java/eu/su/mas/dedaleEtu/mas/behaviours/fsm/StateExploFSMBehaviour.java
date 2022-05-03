@@ -1,6 +1,7 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 
 
+import dataStructures.serializableGraph.SerializableSimpleGraph;
 import eu.su.mas.dedaleEtu.mas.agents.fsm.FSMAgent;
 import jade.core.behaviours.OneShotBehaviour;
 
@@ -17,6 +18,7 @@ import eu.su.mas.dedale.env.Observation;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
+import jade.lang.acl.UnreadableException;
 
 
 // Behaviour/comportement du state A (exploration)
@@ -75,11 +77,41 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 }
             }
 
+            //ACTION : Check si l'agent a reçu une carte de ses voisins
+            MessageTemplate msgMap = MessageTemplate.and(
+                    MessageTemplate.MatchProtocol("FINISH-SHARE-MAP"),
+                    MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+
+            ACLMessage msgMapReceived = this.myAgent.receive(msgMap);
+
+            if (msgMapReceived != null) {
+                String nameExpediteur = msgMapReceived.getSender().getLocalName();
+                System.out.println("STATE A : " + myName + " received MAP, from " + nameExpediteur);
+
+                SerializableSimpleGraph<String, MapAttribute> mapReceived = null;
+                SerializableSimpleGraph<String, MapAttribute> allInformation = null;
+                try {
+                    allInformation = (SerializableSimpleGraph<String, MapAttribute>) msgMapReceived.getContentObject();
+                    mapReceived = allInformation; // pour l'instant, on n'a qu'une carte, mais après on pourra envoyer d'autres informations
+                } catch (UnreadableException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                assert mapReceived != null;
+                this.myMap.mergeMap(mapReceived);
+
+                /*
+                //Normalement, il va dans la condition 'if' (voir ligne 111 à ligne 115 de ce fichier) pour aller au state F
+                exitValue = 2; // aller en F : "Exploration fini"
+                System.out.println("-CHANGE A to F (StateStopFSMBehaviour): " + myName + " goes to state F (Exploration fini) ");
+                */
+            }
+
             //3) while openNodes is not empty, continues
-            if (!this.myMap.hasOpenNode()) { // si exploration finie
+            if (!this.myMap.hasOpenNode()) { // si il n'y a plus de noeud ouvert => exploration finie
                 exitValue = 2; // aller en F : "Exploration finie"
                 System.out.println(myName + " - Exploration successfully done");
-                System.out.println("-END state A (StateExploFSMBehaviour): " + myName + " finished exploring, goes to state F");
+                System.out.println("- END state A (StateExploFSMBehaviour): " + myName + " finished exploring, goes to state F");
             } else {
 
                 // 3.1) Select next move
