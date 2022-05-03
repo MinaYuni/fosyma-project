@@ -88,7 +88,9 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 
 		if (msgMapReceived != null && exitValue == -1) { // si l'agent a reçu une MAP et il n'a rien à faire
 			System.out.println("STATE C : " + myName + " received MAP");
+			String nameExpediteur = msgMapReceived.getSender().getLocalName(); //au state B, on a mis le nom dans message avec 'setContent'
 
+			// ACTION : Récupere la carte
 			SerializableSimpleGraph<String, MapAttribute> mapReceived = null;
 			SerializableSimpleGraph<String, MapAttribute> allInformation = null;
 			try {
@@ -101,8 +103,10 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			assert mapReceived != null;
 			this.myMap.mergeMap(mapReceived);
 
+			//MAP dictMapEnvoye
+			((FSMAgent) this.myAgent).updateDictMapEnvoyeAgent(nameExpediteur, mapReceived);
+
 			// MAJ dict_voisins : on change etat "recoit_carte" de l'agent par rapport à l'expéditeur
-			String nameExpediteur = msgMapReceived.getSender().getLocalName(); //au state B, on a mis le nom dans message avec 'setContent'
 			HashMap <String, Boolean> etat = this.dictVoisinsMessages.get(nameExpediteur); //dico des actions de l'agent par rapport a Expediteur
 			String key = "recoit_carte";
 			etat.put(key,true); //met VRAI pour action "recoit_carte" (elle cree la cle avec value=TRUE ou update la value a TRUE)

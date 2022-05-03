@@ -101,6 +101,9 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 this.myMap.mergeMap(mapReceived);
                 //this.myMap.loadSavedData() ; //car on a recu une carte complete
 
+                //MAP dictMapEnvoye
+                ((FSMAgent) this.myAgent).updateDictMapEnvoyeAgent(nameExpediteur, mapReceived);
+
                 /*
                 //Normalement, il va dans la condition 'if' (voir ligne 111 à ligne 115 de ce fichier) pour aller au state F
                 exitValue = 2; // aller en F : "Exploration fini"
@@ -129,7 +132,6 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 // 3.2) ACTION : envoie PING à chaque déplacement
                 ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
                 msg.setProtocol("PING");
-                //msg.setContent(myName); // mettre son nom dans le ping envoyé
                 msg.setSender(this.myAgent.getAID()); // mettre une expéditeur au message
 
                 //msg.setContent( this.myMap.getNbNodes().toString() ); //mets le nombre de sommets visités
@@ -166,7 +168,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                         // état de l'agent par rapport à l'envoyeur du ping
                         HashMap<String, Boolean> etat = new HashMap<String, Boolean>();
 
-                        //etat.put("nbNodes", this.myMap.getNbNodes().toString());
+                        //etat.put("nbNodes", this.myMap.getNbNodes().toString());  //ajout d'autre element dans etat : comme le nombre de sommet d'un agent
 
                         // ajout de l'envoyeur et son état dans le dico des voisins
                         this.dictVoisinsMessages.put(namePingReceived, etat);

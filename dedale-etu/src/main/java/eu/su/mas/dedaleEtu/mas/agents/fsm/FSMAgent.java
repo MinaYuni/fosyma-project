@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 
+import dataStructures.serializableGraph.SerializableSimpleGraph;
 import eu.su.mas.dedale.mas.agent.behaviours.startMyBehaviours;
 import eu.su.mas.dedaleEtu.mas.behaviours.fsm.*;
 //import eu.su.mas.dedaleEtu.mas.behaviours.SendPingBehaviour;
@@ -190,13 +191,31 @@ public class FSMAgent extends AbstractDedaleAgent {
         return this.dictMapEnvoye;
     }
 
-    public void setDictMapEnvoye(String agent, MapRepresentation map) {
+    public void updateDictMapEnvoyeAgent(String agent, SerializableSimpleGraph<String, MapRepresentation.MapAttribute> sgreceived) {
         /*
             FMSAgent fait la mise à jour de sa connaissance sur la carte d'un autre agent (appelé agent)
-            /!\ map doit être la connaissance totale => une carte entière /!\
-            => on doit d'abord merge la carte puis faire "setDictMapEnvoye"
+
+            Suppose : sgreceived est la carte reçue
+            On effectue ici la fusion l'ancienne carte de l'agent "agent" et la nouvelle carte sgreceived
+
+            /!\ on ne fait PAS la fusion de la carte de l'agent "agent" et celle de l'agent "this" /!\
         */
-        this.dictMapEnvoye.put(agent, map);
+
+        MapRepresentation mapOld = this.dictMapEnvoye.get(agent);
+        if (mapOld == null){
+            /*
+                sgreceived est de type SerializableSimpleGraph<String, MapRepresentation.MapAttribute>
+                mapOld est de type MapRepresentation
+                donc il faut le convertir avec loadSavedDataSGReceived
+            */
+            mapOld.loadSavedDataSGReceived(sgreceived);
+        }else{
+            //sinon on merge les deux cartes
+            mapOld.mergeMap(sgreceived);
+        }
+
+        // MAJ dans le dictionnaire dictMapEnvoye
+        this.dictMapEnvoye.put(agent, mapOld);
     }
 
     public void explorationFinish() {

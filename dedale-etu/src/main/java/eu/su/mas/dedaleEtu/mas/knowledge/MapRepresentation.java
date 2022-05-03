@@ -275,6 +275,28 @@ public class MapRepresentation implements Serializable {
 		System.out.println("Loading done");
 	}
 
+	public synchronized void loadSavedDataSGReceived(SerializableSimpleGraph<String, MapAttribute> sgreceived ){
+
+		this.g= new SingleGraph("My world vision");
+		this.g.setAttribute("ui.stylesheet",nodeStyle);
+
+		openGui();
+
+		Integer nbEd=0;
+		Integer nbNo=0;
+		for (SerializableNode<String, MapAttribute> n: sgreceived.getAllNodes()){
+			this.g.addNode(n.getNodeId()).setAttribute("ui.class", n.getNodeContent().toString());
+			nbNo++;
+			for(String s: sgreceived.getEdges(n.getNodeId())){
+				this.g.addEdge(nbEd.toString(),n.getNodeId(),s);
+				nbEd++;
+			}
+		}
+		this.nbEdges = nbEd ;
+		this.nbNodes = nbNo ;
+		System.out.println("Loading done");
+	}
+
 	/**
 	 * Method called before migration to kill all non serializable graphStream components
 	 */
