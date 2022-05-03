@@ -73,6 +73,7 @@ public class MapRepresentation implements Serializable {
 	public Integer getNbEdges(){return this.nbEdges; }
 	public Integer getNbNodes(){return this.nbNodes; }
 
+	public SerializableSimpleGraph<String, MapAttribute> getSg(){ return this.sg; }
 	public void setSg(SerializableSimpleGraph<String, MapAttribute> sgreceived){
 		this.sg = sgreceived;
 	}
@@ -226,11 +227,11 @@ public class MapRepresentation implements Serializable {
 	 * After migration we load the serialized data and recreate the non serializable components (Gui,..)
 	 */
 	public synchronized void loadSavedData(){
+		//closeGui();
+		this.g= new SingleGraph("My world vision");
+		this.g.setAttribute("ui.stylesheet",nodeStyle);
 
-		//this.g= new SingleGraph("My world vision");
-		//this.g.setAttribute("ui.stylesheet",nodeStyle);
-
-		openGui();
+		//openGui();
 
 		Integer nbEd=0;
 		Integer nbNo=0;
@@ -247,13 +248,13 @@ public class MapRepresentation implements Serializable {
 		System.out.println("Loading done");
 	}
 
-/*
-	public synchronized void transformSerializabletoMAP(SerializableSimpleGraph<String, MapAttribute> sgreceived ){
 
+	public synchronized void transformSerializabletoMAP(SerializableSimpleGraph<String, MapAttribute> sgreceived ){
+		//closeGui();
 		this.g= new SingleGraph("My world vision");
 		this.g.setAttribute("ui.stylesheet",nodeStyle);
 
-		openGui();
+		//openGui();
 
 		Integer nbEd=0;
 		Integer nbNo=0;
@@ -269,7 +270,7 @@ public class MapRepresentation implements Serializable {
 		this.nbNodes = nbNo ;
 		System.out.println("Loading done");
 	}
-*/
+
 
 	/**
 	 * Method called before migration to kill all non serializable graphStream components

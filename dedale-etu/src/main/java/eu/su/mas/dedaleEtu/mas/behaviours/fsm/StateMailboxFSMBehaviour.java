@@ -32,7 +32,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 	
 	public void action() {
 		exitValue = -1;
-		int nb_agents = this.list_agentNames.size();
+		//int nb_agents = this.list_agentNames.size();
 		String myName = this.myAgent.getLocalName();
 
 		System.out.println("\n-- START state C (StateMailboxFSMBehaviour): " + myName + " starts state C --");
@@ -92,10 +92,8 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 
 			// ACTION : Récupere la carte
 			SerializableSimpleGraph<String, MapAttribute> mapReceived = null;
-			SerializableSimpleGraph<String, MapAttribute> allInformation = null;
 			try {
-				allInformation = (SerializableSimpleGraph<String, MapAttribute>) msgMapReceived.getContentObject();
-				mapReceived = allInformation; // pour l'instant, on n'a qu'une carte, mais après on pourra envoyer d'autres informations
+				mapReceived = (SerializableSimpleGraph<String, MapAttribute>) msgMapReceived.getContentObject();
 			} catch (UnreadableException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

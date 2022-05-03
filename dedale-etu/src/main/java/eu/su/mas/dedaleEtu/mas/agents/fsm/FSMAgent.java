@@ -202,21 +202,18 @@ public class FSMAgent extends AbstractDedaleAgent {
         */
 
         MapRepresentation mapOld = this.dictMapEnvoye.get(agent);
-        if (mapOld == null){
+        if (mapOld == null) {
             /*
                 sgreceived est de type SerializableSimpleGraph<String, MapRepresentation.MapAttribute>
                 mapOld est de type MapRepresentation
                 donc il faut le convertir avec loadSavedDataSGReceived
             */
-            //mapOld.transformSerializabletoMAP(sgreceived);
             mapOld = new MapRepresentation();
-            mapOld.setSg(sgreceived);
-            mapOld.loadSavedData();
-
-        }else{
-            //sinon on merge les deux cartes
-            mapOld.mergeMap(sgreceived);
+            //mapOld.transformSerializabletoMAP(sgreceived);
+            //mapOld.setSg(sgreceived);
         }
+        mapOld.mergeMap(sgreceived);
+
 
         // MAJ dans le dictionnaire dictMapEnvoye
         this.dictMapEnvoye.put(agent, mapOld);

@@ -89,7 +89,9 @@ public class StateStopFSMBehaviour extends OneShotBehaviour {
 
                 // ajout de la carte de l'agent dans le message d'envoi
                 SerializableSimpleGraph<String, MapRepresentation.MapAttribute> mapSent = (this.myMap).getSerializableGraph();
-                //SerializableSimpleGraph<String, MapAttribute> mapSent=(((FSMAgent)this.myAgent).getMyMap()).getSerializableGraph();
+
+                //this.myMap.prepareMigration(); //generer SerializableSimpleGraph (et met this.myMap.g à null => optimiser place memoire ??? )
+                //SerializableSimpleGraph<String, MapRepresentation.MapAttribute> mapSent = (this.myMap).getSg();
 
                 try {
                     msgSendingMap.setContentObject(mapSent);
