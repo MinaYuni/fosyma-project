@@ -208,7 +208,11 @@ public class FSMAgent extends AbstractDedaleAgent {
                 mapOld est de type MapRepresentation
                 donc il faut le convertir avec loadSavedDataSGReceived
             */
-            mapOld.loadSavedDataSGReceived(sgreceived);
+            //mapOld.transformSerializabletoMAP(sgreceived);
+            mapOld = new MapRepresentation();
+            mapOld.setSg(sgreceived);
+            mapOld.loadSavedData();
+
         }else{
             //sinon on merge les deux cartes
             mapOld.mergeMap(sgreceived);
