@@ -430,7 +430,7 @@ public class Principal {
 */
         agentName = "AgentFSM_1";
         Object[] entityParametersExploFSM1 = {"AgentFSM_2"};
-        //Object[] entityParametersExploFSM2 = {"AgentFSM_1", "AgentFSM_3"};
+        //Object[] entityParametersExploFSM1 = {"AgentFSM_2", "AgentFSM_3"};
         ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM1);
         agentList.add(ag);
 

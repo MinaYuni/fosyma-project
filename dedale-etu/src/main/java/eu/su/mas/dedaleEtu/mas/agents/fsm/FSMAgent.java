@@ -23,6 +23,7 @@ public class FSMAgent extends AbstractDedaleAgent {
     /*
     A (exploration): à chaque déplacement, envoie PING + check boite aux lettres
         if reception "ping" --> B (arc 1)
+        if reception "finish" --> merge la carte et va en F (arc 2)
         if reception carte --> B (arc 1)
         if exploration finie --> F (arc 2)
         else A
@@ -48,7 +49,11 @@ public class FSMAgent extends AbstractDedaleAgent {
      E: collecte
 
      F: état final
-        quand l'exploration est finie --> faire un dernier mouvement aléatoire sur un des noeud voisins
+        //quand l'exploration est finie --> faire un dernier mouvement aléatoire sur un des noeud voisins
+        if reception "ping" -> envoie sa carte dans un message appelé finish
+
+        (Remarque : agent ne bouge pas => pbl tous les agents vont etre coller
+        on pourrait le faire deplacer ou creer des groupes de collecte par exemple)
     */
     private static final String A = "Exploration";
     private static final String B = "Envoie carte";
@@ -74,6 +79,11 @@ public class FSMAgent extends AbstractDedaleAgent {
     HashMap<String, MapRepresentation> dictMapEnvoye = new HashMap<String, MapRepresentation>();
 
     private MapRepresentation myMap;
+
+    /*
+        permet de savoir si l'agent a fini, si c'est le cas, alors il pourra communiquer aux autres sa carte !
+     */
+    private boolean explorationFinish = false;
 
     protected void setup() {
         super.setup();
@@ -186,5 +196,9 @@ public class FSMAgent extends AbstractDedaleAgent {
         /!\ map doit être la connaissance totale => une carte entière /!\
         */
         this.dictMapEnvoye.put(agent, map);
+    }
+
+    public void explorationFinish() {
+        this.explorationFinish = true;
     }
 }

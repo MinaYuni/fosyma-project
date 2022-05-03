@@ -137,7 +137,7 @@ public final class ConfigurationFile {
      */
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = null;
 
-    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentExploCoop";
+      public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentExploCoop";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentCollectCoop";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentExploCollect";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentCollect";
