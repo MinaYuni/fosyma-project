@@ -412,6 +412,7 @@ public class Principal {
         // ---------- AGENT FSM ---------- //
         c = Principal.containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
         Assert.assertNotNull("This container does not exist", c);
+
 /*
         int nb_agents = 3;
         Object[] entityParametersExploFSM = new Object[nb_agents];
@@ -429,17 +430,19 @@ public class Principal {
 */
         agentName = "AgentFSM_1";
         Object[] entityParametersExploFSM1 = {"AgentFSM_2"};
+        //Object[] entityParametersExploFSM2 = {"AgentFSM_1", "AgentFSM_3"};
         ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM1);
         agentList.add(ag);
 
         agentName = "AgentFSM_2";
         Object[] entityParametersExploFSM2 = {"AgentFSM_1"};
+        //Object[] entityParametersExploFSM2 = {"AgentFSM_1", "AgentFSM_3"};
         ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM2);
         agentList.add(ag);
 
 //        agentName = "AgentFSM_3";
 //        Object[] entityParametersExploFSM3 = {"AgentFSM_1", "AgentFSM_2"};
-//        ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM2);
+//        ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM3);
 //        agentList.add(ag);
 
 

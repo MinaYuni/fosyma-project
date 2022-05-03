@@ -24,7 +24,7 @@ public class FSMAgent extends AbstractDedaleAgent {
     A (exploration): à chaque déplacement, envoie PING + check boite aux lettres
         if reception "ping" --> B (arc 1)
         if reception carte --> B (arc 1)
-        if exploration finie --> F (arc 2)
+        if exploration finie --> E (arc 2)
         else A
 
      B: envoie de la partie de la carte manquante à son voisin (celui du "pong" reçu)
@@ -44,11 +44,14 @@ public class FSMAgent extends AbstractDedaleAgent {
 
      D: envoie ACK de la carte qu'il a reçu
         --> C (arc 1)
+
+     E: collecte
     */
     private static final String A = "Exploration en cours";
     private static final String B = "Envoie carte";
     private static final String C = "Check Mailbox";
     private static final String D = "Envoie ACK";
+    private static final String E = "Collecte"; // pas encore d'arcs
     private static final String F = "Exploration finie";
 
     /*
