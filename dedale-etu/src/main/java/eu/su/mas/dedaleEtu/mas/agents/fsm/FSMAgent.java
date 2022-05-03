@@ -18,31 +18,32 @@ import jade.core.behaviours.FSMBehaviour;
 // Repartition des ressources de manière équitable : max du min ou indice de Gini
 
 public class FSMAgent extends AbstractDedaleAgent {
-    private static final long serialVersionUID = -6431752865590433727L;
+    private static final long serialVersionUID = -1969469610241668140L;
 
     /*
     A (exploration): à chaque déplacement, envoie PING + check boite aux lettres
-    		si reception "ping" --> B (arc 1)
-    		si reception carte --> B (arc 1)
-    		si exploration finie --> F (arc 2)
-    		sinon A
+        if reception "ping" --> B (arc 1)
+        if reception carte --> B (arc 1)
+        if exploration finie --> F (arc 2)
+        else A
 
      B: envoie de la partie de la carte manquante à son voisin (celui du "pong" reçu)
-    		--> C (arc 1)
+        --> C (arc 1)
 
      C: check boite aux lettres (ACK, carte, nouveau voisin)
-    		if reception nouveau "pong" --> B (arc 4)
-     		if reception carte d'un autre agent :
-    				then --> D (arc 2)
-     		if reception (nouveau) ACK de la carte envoyé :
-    				garde en mémoire du ACK reçu
-     				if pas reception nouvelle carte --> C (arc 1)
-    				if reception carte --> D (arc 2)
-    		if reception de tous les ACK (mémoire) --> A (arc 3)
-    		else --> C (arc 1)
+        if reception nouveau "ping" :
+            then --> B (arc 4)
+        if reception carte d'un autre agent :
+            then --> D (arc 2)
+        if reception (nouveau) ACK de la carte envoyé :
+            garde en mémoire du ACK reçu
+            if pas reception nouvelle carte --> C (arc 1)
+            if reception carte --> D (arc 2)
+        if reception de tous les ACK (mémoire) --> A (arc 3)
+        else --> C (arc 1)
 
      D: envoie ACK de la carte qu'il a reçu
-    		--> C (arc 1)
+        --> C (arc 1)
     */
     private static final String A = "Exploration en cours";
     private static final String B = "Envoie carte";
@@ -165,20 +166,19 @@ public class FSMAgent extends AbstractDedaleAgent {
         return this.myMap;
     }
 
+    public void setMyMap(MapRepresentation myMap) {
+        this.myMap = myMap;
+    }
+
     public HashMap<String, MapRepresentation> getDictMapEnvoye() {
         return this.dictMapEnvoye;
     }
 
     public void setDictMapEnvoye(String agent, MapRepresentation map) {
         /*
-            FMSAgent fait la mis a jour de sa connaissance sur la carte d'un autre agent (appelé agent)
-
-            /!\ map doit etre la connaissance totale => une carte entiere
+        FMSAgent fait la mise à jour de sa connaissance sur la carte d'un autre agent (appelé agent)
+        /!\ map doit être la connaissance totale => une carte entière /!\
         */
         this.dictMapEnvoye.put(agent, map);
-    }
-
-    public void setMyMap(MapRepresentation myMap) {
-        this.myMap=myMap;
     }
 }

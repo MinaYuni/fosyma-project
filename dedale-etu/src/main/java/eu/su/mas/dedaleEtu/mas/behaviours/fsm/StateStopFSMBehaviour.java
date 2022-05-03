@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class StateStopFSMBehaviour extends OneShotBehaviour {
-    private static final long serialVersionUID = 8567689731499797561L;
+    private static final long serialVersionUID = 5567689731496787661L;
 
     private MapRepresentation myMap;
     private List<String> list_agentNames;
@@ -19,13 +19,20 @@ public class StateStopFSMBehaviour extends OneShotBehaviour {
 
     public StateStopFSMBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap, List<String> agentNames, HashMap<String, HashMap<String, Boolean>> dico) {
         super(myagent);
-        this.myMap=myMap;
-        this.list_agentNames=agentNames;
+        this.myMap = myMap;
+        this.list_agentNames = agentNames;
         this.dictVoisinsMessages = dico;
     }
 
     public void action() {
-        System.out.println("START state F (StateStopFSMBehaviour): " + this.myAgent.getLocalName());
+        int nb_agents = this.list_agentNames.size();
+        String myName = this.myAgent.getLocalName();
+
+        System.out.println("\n--START state F (StateStopFSMBehaviour): " + myName + " --");
         System.out.println("There is nothing yet in state F");
+    }
+
+    public int onEnd() {
+        return exitValue;
     }
 }

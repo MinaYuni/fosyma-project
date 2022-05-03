@@ -21,7 +21,7 @@ import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 
 // Behaviour/comportement du state A (exploration)
 public class StateExploFSMBehaviour extends OneShotBehaviour {
-    private static final long serialVersionUID = 8567689731499787661L;
+    private static final long serialVersionUID = 1567689731496787661L;
     private final List<String> list_agentNames;
     private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
     private MapRepresentation myMap;
@@ -35,16 +35,18 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
     }
 
     public void action() {
-        System.out.println("START state A (StateExploFSMBehaviour): " + this.myAgent.getLocalName() + " starts exploration");
+        int nb_agents = this.list_agentNames.size();
+        String myName = this.myAgent.getLocalName();
 
-        //update information
+        System.out.println("\n-- START state A (StateExploFSMBehaviour): " + myName + " starts exploration --");
+
+        // update information
         if (this.myMap == null) {
             this.myMap = new MapRepresentation();
         }
-        this.dictVoisinsMessages = ((FSMAgent)this.myAgent).getDictVoisinsMessages();
+        this.dictVoisinsMessages = ((FSMAgent) this.myAgent).getDictVoisinsMessages();
 
-
-        //0) Retrieve the current position
+        // 0) Retrieve the current position
         String myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
         //System.out.println("agent in position "+ myPosition);
 
@@ -58,15 +60,15 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 e.printStackTrace();
             }
 
-            //1) remove the current node from openlist and add it to closedNodes
+            // 1) remove the current node from openlist and add it to closedNodes
             this.myMap.addNode(myPosition, MapAttribute.closed);
 
-            //2) get the surrounding nodes and, if not in closedNodes, add them to open nodes
+            // 2) get the surrounding nodes and, if not in closedNodes, add them to open nodes
             String nextNode = null;
             for (Couple<String, List<Couple<Observation, Integer>>> lob : lobs) {
                 String nodeId = lob.getLeft();
                 boolean isNewNode = this.myMap.addNewNode(nodeId);
-                //the node may exist, but not necessarily the edge
+                // the node may exist, but not necessarily the edge
                 if (!myPosition.equals(nodeId)) {
                     this.myMap.addEdge(myPosition, nodeId);
                     if (nextNode == null && isNewNode) nextNode = nodeId;
@@ -74,45 +76,41 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
             }
 
             //3) while openNodes is not empty, continues
-            if (!this.myMap.hasOpenNode()) { // si exploration fini
+            if (!this.myMap.hasOpenNode()) { // si exploration finie
                 exitValue = 2; // aller en F : "Exploration finie"
-                System.out.println(this.myAgent.getLocalName() + " - Exploration successfully done");
-                System.out.println("END state A (StateExploFSMBehaviour): " + this.myAgent.getLocalName() + " finished exploring, goes to state F");
+                System.out.println(myName + " - Exploration successfully done");
+                System.out.println("-END state A (StateExploFSMBehaviour): " + myName + " finished exploring, goes to state F");
             } else {
 
-                //3.1) Select next move
+                // 3.1) Select next move
                 // there exist one open node directly reachable, go for it,
                 // otherwise choose one from the openNode list, compute the shortestPath and go for it
                 if (nextNode == null) { // if no directly accessible openNode
                     // chose one, compute the path and take the first step
                     nextNode = this.myMap.getShortestPathToClosestOpenNode(myPosition).get(0); //getShortestPath(myPosition,this.openNodes.get(0)).get(0);
-                    System.out.println(this.myAgent.getLocalName() + "-currentPosition: " + myPosition + " -- list= " + this.myMap.getOpenNodes() + "| nextNode: " + nextNode);
+                    System.out.println(myName + " - currentPosition: " + myPosition + " -- list= " + this.myMap.getOpenNodes() + " | nextNode: " + nextNode);
                 } else {
-                    System.out.println("nextNode notNUll - " + this.myAgent.getLocalName() + "-- list= " + this.myMap.getOpenNodes() + "\n -- nextNode: " + nextNode);
+                    System.out.println("nextNode notNUll - " + myName + " -- list= " + this.myMap.getOpenNodes() + " | nextNode: " + nextNode);
                 }
 
-                //3.2) ACTION : envoie PING à chaque déplacement
-                int n = this.list_agentNames.size();
-                String myName = this.myAgent.getLocalName();
-
+                // 3.2) ACTION : envoie PING à chaque déplacement
                 ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
                 msg.setProtocol("PING");
                 //msg.setContent(myName); // mettre son nom dans le ping envoyé
                 msg.setSender(this.myAgent.getAID()); // mettre une expéditeur au message
 
                 // ajout des destinataires du ping (tous les autres agents, sauf moi_meme)
-                for (String receiverAgent : this.list_agentNames) { //pbl qd un autre agent meurt => ya une boucle infini
-                    //System.out.println("myName: " + myName + "\treceiverAgent: " + receiverAgent);
-                    if (!Objects.equals(myName, receiverAgent)) { // si c'est pas moi
-                        System.out.println("STATE A : " + this.myAgent.getLocalName()+" will send msg to " + receiverAgent);
-                        msg.addReceiver(new AID(receiverAgent, false));    //mettre une receveur du message
+                for (String receiverAgent : this.list_agentNames) { // PROBLEME : quand un autre agent meurt => il y a une boucle infinie
+                    if (!Objects.equals(myName, receiverAgent)) { // si ce n'est pas moi
+                        System.out.println("STATE A : " + myName + " will send msg to " + receiverAgent);
+                        msg.addReceiver(new AID(receiverAgent, false)); // on met un receveur au message
                     }
                 }
                 // envoie du ping à tous les agents
                 ((AbstractDedaleAgent) this.myAgent).sendMessage(msg);
-                System.out.println("STATE A : " + this.myAgent.getLocalName()+" FINISHED SENDING PING");
+                System.out.println("STATE A : " + myName + " finished sending PING");
 
-                //3.3) At each time step, the agent check if he received a ping from a teammate
+                // 3.3) At each time step, the agent check if he received a ping from a teammate
                 // ACTION : Check reception PING
                 MessageTemplate msgPing = MessageTemplate.and(
                         MessageTemplate.MatchProtocol("PING"),
@@ -122,34 +120,34 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 // si reception PING, aller en B (envoyer sa carte),
                 // sinon continuer déplacement
                 if (msgPingReceived != null) { // réception PING, donc un autre agent est à proximité, donc MàJ dict_voisins de l'agent
+                    System.out.println("STATE A : " + myName + " received PING");
+
                     // ajouter le voisin au dico (voir type de list_voisin dans FSMAgent.java)
                     String namePingReceived = msgPingReceived.getSender().getLocalName(); // récupérer le nom du voisin (nom donnée dans le message du ping reçu)
 
                     // si l'agent n'a pas encore rencontré l'envoyeur du ping, il est ajouté dans le dictionnaire (dict_voisins)
                     if (!this.dictVoisinsMessages.containsKey(namePingReceived)) { //
                         HashMap<String, Boolean> etat = new HashMap<String, Boolean>();
-                        // état de l'agent par rapport à l'envoyeur du ping : dico est vide car il n'a rien fait (on peut aussi tout initialiser a False)
+                        // état de l'agent par rapport à l'envoyeur du ping : dico est vide car il n'a rien fait (on peut aussi tout initialiser à False)
 
                         // ajout de l'envoyeur et son état dans le dico des voisins
                         this.dictVoisinsMessages.put(namePingReceived, etat);
-                        //on a modifier le dico dictVoisinsMessages => utilise la methode 'setDictVoisinsMessages' pour udapte !
-                        ((FSMAgent)this.myAgent).setDictVoisinsMessages(this.dictVoisinsMessages);
+                        // on a modifié le dico dictVoisinsMessages => utiliser la methode 'setDictVoisinsMessages' pour udapte !
+                        ((FSMAgent) this.myAgent).setDictVoisinsMessages(this.dictVoisinsMessages);
                     }
 
-                    //MAJ MAP
-                    ((FSMAgent)this.myAgent).setMyMap(this.myMap);
+                    // MAJ MAP
+                    ((FSMAgent) this.myAgent).setMyMap(this.myMap);
 
                     exitValue = 1; // aller en B : "Envoie carte"
                     //this.myAgent.setMyMap(this.myMap);
-                    System.out.println("CHANGE A to B (StateSendMapFSMBehaviour): " + this.myAgent.getLocalName()+" goes to state B (send MAP)");
+                    System.out.println("-CHANGE A to B (StateSendMapFSMBehaviour): " + myName + " goes to state B (send MAP)");
 
-                } else { // pas reçu de message (PING) donc continuer a avancer dans la map
+                } else { // pas reçu de PING, donc continuer à avancer dans la map
                     ((AbstractDedaleAgent) this.myAgent).moveTo(nextNode);
-
                 }
             }
         }
-
     }
 
     public int onEnd() {
