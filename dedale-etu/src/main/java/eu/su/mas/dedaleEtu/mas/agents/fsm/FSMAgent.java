@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 
+import dataStructures.serializableGraph.SerializableSimpleGraph;
 import eu.su.mas.dedale.mas.agent.behaviours.startMyBehaviours;
 import eu.su.mas.dedaleEtu.mas.behaviours.fsm.*;
 //import eu.su.mas.dedaleEtu.mas.behaviours.SendPingBehaviour;
@@ -23,6 +24,7 @@ public class FSMAgent extends AbstractDedaleAgent {
     /*
     A (exploration): à chaque déplacement, envoie PING + check boite aux lettres
         if reception "ping" --> B (arc 1)
+        if reception "finish" --> merge la carte et va en F (arc 2)
         if reception carte --> B (arc 1)
         if exploration finie --> F (arc 2)
         else A
@@ -48,7 +50,11 @@ public class FSMAgent extends AbstractDedaleAgent {
      E: collecte
 
      F: état final
-        quand l'exploration est finie --> faire un dernier mouvement aléatoire sur un des noeud voisins
+        //quand l'exploration est finie --> faire un dernier mouvement aléatoire sur un des noeud voisins
+        if reception "ping" -> envoie sa carte dans un message appelé finish
+
+        (Remarque : agent ne bouge pas => pbl tous les agents vont etre coller
+        on pourrait le faire deplacer ou creer des groupes de collecte par exemple)
     */
     private static final String A = "Exploration";
     private static final String B = "Envoie carte";
@@ -74,6 +80,11 @@ public class FSMAgent extends AbstractDedaleAgent {
     HashMap<String, MapRepresentation> dictMapEnvoye = new HashMap<String, MapRepresentation>();
 
     private MapRepresentation myMap;
+
+    /*
+        permet de savoir si l'agent a fini, si c'est le cas, alors il pourra communiquer aux autres sa carte !
+     */
+    private boolean explorationFinish = false;
 
     protected void setup() {
         super.setup();
@@ -180,11 +191,35 @@ public class FSMAgent extends AbstractDedaleAgent {
         return this.dictMapEnvoye;
     }
 
-    public void setDictMapEnvoye(String agent, MapRepresentation map) {
+    public void updateDictMapEnvoyeAgent(String agent, SerializableSimpleGraph<String, MapRepresentation.MapAttribute> sgreceived) {
         /*
-        FMSAgent fait la mise à jour de sa connaissance sur la carte d'un autre agent (appelé agent)
-        /!\ map doit être la connaissance totale => une carte entière /!\
+            FMSAgent fait la mise à jour de sa connaissance sur la carte d'un autre agent (appelé agent)
+
+            Suppose : sgreceived est la carte reçue
+            On effectue ici la fusion l'ancienne carte de l'agent "agent" et la nouvelle carte sgreceived
+
+            /!\ on ne fait PAS la fusion de la carte de l'agent "agent" et celle de l'agent "this" /!\
         */
-        this.dictMapEnvoye.put(agent, map);
+
+        MapRepresentation mapOld = this.dictMapEnvoye.get(agent);
+        if (mapOld == null) {
+            /*
+                sgreceived est de type SerializableSimpleGraph<String, MapRepresentation.MapAttribute>
+                mapOld est de type MapRepresentation
+                donc il faut le convertir avec loadSavedDataSGReceived
+            */
+            mapOld = new MapRepresentation();
+            //mapOld.transformSerializabletoMAP(sgreceived);
+            //mapOld.setSg(sgreceived);
+        }
+        mapOld.mergeMap(sgreceived);
+
+
+        // MAJ dans le dictionnaire dictMapEnvoye
+        this.dictMapEnvoye.put(agent, mapOld);
+    }
+
+    public void explorationFinish() {
+        this.explorationFinish = true;
     }
 }

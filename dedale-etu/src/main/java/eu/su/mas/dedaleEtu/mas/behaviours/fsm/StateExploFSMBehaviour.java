@@ -1,6 +1,7 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 
 
+import dataStructures.serializableGraph.SerializableSimpleGraph;
 import eu.su.mas.dedaleEtu.mas.agents.fsm.FSMAgent;
 import jade.core.behaviours.OneShotBehaviour;
 
@@ -17,6 +18,7 @@ import eu.su.mas.dedale.env.Observation;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
+import jade.lang.acl.UnreadableException;
 
 
 // Behaviour/comportement du state A (exploration)
@@ -75,11 +77,45 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 }
             }
 
+            //ACTION : Check si l'agent a reçu une carte de ses voisins
+            MessageTemplate msgMap = MessageTemplate.and(
+                    MessageTemplate.MatchProtocol("FINISH-SHARE-MAP"),
+                    MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+
+            ACLMessage msgMapReceived = this.myAgent.receive(msgMap);
+
+            if (msgMapReceived != null) {
+                String nameExpediteur = msgMapReceived.getSender().getLocalName();
+                System.out.println("STATE A : " + myName + " received MAP, from " + nameExpediteur);
+
+                SerializableSimpleGraph<String, MapAttribute> mapReceived = null;
+                SerializableSimpleGraph<String, MapAttribute> allInformation = null;
+                try {
+                    allInformation = (SerializableSimpleGraph<String, MapAttribute>) msgMapReceived.getContentObject();
+                    mapReceived = allInformation; // pour l'instant, on n'a qu'une carte, mais après on pourra envoyer d'autres informations
+                } catch (UnreadableException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                assert mapReceived != null;
+                this.myMap.mergeMap(mapReceived);
+                //this.myMap.loadSavedData() ; //car on a recu une carte complete
+
+                //MAP dictMapEnvoye
+                ((FSMAgent) this.myAgent).updateDictMapEnvoyeAgent(nameExpediteur, mapReceived);
+
+                /*
+                //Normalement, il va dans la condition 'if' (voir ligne 111 à ligne 115 de ce fichier) pour aller au state F
+                exitValue = 2; // aller en F : "Exploration fini"
+                System.out.println("-CHANGE A to F (StateStopFSMBehaviour): " + myName + " goes to state F (Exploration fini) ");
+                */
+            }
+
             //3) while openNodes is not empty, continues
-            if (!this.myMap.hasOpenNode()) { // si exploration finie
+            if (!this.myMap.hasOpenNode()) { // si il n'y a plus de noeud ouvert => exploration finie
                 exitValue = 2; // aller en F : "Exploration finie"
                 System.out.println(myName + " - Exploration successfully done");
-                System.out.println("-END state A (StateExploFSMBehaviour): " + myName + " finished exploring, goes to state F");
+                System.out.println("- END state A (StateExploFSMBehaviour): " + myName + " finished exploring, goes to state F");
             } else {
 
                 // 3.1) Select next move
@@ -96,8 +132,9 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 // 3.2) ACTION : envoie PING à chaque déplacement
                 ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
                 msg.setProtocol("PING");
-                //msg.setContent(myName); // mettre son nom dans le ping envoyé
                 msg.setSender(this.myAgent.getAID()); // mettre une expéditeur au message
+
+                //msg.setContent( this.myMap.getNbNodes().toString() ); //mets le nombre de sommets visités
 
                 // ajout des destinataires du ping (tous les autres agents, sauf moi_meme)
                 for (String receiverAgent : this.list_agentNames) { // PROBLEME : quand un autre agent meurt => il y a une boucle infinie
@@ -109,6 +146,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 // envoie du ping à tous les agents
                 ((AbstractDedaleAgent) this.myAgent).sendMessage(msg);
                 System.out.println("STATE A : " + myName + " finished sending PING");
+
 
                 // 3.3) At each time step, the agent check if he received a ping from a teammate
                 // ACTION : Check reception PING
@@ -127,8 +165,10 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 
                     // si l'agent n'a pas encore rencontré l'envoyeur du ping, il est ajouté dans le dictionnaire (dict_voisins)
                     if (!this.dictVoisinsMessages.containsKey(namePingReceived)) { //
+                        // état de l'agent par rapport à l'envoyeur du ping
                         HashMap<String, Boolean> etat = new HashMap<String, Boolean>();
-                        // état de l'agent par rapport à l'envoyeur du ping : dico est vide car il n'a rien fait (on peut aussi tout initialiser à False)
+
+                        //etat.put("nbNodes", this.myMap.getNbNodes().toString());  //ajout d'autre element dans etat : comme le nombre de sommet d'un agent
 
                         // ajout de l'envoyeur et son état dans le dico des voisins
                         this.dictVoisinsMessages.put(namePingReceived, etat);

@@ -32,7 +32,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 	
 	public void action() {
 		exitValue = -1;
-		int nb_agents = this.list_agentNames.size();
+		//int nb_agents = this.list_agentNames.size();
 		String myName = this.myAgent.getLocalName();
 
 		System.out.println("\n-- START state C (StateMailboxFSMBehaviour): " + myName + " starts state C --");
@@ -88,12 +88,12 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 
 		if (msgMapReceived != null && exitValue == -1) { // si l'agent a reçu une MAP et il n'a rien à faire
 			System.out.println("STATE C : " + myName + " received MAP");
+			String nameExpediteur = msgMapReceived.getSender().getLocalName(); //au state B, on a mis le nom dans message avec 'setContent'
 
+			// ACTION : Récupere la carte
 			SerializableSimpleGraph<String, MapAttribute> mapReceived = null;
-			SerializableSimpleGraph<String, MapAttribute> allInformation = null;
 			try {
-				allInformation = (SerializableSimpleGraph<String, MapAttribute>) msgMapReceived.getContentObject();
-				mapReceived = allInformation; // pour l'instant, on n'a qu'une carte, mais après on pourra envoyer d'autres informations
+				mapReceived = (SerializableSimpleGraph<String, MapAttribute>) msgMapReceived.getContentObject();
 			} catch (UnreadableException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -101,8 +101,10 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 			assert mapReceived != null;
 			this.myMap.mergeMap(mapReceived);
 
+			//MAP dictMapEnvoye
+			((FSMAgent) this.myAgent).updateDictMapEnvoyeAgent(nameExpediteur, mapReceived);
+
 			// MAJ dict_voisins : on change etat "recoit_carte" de l'agent par rapport à l'expéditeur
-			String nameExpediteur = msgMapReceived.getSender().getLocalName(); //au state B, on a mis le nom dans message avec 'setContent'
 			HashMap <String, Boolean> etat = this.dictVoisinsMessages.get(nameExpediteur); //dico des actions de l'agent par rapport a Expediteur
 			String key = "recoit_carte";
 			etat.put(key,true); //met VRAI pour action "recoit_carte" (elle cree la cle avec value=TRUE ou update la value a TRUE)
