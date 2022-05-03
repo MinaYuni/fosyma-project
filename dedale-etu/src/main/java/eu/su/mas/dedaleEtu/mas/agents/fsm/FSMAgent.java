@@ -192,8 +192,9 @@ public class FSMAgent extends AbstractDedaleAgent {
 
     public void setDictMapEnvoye(String agent, MapRepresentation map) {
         /*
-        FMSAgent fait la mise à jour de sa connaissance sur la carte d'un autre agent (appelé agent)
-        /!\ map doit être la connaissance totale => une carte entière /!\
+            FMSAgent fait la mise à jour de sa connaissance sur la carte d'un autre agent (appelé agent)
+            /!\ map doit être la connaissance totale => une carte entière /!\
+            => on doit d'abord merge la carte puis faire "setDictMapEnvoye"
         */
         this.dictMapEnvoye.put(agent, map);
     }

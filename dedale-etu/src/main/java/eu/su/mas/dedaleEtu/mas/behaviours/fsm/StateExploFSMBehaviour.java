@@ -98,7 +98,8 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                     e.printStackTrace();
                 }
                 assert mapReceived != null;
-                this.myMap.mergeMap(mapReceived);
+                //this.myMap.mergeMap(mapReceived);
+                this.myMap = mapReceived ; //car on a recu une carte complete
 
                 /*
                 //Normalement, il va dans la condition 'if' (voir ligne 111 à ligne 115 de ce fichier) pour aller au state F
