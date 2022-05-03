@@ -98,8 +98,8 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                     e.printStackTrace();
                 }
                 assert mapReceived != null;
-                //this.myMap.mergeMap(mapReceived);
-                this.myMap = mapReceived ; //car on a recu une carte complete
+                this.myMap.mergeMap(mapReceived);
+                //this.myMap.loadSavedData() ; //car on a recu une carte complete
 
                 /*
                 //Normalement, il va dans la condition 'if' (voir ligne 111 à ligne 115 de ce fichier) pour aller au state F
@@ -132,6 +132,8 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 //msg.setContent(myName); // mettre son nom dans le ping envoyé
                 msg.setSender(this.myAgent.getAID()); // mettre une expéditeur au message
 
+                //msg.setContent( this.myMap.getNbNodes().toString() ); //mets le nombre de sommets visités
+
                 // ajout des destinataires du ping (tous les autres agents, sauf moi_meme)
                 for (String receiverAgent : this.list_agentNames) { // PROBLEME : quand un autre agent meurt => il y a une boucle infinie
                     if (!Objects.equals(myName, receiverAgent)) { // si ce n'est pas moi
@@ -142,6 +144,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 // envoie du ping à tous les agents
                 ((AbstractDedaleAgent) this.myAgent).sendMessage(msg);
                 System.out.println("STATE A : " + myName + " finished sending PING");
+
 
                 // 3.3) At each time step, the agent check if he received a ping from a teammate
                 // ACTION : Check reception PING
@@ -160,8 +163,10 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 
                     // si l'agent n'a pas encore rencontré l'envoyeur du ping, il est ajouté dans le dictionnaire (dict_voisins)
                     if (!this.dictVoisinsMessages.containsKey(namePingReceived)) { //
+                        // état de l'agent par rapport à l'envoyeur du ping
                         HashMap<String, Boolean> etat = new HashMap<String, Boolean>();
-                        // état de l'agent par rapport à l'envoyeur du ping : dico est vide car il n'a rien fait (on peut aussi tout initialiser à False)
+
+                        //etat.put("nbNodes", this.myMap.getNbNodes().toString());
 
                         // ajout de l'envoyeur et son état dans le dico des voisins
                         this.dictVoisinsMessages.put(namePingReceived, etat);

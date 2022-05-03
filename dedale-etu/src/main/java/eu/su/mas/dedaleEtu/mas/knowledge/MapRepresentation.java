@@ -48,6 +48,7 @@ public class MapRepresentation implements Serializable {
 	private Graph g; //data structure non serializable
 	private Viewer viewer; //ref to the display,  non serializable
 	private Integer nbEdges;//used to generate the edges ids
+	private Integer nbNodes;
 
 	private SerializableSimpleGraph<String, MapAttribute> sg;//used as a temporary dataStructure during migration
 
@@ -64,6 +65,7 @@ public class MapRepresentation implements Serializable {
 		//this.viewer = this.g.display();
 
 		this.nbEdges=0;
+		this.nbNodes=0;
 	}
 
 	/**
@@ -74,6 +76,7 @@ public class MapRepresentation implements Serializable {
 	public synchronized void addNode(String id,MapAttribute mapAttribute){
 		Node n;
 		if (this.g.getNode(id)==null){
+			this.nbNodes++;
 			n=this.g.addNode(id);
 		}else{
 			n=this.g.getNode(id);
@@ -92,6 +95,7 @@ public class MapRepresentation implements Serializable {
 	public synchronized boolean addNewNode(String id) {
 		if (this.g.getNode(id)==null){
 			addNode(id,MapAttribute.open);
+			this.nbNodes++;
 			return true;
 		}
 		return false;
@@ -257,13 +261,17 @@ public class MapRepresentation implements Serializable {
 		openGui();
 
 		Integer nbEd=0;
+		Integer nbNo=0;
 		for (SerializableNode<String, MapAttribute> n: this.sg.getAllNodes()){
 			this.g.addNode(n.getNodeId()).setAttribute("ui.class", n.getNodeContent().toString());
+			nbNo++;
 			for(String s:this.sg.getEdges(n.getNodeId())){
 				this.g.addEdge(nbEd.toString(),n.getNodeId(),s);
 				nbEd++;
 			}
 		}
+		this.nbEdges = nbEd ;
+		this.nbNodes = nbNo ;
 		System.out.println("Loading done");
 	}
 
@@ -343,6 +351,8 @@ public class MapRepresentation implements Serializable {
 	}
 
 
+	public Integer getNbEdges(){return this.nbEdges; }
+	public Integer getNbNodes(){return this.nbNodes; }
 
 
 }
