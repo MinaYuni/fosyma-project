@@ -36,11 +36,15 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 
         System.out.println("\n-- START state C (StateMailboxFSMBehaviour): " + myName + " starts state C --");
 
-		// update information
-		if (this.myMap==null){
-			this.myMap = ((FSMAgent)this.myAgent).getMyMap();
-		}
-		this.dictVoisinsMessages = ((FSMAgent)this.myAgent).getDictVoisinsMessages();
+        // update information
+        this.MyMap = ((FSMAgent) this.myAgent).getMyMap();
+        this.dictVoisinsMessages = ((FSMAgent) this.myAgent).getDictVoisinsMessages();
+
+//        try {
+//            this.myAgent.doWait(500);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
         // 1) ACTION : Check si l'agent a reçu un ping d'un nouveau voisin
         MessageTemplate msgPing = MessageTemplate.and(

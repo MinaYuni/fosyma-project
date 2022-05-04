@@ -40,6 +40,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
         // update information
         this.myMap = ((FSMAgent) this.myAgent).getMyMap();
         this.dictVoisinsMessages = ((FSMAgent) this.myAgent).getDictVoisinsMessages();
+        this.listAgentNames = ((FSMAgent) this.myAgent).getListAgentNames();
 
         // 0) Retrieve the current position
         String myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
@@ -132,6 +133,8 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 } else { // pas reçu de PING, donc continuer à avancer dans la map
                     ((FSMAgent) this.myAgent).resetDictVoisinsMessages();
                     ((AbstractDedaleAgent) this.myAgent).moveTo(nextNode);
+
+                    //exitValue = 3 ; //aller state G (choix prochain destination/noeud)
                 }
             }
         }

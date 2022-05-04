@@ -26,9 +26,6 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
 
     public StateSendMapFSMBehaviour(final AbstractDedaleAgent myagent) {
         super(myagent);
-        this.myMap = myMap;
-        this.list_agentNames = agentNames;
-        this.dictVoisinsMessages = dico;
     }
 
     public void action() {

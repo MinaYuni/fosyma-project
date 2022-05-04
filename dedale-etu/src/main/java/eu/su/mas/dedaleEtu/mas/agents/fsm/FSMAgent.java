@@ -142,6 +142,20 @@ public class FSMAgent extends AbstractDedaleAgent {
         }
     }
 
+    public void initDictVoisinsMessages() {
+        for (String agent: this.listAgentNames) {
+            // création du dictionnaire de l'état des actions de l'agent par rapport à l'envoyeur du ping
+            HashMap<String, Boolean> etat = new HashMap<>();
+            // initialisation des états des actions à faire
+            etat.put("recoit_PING", false); // reception d'un ping
+            etat.put("envoie_MAP", false);  // carte à envoyer au ping reçu
+            etat.put("recoit_MAP", false);  // attente de la carte de l'agent qui a envoyé le ping
+            etat.put("envoie_ACK", false);  // ACK à envoyer pour la carte reçue par l'agent du ping
+            etat.put("recoit_ACK", false);  // attente ACK de sa carte par l'agent du ping
+            this.dictVoisinsMessages.put(agent, etat);
+        }
+    }
+
     public HashMap<String, HashMap<String, Boolean>> getDictVoisinsMessages() {
         // Retourne le dictionnaire dictVoisinsMessages
         if (this.dictVoisinsMessages == null) {
@@ -180,6 +194,9 @@ public class FSMAgent extends AbstractDedaleAgent {
 
 
     public MapRepresentation getMyMap() {
+        if (this.myMap == null) {
+            this.myMap = new MapRepresentation();
+        }
         return this.myMap;
     }
 
@@ -197,5 +214,9 @@ public class FSMAgent extends AbstractDedaleAgent {
         /!\ map doit être la connaissance totale => une carte entière /!\
         */
         this.dictMapEnvoye.put(agent, map);
+    }
+
+    public List<String> getListAgentNames() {
+        return listAgentNames;
     }
 }
