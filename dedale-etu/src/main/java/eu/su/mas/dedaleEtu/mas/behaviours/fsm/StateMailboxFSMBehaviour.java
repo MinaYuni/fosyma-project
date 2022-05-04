@@ -116,10 +116,10 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
             timerMAP++;
         }
 
+        // 4) Vérification si l'agent a fait toutes les actions
+
         // on récupère toutes les clés (les noms des voisins)
         Set<String> voisins = this.dictVoisinsMessages.keySet();
-
-        // 4) Vérification si l'agent a fait toutes les actions
         int nb_voisins = voisins.size();
 
         int cptACKreceived = 0;

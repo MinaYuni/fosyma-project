@@ -5,6 +5,7 @@ import dataStructures.tuple.Couple;
 import eu.su.mas.dedale.env.Observation;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.agents.fsm.FSMAgent;
+import eu.su.mas.dedaleEtu.mas.knowledge.FullMapRepresentation;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import jade.core.AID;
 import jade.core.behaviours.OneShotBehaviour;
@@ -24,7 +25,8 @@ public class StateRandomWalkFSMBehaviour extends OneShotBehaviour {
 
     private List<String> listAgentNames;
     //private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
-    private MapRepresentation myMap;
+    //private MapRepresentation myMap;
+    private FullMapRepresentation myFullMap;
     private int exitValue;
 
     public StateRandomWalkFSMBehaviour(final AbstractDedaleAgent myagent) {
@@ -43,7 +45,8 @@ public class StateRandomWalkFSMBehaviour extends OneShotBehaviour {
         }
 
         // update information
-        this.myMap = ((FSMAgent) this.myAgent).getMyMap();
+        //this.myMap = ((FSMAgent) this.myAgent).getMyMap();
+        this.myFullMap = ((FSMAgent) this.myAgent).getMyFullMap();
         //this.dictVoisinsMessages = ((FSMAgent) this.myAgent).getDictVoisinsMessages();
         this.listAgentNames = ((FSMAgent) this.myAgent).getListAgentNames();
 
@@ -80,7 +83,8 @@ public class StateRandomWalkFSMBehaviour extends OneShotBehaviour {
         }
 
         // ajout de la carte de l'agent dans le message
-        SerializableSimpleGraph<String, MapRepresentation.MapAttribute> mapSent = this.myMap.getSerializableGraph();
+        //SerializableSimpleGraph<String, MapRepresentation MapAttribute> mapSent = this.myMap.getSerializableGraph();
+        SerializableSimpleGraph<String, HashMap<String, Object>> mapSent = this.myFullMap.getSerializableGraph();
 
         try {
             msg.setContentObject(mapSent);

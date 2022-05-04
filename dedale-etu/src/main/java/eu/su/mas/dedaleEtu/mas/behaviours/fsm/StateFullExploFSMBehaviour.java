@@ -50,7 +50,7 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
         String myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
 
         if (myPosition != null) {
-            System.out.println(myName + " [STATE A] -- currentPosition: " + myPosition);
+            System.out.println(myName + " [STATE A] -- currentPosition: " + myPosition ); //+ "-- list= " + this.myFullMap.getOpenNodes()
 
             // list of observable from the agent's current position
             List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition

@@ -34,15 +34,15 @@ public class FullMapRepresentation implements Serializable {
 
     private String defaultNodeStyle = "node {" + "fill-color: black;" + " size-mode:fit;text-alignment:under; text-size:14;text-color:white;text-background-mode:rounded-box;text-background-color:black;}";
     private String nodeStyle_open = "node.agent {" + "fill-color: forestgreen;" + "}";
-    private String nodeStyle_agent = "node.open {" + "fill-color: blue;" + "}";
+    private String nodeStyle_agent = "node.open {" + "fill-color: red;" + "}";
     private String nodeStyle = defaultNodeStyle + nodeStyle_agent + nodeStyle_open;
     private Graph g; //data structure non serializable
     private Viewer viewer; //ref to the display,  non serializable
     private Integer nbEdges;//used to generate the edges ids
     private Integer nbNodes;
-    private SerializableSimpleGraph<String, MapAttribute> sg;//used as a temporary dataStructure during migration
-    private HashMap<String, Integer> goldDict = new HashMap<String, Integer>(); // key: nodeId, value: amount of gold
-    private HashMap<String, Integer> diamondDict = new HashMap<String, Integer>(); // key: nodeId, value: amount of diamond
+    private SerializableSimpleGraph<String, HashMap<String, Object>> sg;//used as a temporary dataStructure during migration
+    private HashMap<String, Integer> goldDict = new HashMap<String, Integer>(); // key: nodeId, value: quantité d'or
+    private HashMap<String, Integer> diamondDict = new HashMap<String, Integer>(); // key: nodeId, value: quantité de diamant
 
     public FullMapRepresentation() {
         //System.setProperty("org.graphstream.ui.renderer","org.graphstream.ui.j2dviewer.J2DGraphRenderer");
@@ -87,11 +87,11 @@ public class FullMapRepresentation implements Serializable {
         return goldDict;
     }
 
-    public SerializableSimpleGraph<String, MapAttribute> getSg() {
+    public SerializableSimpleGraph<String, HashMap<String, Object>> getSg() {
         return this.sg;
     }
 
-    public void setSg(SerializableSimpleGraph<String, MapAttribute> sgreceived) {
+    public void setSg(SerializableSimpleGraph<String, HashMap<String, Object>> sgreceived) {
         this.sg = sgreceived;
     }
 
@@ -244,7 +244,15 @@ public class FullMapRepresentation implements Serializable {
         this.sg = new SerializableSimpleGraph<>();
 
         for (Node n : this.g) {    // on copie tous les noeuds du graphe
-            sg.addNode(n.getId(), MapAttribute.valueOf((String) n.getAttribute("ui.class")));
+            //sg.addNode(n.getId(), MapAttribute.valueOf((String) n.getAttribute("ui.class")));
+            HashMap<String, Object> map = new HashMap<>(); // map containing all the attributes of the node
+            Object[] attributes = n.attributeKeys().toArray();
+            for (Object att : attributes) {
+                String key = (String) att;
+                map.put(key, n.getAttribute(key));
+            }
+
+            sg.addNode(n.getId(), map);
         }
 
         Iterator<Edge> iterE = this.g.edges().iterator();
@@ -287,7 +295,7 @@ public class FullMapRepresentation implements Serializable {
         System.out.println("Loading done");
     }
 
-    public synchronized void transformSerializabletoMAP(SerializableSimpleGraph<String, MapAttribute> sgreceived) {
+    public synchronized void transformSerializabletoMAP(SerializableSimpleGraph<String, HashMap<String, Object>> sgreceived) {
         //closeGui();
         this.g = new SingleGraph("My world vision");
         this.g.setAttribute("ui.stylesheet", nodeStyle);
@@ -296,7 +304,7 @@ public class FullMapRepresentation implements Serializable {
 
         Integer nbEd = 0;
         Integer nbNo = 0;
-        for (SerializableNode<String, MapAttribute> n : sgreceived.getAllNodes()) {
+        for (SerializableNode<String, HashMap<String, Object>> n : sgreceived.getAllNodes()) {
             this.g.addNode(n.getNodeId()).setAttribute("ui.class", n.getNodeContent().toString());
             nbNo++;
             for (String s : sgreceived.getEdges(n.getNodeId())) {
@@ -338,11 +346,11 @@ public class FullMapRepresentation implements Serializable {
         g.display();
     }
 
-    public void mergeMap(SerializableSimpleGraph<String, MapAttribute> sgreceived) {
+    public void mergeMap(SerializableSimpleGraph<String, HashMap<String, Object>> sgreceived) {
         //System.out.println("You should decide what you want to save and how");
         //System.out.println("We currently blindy add the topology");
 
-        for (SerializableNode<String, MapAttribute> n : sgreceived.getAllNodes()) {
+        for (SerializableNode<String, HashMap<String, Object>> nReceived : sgreceived.getAllNodes()) {
             //System.out.println("dans mergeMap : " + n);
             String nodeID = nReceived.getNodeId();
             HashMap<String, Object> nReceivedAttributes = nReceived.getNodeContent();
@@ -417,6 +425,7 @@ public class FullMapRepresentation implements Serializable {
                 for (Edge e : edge_g) {
                     Node sn = e.getSourceNode();
                     Node tn = e.getTargetNode();
+
                     if (sn != node_g) {
                         sg.addEdge(e.getId(), tn.getId(), sn.getId());
                     } else {
