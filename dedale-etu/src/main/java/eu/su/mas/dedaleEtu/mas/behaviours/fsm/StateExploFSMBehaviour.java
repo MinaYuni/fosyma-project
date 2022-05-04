@@ -35,7 +35,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
     public void action() {
         String myName = this.myAgent.getLocalName();
 
-        System.out.println("\n-- START state A (StateExploFSMBehaviour): " + myName + " starts exploration --");
+        System.out.println("\n--- START state A (StateExploFSMBehaviour): " + myName + " ---");
 
         // update information
         this.myMap = ((FSMAgent) this.myAgent).getMyMap();
@@ -46,10 +46,35 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
         String myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
 
         if (myPosition != null) {
-            //System.out.println("STATE A : " + myName + " - currentPosition: " + myPosition);
+            System.out.println(myName + " [STATE A] -- currentPosition: " + myPosition);
 
             // list of observable from the agent's current position
             List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
+            System.out.println(myName + " [STATE A] -- lobs: " + lobs);
+
+            // list of observations associated to the currentPosition
+            List<Couple<Observation, Integer>> lObservations = lobs.get(0).getRight();
+            System.out.println(myName + " [STATE A] -- lObservations: " + lObservations);
+
+            for (Couple<Observation, Integer> o : lObservations) {
+                System.out.println(myName + " [STATE A] -- obs: " + o);
+                switch (o.getLeft()) {
+                    case DIAMOND:
+                        System.out.println(myName + " [STATE A] -- My treasure type: " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
+                        System.out.println(myName + " [STATE A] -- My current backpack capacity:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
+                        System.out.println(myName + " [STATE A] -- Value of the treasure on the current position: " + o.getLeft() + " - " + o.getRight());
+                        System.out.println(myName + " [STATE A] -- The agent grabbed: " + ((AbstractDedaleAgent) this.myAgent).pick());
+                        System.out.println(myName + " [STATE A] -- The remaining backpack capacity: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
+                    case GOLD:
+                        System.out.println(myName + " [STATE A] -- My treasure type: " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
+                        System.out.println(myName + " [STATE A] -- My current backpack capacity:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
+                        System.out.println(myName + " [STATE A] -- Value of the treasure on the current position: " + o.getLeft() + " - " + o.getRight());
+                        System.out.println(myName + " [STATE A] -- The agent grabbed: " + ((AbstractDedaleAgent) this.myAgent).pick());
+                        System.out.println(myName + " [STATE A] -- The remaining backpack capacity: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
+                    case STENCH:
+                        System.out.println(myName + " [STATE A] -- STENCH");
+                }
+            }
 
             try {
                 this.myAgent.doWait(500);
@@ -74,9 +99,9 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 
             //3) while openNodes is not empty, continues
             if (!this.myMap.hasOpenNode()) { // si exploration finie
-                exitValue = 2; // aller en F : "Exploration finie"
-                System.out.println(myName + " - Exploration successfully done");
-                System.out.println("-END state A (StateExploFSMBehaviour): " + myName + " finished exploring, goes to state F");
+                exitValue = 3; // aller en G : "Random Walk"
+                System.out.println(myName + " [STATE A] - Exploration successfully done");
+                System.out.println(myName + " CHANGES A to G : random walk");
             } else {
                 // 3.1) Select next move
                 // there exist one open node directly reachable, go for it,
@@ -101,13 +126,13 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 // ajout des destinataires du ping (tous les autres agents, sauf moi-meme)
                 for (String receiverAgent : this.listAgentNames) { // PROBLEME : quand un autre agent meurt => il y a une boucle infinie
                     if (!Objects.equals(myName, receiverAgent)) { // si ce n'est pas moi
-                        System.out.println("STATE A : " + myName + " will send msg to " + receiverAgent);
+                        System.out.println(myName + " [STATE A] will send msg to " + receiverAgent);
                         msg.addReceiver(new AID(receiverAgent, false)); // on met un receveur au message
                     }
                 }
                 // envoie du ping à tous les agents
                 ((AbstractDedaleAgent) this.myAgent).sendMessage(msg);
-                System.out.println("STATE A : " + myName + " finished sending PING");
+                System.out.println(myName + " [STATE A] finished sending PING");
 
                 // 3.3) At each time step, the agent check if he received a ping from a teammate
                 // ACTION : Check reception PING
@@ -120,7 +145,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 // si reception PING, aller en B (envoyer sa carte),
                 // sinon continuer déplacement
                 if (msgPingReceived != null) { // réception PING, donc un autre agent est à proximité
-                    System.out.println("STATE A : " + myName + " received PING");
+                    System.out.println(myName + " [STATE A] received PING");
 
                     String namePingReceived = msgPingReceived.getSender().getLocalName();
                     ((FSMAgent) this.myAgent).setDictVoisinsMessagesAgentAction(namePingReceived, "recoit_PING", true);
@@ -128,7 +153,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                     // ancien emplacement de ((FSMAgent) this.myAgent).setMyMap(this.myMap);
 
                     exitValue = 1; // aller en B : "Envoie carte"
-                    System.out.println("-CHANGE A to B (StateSendMapFSMBehaviour): " + myName + " goes to state B (send MAP)");
+                    System.out.println(myName + " CHANGES A to B : send MAP");
 
                 } else { // pas reçu de PING, donc continuer à avancer dans la map
                     ((FSMAgent) this.myAgent).resetDictVoisinsMessages();

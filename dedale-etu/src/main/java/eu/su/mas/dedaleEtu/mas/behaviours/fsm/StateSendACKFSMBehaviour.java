@@ -38,7 +38,7 @@ public class StateSendACKFSMBehaviour extends OneShotBehaviour {
     public void action() {
         String myName = this.myAgent.getLocalName();
 
-        System.out.println("\n-- START state D (StateSendACKFSMBehaviour): " + myName + " starts state D --");
+        System.out.println("\n--- START state D (StateSendACKFSMBehaviour): " + myName + " ---");
 
         // update information
         this.MyMap = ((FSMAgent) this.myAgent).getMyMap();
@@ -71,10 +71,10 @@ public class StateSendACKFSMBehaviour extends OneShotBehaviour {
 
         // envoyer un ACK-MAP à tous les agents dont l'agent a reçu la carte et où il n'a pas encore envoyé de ACK auparavant
         ((AbstractDedaleAgent) this.myAgent).sendMessage(msg);
-        System.out.println("STATE D : " + myName + " finished sending ACK");
+        System.out.println(myName + " [STATE D] finished sending ACK");
 
         exitValue = 1; // aller en C : "Attente ACK"
-        System.out.println("-END state D (StateSendACKFSMBehaviour): " + myName + " ends state D, goes to state C ");
+        System.out.println(myName + " CHANGES D to C: check Mailbox");
     }
 
     public int onEnd() {

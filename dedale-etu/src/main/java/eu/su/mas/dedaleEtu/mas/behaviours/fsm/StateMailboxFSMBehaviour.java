@@ -34,7 +34,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
         exitValue = -1;
         String myName = this.myAgent.getLocalName();
 
-        System.out.println("\n-- START state C (StateMailboxFSMBehaviour): " + myName + " starts state C --");
+        System.out.println("\n--- START state C (StateMailboxFSMBehaviour): " + myName + " ---");
 
         // update information
         this.MyMap = ((FSMAgent) this.myAgent).getMyMap();
@@ -54,14 +54,14 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
         ACLMessage msgPingReceived = this.myAgent.receive(msgPing);
 
         if (msgPingReceived != null) {
-            System.out.println("STATE C : " + myName + " received PING");
+            System.out.println(myName + " [STATE C] received PING");
 
             String namePingReceived = msgPingReceived.getSender().getLocalName();
 
             ((FSMAgent) this.myAgent).setDictVoisinsMessagesAgentAction(namePingReceived, "recoit_PING", true);
 
             exitValue = 4; // aller en B : "Envoie MAP"
-            System.out.println("-CHANGE C to B (StateSendMapFSMBehaviour): " + myName + " goes to state B ");
+            System.out.println(myName + " CHANGES C to B: send MAP");
         }
 
         // 2) ACTION : check si l'agent a reçu un ACK de ses voisins pour la carte qu'il a envoyé
@@ -72,7 +72,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
         ACLMessage msgACKMapReceived = this.myAgent.receive(msgACK);
 
         if (msgACKMapReceived != null) { // si l'agent a reçu un ACK-MAP
-            System.out.println("STATE C : " + myName + " received ACK");
+            System.out.println(myName + " [STATE C] received ACK");
 
             String nameExpediteur = msgACKMapReceived.getSender().getLocalName(); // on récupère l'envoyeur du message (chaine de caractères)
 
@@ -90,7 +90,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
         ACLMessage msgMapReceived = this.myAgent.receive(msgMap);
 
         if (msgMapReceived != null && exitValue == -1) { // si l'agent a reçu une MAP et il n'a rien à faire
-            System.out.println("STATE C : " + myName + " received MAP");
+            System.out.println(myName + " [STATE C] received MAP");
 
             String nameExpediteur = msgMapReceived.getSender().getLocalName();
 
@@ -111,7 +111,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
             ((FSMAgent) this.myAgent).setDictVoisinsMessagesAgentAction(nameExpediteur, "recoit_MAP", true);
 
             exitValue = 2; // aller en D : "Envoie ACK"
-            System.out.println("-CHANGE C to D (StateSendACKFSMBehaviour): " + myName + " goes to state D ");
+            System.out.println(myName + " CHANGES C to D: send ACK");
         } else {
             timerMAP++;
         }
@@ -154,24 +154,24 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
         if (exitValue == -1) { // si l'agent n'a rien à faire
             if (cptACKreceived == nb_voisins && cptACKsend == nb_voisins && cptMAPreceived == nb_voisins && cptMAPsend == nb_voisins) {
                 exitValue = 3; // aller en A : l'agent continue l'exploration
-                System.out.println("-CHANGE C to A (StateExploFSMBehaviour): " + myName + " goes to state A");
+                System.out.println(myName + " CHANGES C to A: continue exploration");
 
             } else if (this.timerACK >= this.timerMax) {
-                System.out.println("STATE C: " + myName + " TIMER ACK END");
+                System.out.println(myName + " [STATE C] - TIMER ACK END");
                 exitValue = 4; // aller en B : renvoyer sa carte
                 this.timerACK = 0;
-                System.out.println("-CHANGE C to B (StateExploFSMBehaviour): " + myName + " goes to state B");
+                System.out.println(myName + " CHANGES C to B: re-sending MAP");
             }
             else if (this.timerMAP >= this.timerMax) {
-                System.out.println("STATE C: " + myName + " TIMER MAP END");
+                System.out.println(myName + " [STATE C] - TIMER MAP END");
                 exitValue = 3; // aller en A : l'agent continue l'exploration
                 this.timerMAP = 0;
                 ((FSMAgent) this.myAgent).resetDictVoisinsMessages();
-                System.out.println("-CHANGE C to A (StateExploFSMBehaviour): " + myName + " goes to state A");
+                System.out.println(myName + " CHANGES C to A: continue exploration");
             }
             else { // sinon il existe un agent dont on n'a pas reçu de ACK, alors on reste au state C pour attendre son ACK
                 exitValue = 1; // rester en C
-                System.out.println("-STAY in state C (StateMailboxFSMBehaviour): " + myName + " reminds in state C | timerACK: " + this.timerACK + " -- timerMAP: " + this.timerMAP);
+                System.out.println(myName + " STAYS in C -- timerACK: " + this.timerACK + " | timerMAP: " + this.timerMAP);
             }
         }
 

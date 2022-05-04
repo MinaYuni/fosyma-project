@@ -31,7 +31,7 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
     public void action() {
         String myName = this.myAgent.getLocalName();
 
-        System.out.println("\n-- START state B (StateSendMapFSMBehaviour): " + myName + " starts sending MAP --");
+        System.out.println("\n--- START state B (StateSendMapFSMBehaviour): " + myName + " ---");
 
         // update information
         this.myMap = ((FSMAgent) this.myAgent).getMyMap();
@@ -60,14 +60,14 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
 
                 ((FSMAgent) this.myAgent).setDictVoisinsMessagesAgentAction(receiverAgent, "envoie_MAP", true);
 
-                System.out.println("STATE B : " + myName + " sends MAP to " + receiverAgent);
+                System.out.println(myName + " [STATE B] sends MAP to " + receiverAgent);
             }
             else if (!etat.get("recoit_ACK")) { // renvoie sa carte si pas reçu d'ACK pour la carte qu'il a déjà envoyé
                 msg.addReceiver(new AID(receiverAgent, false));
 
                 ((FSMAgent) this.myAgent).setDictVoisinsMessagesAgentAction(receiverAgent, "envoie_MAP", true);
 
-                System.out.println("STATE B : " + myName + " re-sends MAP to " + receiverAgent);
+                System.out.println(myName + " [STATE B] re-sends MAP to " + receiverAgent);
             }
         }
 
@@ -88,7 +88,7 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
         ((AbstractDedaleAgent) this.myAgent).sendMessage(msg);
 
         exitValue = 1; // aller en C = "Attente ACK et check Mailbox"
-        System.out.println("-END state B (StateSendMapFSMBehaviour): " + myName + " finished sending MAP, goes to state C ");
+        System.out.println(myName + " CHANGES C to B: check Mailbox");
     }
 
     public int onEnd() {

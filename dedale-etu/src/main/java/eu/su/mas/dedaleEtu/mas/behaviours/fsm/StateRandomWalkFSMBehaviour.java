@@ -32,7 +32,7 @@ public class StateRandomWalkFSMBehaviour extends OneShotBehaviour {
     public void action() {
         String myName = this.myAgent.getLocalName();
 
-        System.out.println("\n-- START state G (StateRandomWalkFSMBehaviour): " + myName + " --");
+        System.out.println("\n--- START state G (StateRandomWalkFSMBehaviour): " + myName + " ---");
 
         // update information
         this.myMap = ((FSMAgent) this.myAgent).getMyMap();
@@ -40,18 +40,18 @@ public class StateRandomWalkFSMBehaviour extends OneShotBehaviour {
         this.listAgentNames = ((FSMAgent) this.myAgent).getListAgentNames();
 
         String myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
-        System.out.println("STATE G : " + myName + " -- myCurrentPosition is: " + myPosition);
+        System.out.println(myName + " [STATE G] -- myCurrentPosition is: " + myPosition);
 
         if (myPosition != null) {
             // List of observable from the agent's current position
             List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
-            System.out.println("STATE G : " + myName + " -- list of observables: " + lobs);
+            System.out.println(myName + " [STATE G] -- list of observables: " + lobs);
 
             // chose a random next node to go to
             Random r = new Random();
             int moveId = 1 + r.nextInt(lobs.size() - 1); // removing the current position from the list of target, not necessary as to stay is an action but allow quicker random move
             String nextNode = lobs.get(moveId).getLeft();
-            System.out.println("STATE G : " + myName + " will move to " + nextNode);
+            System.out.println(myName + " [STATE G] will move to " + nextNode);
             ((AbstractDedaleAgent) this.myAgent).moveTo(nextNode);
         }
 
@@ -64,7 +64,7 @@ public class StateRandomWalkFSMBehaviour extends OneShotBehaviour {
         for (String receiverAgent : this.listAgentNames) {
             msg.addReceiver(new AID(receiverAgent, false));
 
-            System.out.println("STATE G : " + myName + " sends MAP to " + receiverAgent);
+            System.out.println(myName + " [STATE G] sends MAP to " + receiverAgent);
         }
 
         // ajout de la carte de l'agent dans le message
