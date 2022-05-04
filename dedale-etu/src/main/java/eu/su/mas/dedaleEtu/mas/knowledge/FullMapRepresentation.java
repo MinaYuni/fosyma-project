@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import eu.su.mas.dedale.env.Observation;
+import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import org.graphstream.algorithm.Dijkstra;
 import org.graphstream.graph.*;
 import org.graphstream.graph.implementations.SingleGraph;
@@ -98,10 +100,11 @@ public class FullMapRepresentation implements Serializable {
     /**
      * Add or replace a node and its attribute
      *
-     * @param id
-     * @param mapAttribute
+     * @param id                id du noeud
+     * @param mapAttribute      attributs des noeuds de la map
+     * @param lObservations     liste des observations du noeud id
      */
-    public synchronized void addNode(String id, MapAttribute mapAttribute) {
+    public synchronized void addNode(String id, MapAttribute mapAttribute, List<Couple<Observation, Integer>> lObservations) {
         Node n;
         if (this.g.getNode(id) == null) {
             this.nbNodes++;
@@ -112,6 +115,23 @@ public class FullMapRepresentation implements Serializable {
         n.clearAttributes();
         n.setAttribute("ui.class", mapAttribute.toString());
         n.setAttribute("ui.label", id);
+
+        for (Couple<Observation, Integer> o : lObservations) {
+            Observation observationType = o.getLeft();
+            Integer observationValue = o.getRight();
+
+            switch (observationType) {
+                case DIAMOND:
+                    this.diamondDict.put(id, observationValue);
+                    break;
+                case GOLD:
+                    this.goldDict.put(id, observationValue);
+                    break;
+                //case STENCH:
+                default:
+                    break;
+            }
+        }
     }
 
     /**
@@ -121,9 +141,9 @@ public class FullMapRepresentation implements Serializable {
      * @param id id of the node
      * @return true if added
      */
-    public synchronized boolean addNewNode(String id) {
+    public synchronized boolean addNewNode(String id, List<Couple<Observation, Integer>> lObservations) {
         if (this.g.getNode(id) == null) {
-            addNode(id, MapAttribute.open);
+            addNode(id, MapAttribute.open, lObservations);
             this.nbNodes++;
             return true;
         }

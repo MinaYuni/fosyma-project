@@ -10,6 +10,7 @@ import eu.su.mas.dedaleEtu.mas.behaviours.fsm.*;
 
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 
+import eu.su.mas.dedaleEtu.mas.knowledge.FullMapRepresentation;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 
 import jade.core.behaviours.Behaviour;
@@ -72,6 +73,7 @@ public class FSMAgent extends AbstractDedaleAgent {
     HashMap<String, MapRepresentation> dictMapEnvoye = new HashMap<>();
 
     private MapRepresentation myMap;
+    private FullMapRepresentation myFullMap;
     private List<String> listAgentNames = new ArrayList<String>();
 
     protected void setup() {
@@ -100,7 +102,7 @@ public class FSMAgent extends AbstractDedaleAgent {
         FSMBehaviour fsm = new FSMBehaviour(this);
 
         // Define the different states and behaviours
-        fsm.registerFirstState(new StateExploFSMBehaviour(this), A);
+        fsm.registerFirstState(new StateFullExploFSMBehaviour(this), A);
         fsm.registerState(new StateSendMapFSMBehaviour(this), B);
         fsm.registerState(new StateMailboxFSMBehaviour(this), C);
         fsm.registerState(new StateSendACKFSMBehaviour(this), D);
@@ -193,7 +195,6 @@ public class FSMAgent extends AbstractDedaleAgent {
         this.dictVoisinsMessages.put(agent, dico);
     }
 
-
     public MapRepresentation getMyMap() {
         if (this.myMap == null) {
             this.myMap = new MapRepresentation();
@@ -203,6 +204,17 @@ public class FSMAgent extends AbstractDedaleAgent {
 
     public void setMyMap(MapRepresentation myMap) {
         this.myMap = myMap;
+    }
+
+    public FullMapRepresentation getMyFullMap() {
+        if (this.myFullMap == null) {
+            this.myFullMap = new FullMapRepresentation();
+        }
+        return this.myFullMap;
+    }
+
+    public void setMyFullMap(FullMapRepresentation myMap) {
+        this.myFullMap = myMap;
     }
 
     public HashMap<String, MapRepresentation> getDictMapEnvoye() {
