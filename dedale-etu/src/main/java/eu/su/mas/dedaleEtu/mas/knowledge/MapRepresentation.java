@@ -1,25 +1,14 @@
 package eu.su.mas.dedaleEtu.mas.knowledge;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.graphstream.algorithm.Dijkstra;
-import org.graphstream.graph.Edge;
-import org.graphstream.graph.EdgeRejectedException;
-import org.graphstream.graph.ElementNotFoundException;
-import org.graphstream.graph.Graph;
-import org.graphstream.graph.IdAlreadyInUseException;
-import org.graphstream.graph.Node;
+import org.graphstream.graph.*;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.fx_viewer.FxViewer;
 import org.graphstream.ui.view.Viewer;
-import org.graphstream.ui.view.Viewer.CloseFramePolicy;
 
 import dataStructures.serializableGraph.*;
 import dataStructures.tuple.Couple;
@@ -59,6 +48,7 @@ public class MapRepresentation implements Serializable {
 	private Graph g; //data structure non serializable
 	private Viewer viewer; //ref to the display,  non serializable
 	private Integer nbEdges;//used to generate the edges ids
+	private Integer nbNodes;
 
 	private SerializableSimpleGraph<String, MapAttribute> sg;//used as a temporary dataStructure during migration
 
@@ -75,7 +65,20 @@ public class MapRepresentation implements Serializable {
 		//this.viewer = this.g.display();
 
 		this.nbEdges=0;
+		this.nbNodes=0;
 	}
+
+	/*--------------------- GET et SET ---------------------------*/
+
+	public Integer getNbEdges(){return this.nbEdges; }
+	public Integer getNbNodes(){return this.nbNodes; }
+
+	public SerializableSimpleGraph<String, MapAttribute> getSg(){ return this.sg; }
+	public void setSg(SerializableSimpleGraph<String, MapAttribute> sgreceived){
+		this.sg = sgreceived;
+	}
+
+	/*--------------------- Méthodes add or remove node/edge ---------------------------*/
 
 	/**
 	 * Add or replace a node and its attribute 
@@ -85,6 +88,7 @@ public class MapRepresentation implements Serializable {
 	public synchronized void addNode(String id,MapAttribute mapAttribute){
 		Node n;
 		if (this.g.getNode(id)==null){
+			this.nbNodes++;
 			n=this.g.addNode(id);
 		}else{
 			n=this.g.getNode(id);
@@ -103,6 +107,7 @@ public class MapRepresentation implements Serializable {
 	public synchronized boolean addNewNode(String id) {
 		if (this.g.getNode(id)==null){
 			addNode(id,MapAttribute.open);
+			this.nbNodes++;
 			return true;
 		}
 		return false;
@@ -196,48 +201,76 @@ public class MapRepresentation implements Serializable {
 	/**
 	 * Before sending the agent knowledge of the map it should be serialized.
 	 */
+
 	private void serializeGraphTopology() {
 		this.sg= new SerializableSimpleGraph<String,MapAttribute>();
 		Iterator<Node> iter=this.g.iterator();
-		while(iter.hasNext()){
+		while(iter.hasNext()){	//on copie tous les noeuds du graphe
 			Node n=iter.next();
 			sg.addNode(n.getId(),MapAttribute.valueOf((String)n.getAttribute("ui.class")));
 		}
 		Iterator<Edge> iterE=this.g.edges().iterator();
-		while (iterE.hasNext()){
+		while (iterE.hasNext()){	//on copie tous les aretes du graphe
 			Edge e=iterE.next();
 			Node sn=e.getSourceNode();
 			Node tn=e.getTargetNode();
 			sg.addEdge(e.getId(), sn.getId(), tn.getId());
 		}	
 	}
-
-
 	public synchronized SerializableSimpleGraph<String,MapAttribute> getSerializableGraph(){
 		serializeGraphTopology();
 		return this.sg;
 	}
 
+
 	/**
 	 * After migration we load the serialized data and recreate the non serializable components (Gui,..)
 	 */
 	public synchronized void loadSavedData(){
-
+		//closeGui();
 		this.g= new SingleGraph("My world vision");
 		this.g.setAttribute("ui.stylesheet",nodeStyle);
 
-		openGui();
+		//openGui();
 
 		Integer nbEd=0;
+		Integer nbNo=0;
 		for (SerializableNode<String, MapAttribute> n: this.sg.getAllNodes()){
 			this.g.addNode(n.getNodeId()).setAttribute("ui.class", n.getNodeContent().toString());
+			nbNo++;
 			for(String s:this.sg.getEdges(n.getNodeId())){
 				this.g.addEdge(nbEd.toString(),n.getNodeId(),s);
 				nbEd++;
 			}
 		}
+		this.nbEdges = nbEd ;
+		this.nbNodes = nbNo ;
 		System.out.println("Loading done");
 	}
+
+
+	public synchronized void transformSerializabletoMAP(SerializableSimpleGraph<String, MapAttribute> sgreceived ){
+		//closeGui();
+		this.g= new SingleGraph("My world vision");
+		this.g.setAttribute("ui.stylesheet",nodeStyle);
+
+		//openGui();
+
+		Integer nbEd=0;
+		Integer nbNo=0;
+		for (SerializableNode<String, MapAttribute> n: sgreceived.getAllNodes()){
+			this.g.addNode(n.getNodeId()).setAttribute("ui.class", n.getNodeContent().toString());
+			nbNo++;
+			for(String s: sgreceived.getEdges(n.getNodeId())){
+				this.g.addEdge(nbEd.toString(),n.getNodeId(),s);
+				nbEd++;
+			}
+		}
+		this.nbEdges = nbEd ;
+		this.nbNodes = nbNo ;
+		System.out.println("Loading done");
+	}
+
 
 	/**
 	 * Method called before migration to kill all non serializable graphStream components
@@ -273,7 +306,7 @@ public class MapRepresentation implements Serializable {
 		//System.out.println("We currently blindy add the topology");
 
 		for (SerializableNode<String, MapAttribute> n: sgreceived.getAllNodes()){
-			//System.out.println(n);
+			//System.out.println("dans mergeMap : " + n);
 			boolean alreadyIn =false;
 			//1 Add the node
 			Node newnode=null;
@@ -315,6 +348,44 @@ public class MapRepresentation implements Serializable {
 	}
 
 
+	/*--------------------- Version optimisé ---------------------------*/
 
+	private void serializeGraphTopologyOptimum(SerializableSimpleGraph<String,MapAttribute> sgReceived) {
+		/* Retourne les noeuds et les aretes qui ne sont pas presents dans sgReceived mais present dans g */
+		this.sg= new SerializableSimpleGraph<String,MapAttribute>();
+		Iterator<Node> nodeSend=this.g.iterator();
+		while(nodeSend.hasNext()){	//on copie tous les noeuds du graphe
+			Node node_g = nodeSend.next();
+
+			//On vérifie si le noeud n (qui est dans le graphe nommé g) est présent dans le graphe nommé sgReceived (le graphe d'un autre agent)
+			// 		si oui, on fait rien
+			// 		sinon, on ajoute le noeud n (et ses arcs) dans le graphe nommé sg (qui est le graphe qu'on envoit par message)
+			SerializableNode<String, MapAttribute>  node_sgR = sgReceived.getNode(node_g.getId());
+
+			if (node_sgR==null){ //on n'a pas trouver le noeud node_g dans sgReceived
+
+				//Ajout du noeud node_g dans le graphe nommé sg
+				sg.addNode(node_g.getId(),MapAttribute.valueOf((String)node_g.getAttribute("ui.class")));
+
+				//Ajout des arcs de node_g dans le graphe nommé sg
+				Set<Edge> edge_g = (Set<Edge>) node_g.edges(); //ensemble d'arc de node_g
+				for (Edge e: edge_g) {
+					Node sn=e.getSourceNode();
+					Node tn=e.getTargetNode();
+					if (sn != node_g){
+						sg.addEdge(e.getId(), tn.getId(), sn.getId());
+					}else {
+						sg.addEdge(e.getId(), sn.getId(), tn.getId());
+					}
+				}
+			}
+		}
+		//System.out.println("FIN : serializeGraphTopologyOptimum"+this.sg.getAllNodes());
+	}
+
+	public synchronized SerializableSimpleGraph<String,MapAttribute> getSerializableGraphOptimum(SerializableSimpleGraph<String,MapAttribute> sgReceived){
+		serializeGraphTopologyOptimum(sgReceived);
+		return this.sg;
+	}
 
 }
