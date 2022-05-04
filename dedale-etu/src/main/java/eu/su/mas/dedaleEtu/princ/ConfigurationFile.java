@@ -103,7 +103,7 @@ public final class ConfigurationFile {
     /*
      * Size of the generated environment, mandatory
      */
-    public static Integer ENVIRONMENT_SIZE = 10;
+    public static Integer ENVIRONMENT_SIZE = 5;
 
     // Parameters required for some generators (see dedale.gitlab.io)
     public static Integer OPTIONAL_ADDITIONAL_ENVGENERATOR_PARAM1 = 1; // used by the BARABASI_ALBERT generator to know the number of childs
@@ -138,10 +138,11 @@ public final class ConfigurationFile {
      */
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = null;
 
-//    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentExplo";
-//    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentExplo-2";
-    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentExplo-3";
+    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentCollect";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentCollect-2";
+//    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentExplo-2";
+//    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentExplo-3";
+//    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentCollect-Wumpus";
 
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentCollect";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentExplo";
