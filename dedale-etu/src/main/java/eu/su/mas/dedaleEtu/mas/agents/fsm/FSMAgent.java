@@ -112,6 +112,7 @@ public class FSMAgent extends AbstractDedaleAgent {
         fsm.registerDefaultTransition(A, A); //Default
         fsm.registerTransition(A, B, 1);
         fsm.registerTransition(A, G, 2);
+        fsm.registerTransition(A, F, 3);
         fsm.registerTransition(B, C, 1);
         fsm.registerTransition(C, D, 2);
         fsm.registerTransition(C, C, 1);
