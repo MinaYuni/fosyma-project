@@ -4,7 +4,7 @@ import dataStructures.tuple.Couple;
 import eu.su.mas.dedale.env.Observation;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.agents.fsm.FSMAgent;
-import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
+import eu.su.mas.dedaleEtu.mas.knowledge.FullMapRepresentation;
 import jade.core.behaviours.OneShotBehaviour;
 
 import java.util.HashMap;
@@ -15,7 +15,8 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
     private static final long serialVersionUID = 6567689731496787661L;
 
     private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
-    private MapRepresentation myMap;
+    //private MapRepresentation myMap;
+    private FullMapRepresentation myFullMap;
     private int exitValue;
 
     public StateCollectFSMBehaviour(final AbstractDedaleAgent myagent) {
@@ -27,7 +28,7 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
         System.out.println("\n--START state E (StateCollectFSMBehaviour): " + myName + " --");
 
         // update information
-        this.myMap = ((FSMAgent) this.myAgent).getMyMap();
+        this.myFullMap = ((FSMAgent) this.myAgent).getMyFullMap();
         this.dictVoisinsMessages = ((FSMAgent) this.myAgent).getDictVoisinsMessages();
 
         String myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();

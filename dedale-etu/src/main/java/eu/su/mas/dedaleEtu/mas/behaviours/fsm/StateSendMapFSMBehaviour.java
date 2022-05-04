@@ -1,6 +1,7 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 
 import eu.su.mas.dedaleEtu.mas.agents.fsm.FSMAgent;
+import eu.su.mas.dedaleEtu.mas.knowledge.FullMapRepresentation;
 import jade.core.behaviours.OneShotBehaviour;
 
 import jade.core.AID;
@@ -13,15 +14,14 @@ import jade.lang.acl.ACLMessage;
 import dataStructures.serializableGraph.SerializableSimpleGraph;
 
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
-import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
-import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 
 // comportement du state B (Envoie carte)
 public class StateSendMapFSMBehaviour extends OneShotBehaviour {
     private static final long serialVersionUID = 2567689731496787661L;
 
     private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
-    private MapRepresentation myMap;
+    //private MapRepresentation myMap;
+    private FullMapRepresentation myFullMap;
     private int exitValue;
 
     public StateSendMapFSMBehaviour(final AbstractDedaleAgent myagent) {
@@ -34,7 +34,7 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
         System.out.println("\n--- START state B (StateSendMapFSMBehaviour): " + myName + " ---");
 
         // update information
-        this.myMap = ((FSMAgent) this.myAgent).getMyMap();
+        this.myFullMap = ((FSMAgent) this.myAgent).getMyFullMap();
         this.dictVoisinsMessages = ((FSMAgent) this.myAgent).getDictVoisinsMessages();
 
 //        try {
@@ -60,22 +60,21 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
 
                 ((FSMAgent) this.myAgent).setDictVoisinsMessagesAgentAction(receiverAgent, "envoie_MAP", true);
 
-                System.out.println(myName + " [STATE B] sends MAP to " + receiverAgent);
+                System.out.println(myName + " [STATE B] will send MAP to " + receiverAgent);
             }
             else if (!etat.get("recoit_ACK")) { // renvoie sa carte si pas reçu d'ACK pour la carte qu'il a déjà envoyé
                 msg.addReceiver(new AID(receiverAgent, false));
 
                 ((FSMAgent) this.myAgent).setDictVoisinsMessagesAgentAction(receiverAgent, "envoie_MAP", true);
 
-                System.out.println(myName + " [STATE B] re-sends MAP to " + receiverAgent);
+                System.out.println(myName + " [STATE B] will re-send MAP to " + receiverAgent);
             }
         }
 
         // ajout de la carte de l'agent dans le message
-        SerializableSimpleGraph<String, MapAttribute> mapSent = this.myMap.getSerializableGraph();
+        SerializableSimpleGraph<String, HashMap<String, Object>> mapSent = this.myFullMap.getSerializableGraph();
 
-
-        //this.myMap.prepareMigration(); //generer SerializableSimpleGraph (et met this.myMap.g à null => optimiser place memoire ???? )
+        //this.myMap.prepareMigration(); // generer SerializableSimpleGraph (et met this.myMap.g à null => optimiser place memoire ???? )
         //SerializableSimpleGraph<String, MapAttribute> mapSent = (this.myMap).getSg();
 
         try {

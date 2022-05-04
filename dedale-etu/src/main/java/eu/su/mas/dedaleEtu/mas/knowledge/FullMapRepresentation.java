@@ -1,6 +1,7 @@
 package eu.su.mas.dedaleEtu.mas.knowledge;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -103,18 +104,22 @@ public class FullMapRepresentation implements Serializable {
      * @param id                id du noeud
      * @param mapAttribute      attributs des noeuds de la map
      * @param lObservations     liste des observations du noeud id
+     * @param time              temps où le noeud a été observé
      */
-    public synchronized void addNode(String id, MapAttribute mapAttribute, List<Couple<Observation, Integer>> lObservations) {
+    public synchronized void addNode(String id, MapAttribute mapAttribute, List<Couple<Observation, Integer>> lObservations, long time) {
         Node n;
+
         if (this.g.getNode(id) == null) {
             this.nbNodes++;
             n = this.g.addNode(id);
         } else {
             n = this.g.getNode(id);
         }
+
         n.clearAttributes();
         n.setAttribute("ui.class", mapAttribute.toString());
         n.setAttribute("ui.label", id);
+        n.setAttribute("timestamp", time);
 
         for (Couple<Observation, Integer> o : lObservations) {
             Observation observationType = o.getLeft();
@@ -138,12 +143,15 @@ public class FullMapRepresentation implements Serializable {
      * Add a node to the graph. Do nothing if the node already exists.
      * If new, it is labeled as open (non-visited)
      *
-     * @param id id of the node
+     * @param id                id du noeud
+     * @param lObservations     liste des observations du noeud id
+     * @param time              temps où le noeud a été observé
+     *
      * @return true if added
      */
-    public synchronized boolean addNewNode(String id, List<Couple<Observation, Integer>> lObservations) {
+    public synchronized boolean addNewNode(String id, List<Couple<Observation, Integer>> lObservations, long time) {
         if (this.g.getNode(id) == null) {
-            addNode(id, MapAttribute.open, lObservations);
+            addNode(id, MapAttribute.open, lObservations, time);
             this.nbNodes++;
             return true;
         }
@@ -185,9 +193,8 @@ public class FullMapRepresentation implements Serializable {
         dijkstra.setSource(g.getNode(idFrom));
         dijkstra.compute();//compute the distance to all nodes from idFrom
         List<Node> path = dijkstra.getPath(g.getNode(idTo)).getNodePath(); //the shortest path from idFrom to idTo
-        Iterator<Node> iter = path.iterator();
-        while (iter.hasNext()) {
-            shortestPath.add(iter.next().getId());
+        for (Node edges : path) {
+            shortestPath.add(edges.getId());
         }
         dijkstra.clear();
         if (shortestPath.isEmpty()) {//The openNode is not currently reachable
@@ -226,9 +233,7 @@ public class FullMapRepresentation implements Serializable {
      */
     public void prepareMigration() {
         serializeGraphTopology();
-
         closeGui();
-
         this.g = null;
     }
 
@@ -236,7 +241,8 @@ public class FullMapRepresentation implements Serializable {
      * Before sending the agent knowledge of the map it should be serialized.
      */
     private void serializeGraphTopology() {
-        this.sg = new SerializableSimpleGraph<String, MapAttribute>();
+        this.sg = new SerializableSimpleGraph<>();
+
         for (Node n : this.g) {    // on copie tous les noeuds du graphe
             sg.addNode(n.getId(), MapAttribute.valueOf((String) n.getAttribute("ui.class")));
         }
@@ -251,7 +257,7 @@ public class FullMapRepresentation implements Serializable {
         }
     }
 
-    public synchronized SerializableSimpleGraph<String, MapAttribute> getSerializableGraph() {
+    public synchronized SerializableSimpleGraph<String, HashMap<String, Object>> getSerializableGraph() {
         serializeGraphTopology();
         return this.sg;
     }
@@ -268,7 +274,7 @@ public class FullMapRepresentation implements Serializable {
 
         Integer nbEd = 0;
         Integer nbNo = 0;
-        for (SerializableNode<String, MapAttribute> n : this.sg.getAllNodes()) {
+        for (SerializableNode<String, HashMap<String, Object>> n : this.sg.getAllNodes()) {
             this.g.addNode(n.getNodeId()).setAttribute("ui.class", n.getNodeContent().toString());
             nbNo++;
             for (String s : this.sg.getEdges(n.getNodeId())) {
@@ -338,33 +344,41 @@ public class FullMapRepresentation implements Serializable {
 
         for (SerializableNode<String, MapAttribute> n : sgreceived.getAllNodes()) {
             //System.out.println("dans mergeMap : " + n);
-            boolean alreadyIn = false;
-            //1 Add the node
-            Node newnode = null;
-            try {
-                newnode = this.g.addNode(n.getNodeId());
-            } catch (IdAlreadyInUseException e) {
-                alreadyIn = true;
-                //System.out.println("Already in"+n.getNodeId());
+            String nodeID = nReceived.getNodeId();
+            HashMap<String, Object> nReceivedAttributes = nReceived.getNodeContent();
+
+            Node nActual = this.g.getNode(nodeID);
+
+            if (nActual == null) {
+                nActual = this.g.addNode(nodeID); //ajout noeud mais ne mets rien comme attribut
+
+                //nActual.setAttribute("ui.label", nodeID);
+                nActual.setAttribute("ui.class", MapAttribute.open.toString());
+
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                long time = timestamp.getTime();
+                nActual.setAttribute("timestamp", time);
             }
-            if (!alreadyIn) {
-                newnode.setAttribute("ui.label", newnode.getId());
-                newnode.setAttribute("ui.class", n.getNodeContent().toString());
-            } else {
-                newnode = this.g.getNode(n.getNodeId());
-                //3 check its attribute. If it is below the one received, update it.
-                if (((String) newnode.getAttribute("ui.class")) == MapAttribute.closed.toString() || n.getNodeContent().toString() == MapAttribute.closed.toString()) {
-                    newnode.setAttribute("ui.class", MapAttribute.closed.toString());
-                }
+
+            // si un des noeuds (reçu ou actuel) est fermé, le noeud reste fermé
+            if (nReceived.getNodeContent().toString().equals(MapAttribute.closed.toString()) || Objects.equals(nActual.getAttribute("ui.class").toString(), MapAttribute.closed.toString()) ) {
+                nActual.setAttribute("ui.class", MapAttribute.closed.toString());
+            }
+
+            // prendre le timestamp le plus récent
+            int comparaison = (nReceived.getNodeContent().get("timestamp").toString()).compareTo(nActual.getAttribute("timestamp").toString());
+            if (comparaison >= 0){
+                nActual.setAttribute("timestamp", nReceived.getNodeContent().get("timestamp").toString());
             }
         }
 
         //4 now that all nodes are added, we can add edges
-        for (SerializableNode<String, MapAttribute> n : sgreceived.getAllNodes()) {
+        for (SerializableNode<String, HashMap<String, Object>> n : sgreceived.getAllNodes()) {
             for (String s : sgreceived.getEdges(n.getNodeId())) {
                 addEdge(n.getNodeId(), s);
             }
         }
+
         System.out.println("Merge done");
     }
 
@@ -380,9 +394,10 @@ public class FullMapRepresentation implements Serializable {
 
     /*--------------------- Version optimisé ---------------------------*/
 
-    private void serializeGraphTopologyOptimum(SerializableSimpleGraph<String, MapAttribute> sgReceived) {
-        /* Retourne les noeuds et les aretes qui ne sont pas presents dans sgReceived mais present dans g */
-        this.sg = new SerializableSimpleGraph<String, MapAttribute>();
+    /*
+    private void serializeGraphTopologyOptimum(SerializableSimpleGraph<String, HashMap<String, Object>> sgReceived) {
+        // Retourne les noeuds et les aretes qui ne sont pas presents dans sgReceived mais present dans g
+        this.sg = new SerializableSimpleGraph<String, HashMap<String, Object>>();
         Iterator<Node> nodeSend = this.g.iterator();
         while (nodeSend.hasNext()) {    //on copie tous les noeuds du graphe
             Node node_g = nodeSend.next();
@@ -390,7 +405,7 @@ public class FullMapRepresentation implements Serializable {
             //On vérifie si le noeud n (qui est dans le graphe nommé g) est présent dans le graphe nommé sgReceived (le graphe d'un autre agent)
             // 		si oui, on fait rien
             // 		sinon, on ajoute le noeud n (et ses arcs) dans le graphe nommé sg (qui est le graphe qu'on envoit par message)
-            SerializableNode<String, MapAttribute> node_sgR = sgReceived.getNode(node_g.getId());
+            SerializableNode<String, HashMap<String, Object>> node_sgR = sgReceived.getNode(node_g.getId());
 
             if (node_sgR == null) { //on n'a pas trouver le noeud node_g dans sgReceived
 
@@ -413,10 +428,11 @@ public class FullMapRepresentation implements Serializable {
         //System.out.println("FIN : serializeGraphTopologyOptimum"+this.sg.getAllNodes());
     }
 
-    public synchronized SerializableSimpleGraph<String, MapAttribute> getSerializableGraphOptimum(SerializableSimpleGraph<String, MapAttribute> sgReceived) {
+
+    public synchronized SerializableSimpleGraph<String, HashMap<String, Object>> getSerializableGraphOptimum(SerializableSimpleGraph<String, HashMap<String, Object>> sgReceived) {
         serializeGraphTopologyOptimum(sgReceived);
         return this.sg;
     }
-
+    */
 
 }

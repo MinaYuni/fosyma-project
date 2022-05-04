@@ -436,11 +436,11 @@ public class Principal {
         ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM1);
         agentList.add(ag);
 
-//        agentName = "AgentFSM_2";
-//        Object[] entityParametersExploFSM2 = {"AgentFSM_1"};
-////        Object[] entityParametersExploFSM2 = {"AgentFSM_1", "AgentFSM_3"};
-//        ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM2);
-//        agentList.add(ag);
+        agentName = "AgentFSM_2";
+        Object[] entityParametersExploFSM2 = {"AgentFSM_1"};
+//        Object[] entityParametersExploFSM2 = {"AgentFSM_1", "AgentFSM_3"};
+        ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM2);
+        agentList.add(ag);
 
 //        agentName = "AgentFSM_3";
 //        Object[] entityParametersExploFSM3 = {"AgentFSM_1", "AgentFSM_2"};

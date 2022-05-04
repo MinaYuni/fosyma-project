@@ -1,34 +1,23 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 
+import eu.su.mas.dedaleEtu.mas.knowledge.FullMapRepresentation;
 import jade.core.behaviours.OneShotBehaviour;
 import eu.su.mas.dedaleEtu.mas.agents.fsm.FSMAgent;
 import jade.core.AID;
 
 import java.util.*;
-import java.io.IOException;
-import java.lang.Math;
 
 import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
-import jade.lang.acl.UnreadableException;
-import jade.lang.acl.UnreadableException;
 
-import dataStructures.serializableGraph.SerializableSimpleGraph;
-import dataStructures.tuple.Couple;
-
-import eu.su.mas.dedale.env.Observation;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
-import eu.su.mas.dedaleEtu.mas.agents.fsm.FSMAgent;
-import eu.su.mas.dedaleEtu.mas.behaviours.ShareMapBehaviour;
-import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
-import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 
 //Behaviours/comportement au state D : "Envoie ACK"
 public class StateSendACKFSMBehaviour extends OneShotBehaviour {
     private static final long serialVersionUID = 4567689731496787661L;
 
     private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
-    private MapRepresentation MyMap;
+    //private MapRepresentation MyMap;
+    private FullMapRepresentation MyFullMap;
     private int exitValue;
 
     public StateSendACKFSMBehaviour(final AbstractDedaleAgent myagent) {
@@ -41,7 +30,7 @@ public class StateSendACKFSMBehaviour extends OneShotBehaviour {
         System.out.println("\n--- START state D (StateSendACKFSMBehaviour): " + myName + " ---");
 
         // update information
-        this.MyMap = ((FSMAgent) this.myAgent).getMyMap();
+        this.MyFullMap = ((FSMAgent) this.myAgent).getMyFullMap();
         this.dictVoisinsMessages = ((FSMAgent) this.myAgent).getDictVoisinsMessages();
 
 //        try {

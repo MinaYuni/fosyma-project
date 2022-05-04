@@ -9,6 +9,8 @@ import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import jade.core.AID;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
+import jade.lang.acl.UnreadableException;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -34,6 +36,12 @@ public class StateRandomWalkFSMBehaviour extends OneShotBehaviour {
 
         System.out.println("\n--- START state G (StateRandomWalkFSMBehaviour): " + myName + " ---");
 
+        try {
+            this.myAgent.doWait(2000);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // update information
         this.myMap = ((FSMAgent) this.myAgent).getMyMap();
         //this.dictVoisinsMessages = ((FSMAgent) this.myAgent).getDictVoisinsMessages();
@@ -42,10 +50,15 @@ public class StateRandomWalkFSMBehaviour extends OneShotBehaviour {
         String myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
         System.out.println(myName + " [STATE G] -- myCurrentPosition is: " + myPosition);
 
+        HashMap<String, Integer> goldDict = this.myFullMap.getGoldDict();
+        HashMap<String, Integer> diamondDict = this.myFullMap.getDiamondDict();
+
+        System.out.println(myName + " [STATE G] -- goldDict: " + goldDict + " | diamondDict: " + diamondDict);
+
         if (myPosition != null) {
             // List of observable from the agent's current position
             List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
-            System.out.println(myName + " [STATE G] -- list of observables: " + lobs);
+            System.out.println(myName + " [STATE G] -- list of observables: " + lobs + " | listOpenNodes: " + this.myFullMap.getOpenNodes());
 
             // chose a random next node to go to
             Random r = new Random();
@@ -57,14 +70,13 @@ public class StateRandomWalkFSMBehaviour extends OneShotBehaviour {
 
         // ACTION : Envoyer sa carte à tous ses voisins
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-        msg.setProtocol("SHARE-MAP");
+        msg.setProtocol("FULL-MAP");
         msg.setSender(this.myAgent.getAID()); // mettre un expéditeur
 
         //Envoit sa carte (qui est complete) à tous les agents
         for (String receiverAgent : this.listAgentNames) {
             msg.addReceiver(new AID(receiverAgent, false));
-
-            System.out.println(myName + " [STATE G] sends MAP to " + receiverAgent);
+            System.out.println(myName + " [STATE G] will send MAP to " + receiverAgent);
         }
 
         // ajout de la carte de l'agent dans le message
@@ -79,7 +91,32 @@ public class StateRandomWalkFSMBehaviour extends OneShotBehaviour {
         // envoie en cours de la carte à tous les voisins
         ((AbstractDedaleAgent) this.myAgent).sendMessage(msg);
 
-        exitValue = 1; //reste au state G (RandomWalk)
+        // ACTION : Check si l'agent a reçu une carte
+        MessageTemplate msgMap = MessageTemplate.and(
+                MessageTemplate.MatchProtocol("FULL-MAP"),
+                MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+
+        ACLMessage msgMapReceived = this.myAgent.receive(msgMap);
+
+        if (msgMapReceived != null) { // si l'agent a reçu une MAP
+            System.out.println(myName + " [STATE G] received FULL-MAP");
+
+            SerializableSimpleGraph<String, HashMap<String, Object>> mapReceived = null;
+            SerializableSimpleGraph<String, HashMap<String, Object>> allInformation = null;
+
+            try {
+                allInformation = (SerializableSimpleGraph<String, HashMap<String, Object>>) msgMapReceived.getContentObject();
+                mapReceived = allInformation; // pour l'instant, on n'a qu'une carte, mais après on pourra envoyer d'autres informations
+            } catch (UnreadableException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            assert mapReceived != null;
+            this.myFullMap.mergeMap(mapReceived);
+        }
+
+        exitValue = 1; // reste au state G (Random Walk)
+        System.out.println(myName + " STAYS in G");
     }
 
     public int onEnd() {

@@ -5,12 +5,12 @@ import eu.su.mas.dedale.env.Observation;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.agents.fsm.FSMAgent;
 import eu.su.mas.dedaleEtu.mas.knowledge.FullMapRepresentation;
-import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import jade.core.AID;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -23,7 +23,7 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
     private List<String> listAgentNames;
     private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
     //private MapRepresentation myMap;
-    private FullMapRepresentation myMap;
+    private FullMapRepresentation myFullMap;
     private int exitValue;
 
     public StateFullExploFSMBehaviour(final AbstractDedaleAgent myagent) {
@@ -36,9 +36,15 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
         System.out.println("\n--- START state A (StateFullExploFSMBehaviour): " + myName + " ---");
 
         // update information
-        this.myMap = ((FSMAgent) this.myAgent).getMyFullMap();
+        this.myFullMap = ((FSMAgent) this.myAgent).getMyFullMap();
         this.dictVoisinsMessages = ((FSMAgent) this.myAgent).getDictVoisinsMessages();
         this.listAgentNames = ((FSMAgent) this.myAgent).getListAgentNames();
+
+//        try {
+//            this.myAgent.doWait(1000);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
         // 0) Retrieve the current position
         String myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
@@ -48,11 +54,11 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
 
             // list of observable from the agent's current position
             List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
-            System.out.println(myName + " [STATE A] -- lobs: " + lobs);
+            //System.out.println(myName + " [STATE A] -- lobs: " + lobs);
 
             // list of observations associated to the currentPosition
             List<Couple<Observation, Integer>> lObservations = lobs.get(0).getRight();
-            System.out.println(myName + " [STATE A] -- lObservations: " + lObservations);
+            //System.out.println(myName + " [STATE A] -- lObservations: " + lObservations);
 
             for (Couple<Observation, Integer> o : lObservations) {
                 System.out.println(myName + " [STATE A] -- obs: " + o);
@@ -61,59 +67,57 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
                         System.out.println(myName + " [STATE A] -- My treasure type: " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
                         System.out.println(myName + " [STATE A] -- My current backpack capacity:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
                         System.out.println(myName + " [STATE A] -- Value of the treasure on the current position: " + o.getLeft() + " - " + o.getRight());
-                        System.out.println(myName + " [STATE A] -- The agent grabbed: " + ((AbstractDedaleAgent) this.myAgent).pick());
-                        System.out.println(myName + " [STATE A] -- The remaining backpack capacity: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
+                        //System.out.println(myName + " [STATE A] -- The agent grabbed: " + ((AbstractDedaleAgent) this.myAgent).pick());
+                        //System.out.println(myName + " [STATE A] -- The remaining backpack capacity: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
                     case GOLD:
                         System.out.println(myName + " [STATE A] -- My treasure type: " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
                         System.out.println(myName + " [STATE A] -- My current backpack capacity:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
                         System.out.println(myName + " [STATE A] -- Value of the treasure on the current position: " + o.getLeft() + " - " + o.getRight());
-                        System.out.println(myName + " [STATE A] -- The agent grabbed: " + ((AbstractDedaleAgent) this.myAgent).pick());
-                        System.out.println(myName + " [STATE A] -- The remaining backpack capacity: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
+                        //System.out.println(myName + " [STATE A] -- The agent grabbed: " + ((AbstractDedaleAgent) this.myAgent).pick());
+                        //System.out.println(myName + " [STATE A] -- The remaining backpack capacity: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
                     case STENCH:
                         System.out.println(myName + " [STATE A] -- STENCH");
+                    default:
+                        break;
                 }
             }
 
-            try {
-                this.myAgent.doWait(500);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
             // 1) remove the current node from openlist and add it to closedNodes
-            this.myMap.addNode(myPosition, FullMapRepresentation.MapAttribute.closed, lObservations);
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            long time = timestamp.getTime();
+            this.myFullMap.addNode(myPosition, FullMapRepresentation.MapAttribute.closed, lObservations, time);
 
             // 2) get the surrounding nodes and, if not in closedNodes, add them to open nodes
             String nextNode = null;
             for (Couple<String, List<Couple<Observation, Integer>>> lob : lobs) {
                 String nodeId = lob.getLeft();
-                boolean isNewNode = this.myMap.addNewNode(nodeId, lob.getRight());
+                boolean isNewNode = this.myFullMap.addNewNode(nodeId, lob.getRight(), time);
                 // the node may exist, but not necessarily the edge
                 if (!myPosition.equals(nodeId)) {
-                    this.myMap.addEdge(myPosition, nodeId);
+                    this.myFullMap.addEdge(myPosition, nodeId);
                     if (nextNode == null && isNewNode) nextNode = nodeId;
                 }
             }
 
             //3) while openNodes is not empty, continues
-            if (!this.myMap.hasOpenNode()) { // si exploration finie
-                exitValue = 3; // aller en G : "Random Walk"
+            if (!this.myFullMap.hasOpenNode()) { // si exploration finie
+                exitValue = 2; // aller en G : "Random Walk"
                 System.out.println(myName + " [STATE A] - Exploration successfully done");
-                System.out.println(myName + " CHANGES A to G : random walk");
+                System.out.println(myName + " CHANGES A to G : ranwom walk");
             } else {
                 // 3.1) Select next move
                 // there exist one open node directly reachable, go for it,
                 // otherwise choose one from the openNode list, compute the shortestPath and go for it
                 if (nextNode == null) { // if no directly accessible openNode
                     // chose one, compute the path and take the first step
-                    nextNode = this.myMap.getShortestPathToClosestOpenNode(myPosition).get(0); //getShortestPath(myPosition,this.openNodes.get(0)).get(0);
-                    System.out.println(myName + " - currentPosition: " + myPosition + " -- list= " + this.myMap.getOpenNodes() + " | nextNode: " + nextNode);
+                    nextNode = this.myFullMap.getShortestPathToClosestOpenNode(myPosition).get(0); //getShortestPath(myPosition,this.openNodes.get(0)).get(0);
+                    System.out.println(myName + " - currentPosition: " + myPosition + " -- list= " + this.myFullMap.getOpenNodes() + " | nextNode: " + nextNode);
                 } else {
-                    System.out.println("nextNode notNUll - " + myName + " -- list= " + this.myMap.getOpenNodes() + " | nextNode: " + nextNode);
+                    System.out.println("nextNode notNUll - " + myName + " -- list= " + this.myFullMap.getOpenNodes() + " | nextNode: " + nextNode);
                 }
 
                 // MAJ MAP
-                ((FSMAgent) this.myAgent).setMyFullMap(this.myMap);
+                ((FSMAgent) this.myAgent).setMyFullMap(this.myFullMap);
 
                 // 3.2) ACTION : envoie un PING à tout le monde à chaque déplacement
                 ACLMessage msg = new ACLMessage(ACLMessage.INFORM);

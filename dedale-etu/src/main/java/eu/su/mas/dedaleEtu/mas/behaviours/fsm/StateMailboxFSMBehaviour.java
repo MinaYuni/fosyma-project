@@ -1,5 +1,6 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 
+import eu.su.mas.dedaleEtu.mas.knowledge.FullMapRepresentation;
 import jade.core.behaviours.OneShotBehaviour;
 import eu.su.mas.dedaleEtu.mas.agents.fsm.FSMAgent;
 
@@ -12,8 +13,6 @@ import jade.lang.acl.UnreadableException;
 import dataStructures.serializableGraph.SerializableSimpleGraph;
 
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
-import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
-import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 
 
 //Behaviours/comportement au state C
@@ -21,7 +20,8 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
     private static final long serialVersionUID = 3567689731496787661L;
     private final int timerMax = 10; // temps max d'attente
     private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
-    private MapRepresentation MyMap;
+    //private MapRepresentation MyMap;
+    private FullMapRepresentation myFullMap;
     private int timerACK = 0;
     private int timerMAP = 0;
     private int exitValue;
@@ -37,7 +37,7 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
         System.out.println("\n--- START state C (StateMailboxFSMBehaviour): " + myName + " ---");
 
         // update information
-        this.MyMap = ((FSMAgent) this.myAgent).getMyMap();
+        this.myFullMap = ((FSMAgent) this.myAgent).getMyFullMap();
         this.dictVoisinsMessages = ((FSMAgent) this.myAgent).getDictVoisinsMessages();
 
 //        try {
@@ -94,18 +94,18 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 
             String nameExpediteur = msgMapReceived.getSender().getLocalName();
 
-            SerializableSimpleGraph<String, MapAttribute> mapReceived = null;
-            SerializableSimpleGraph<String, MapAttribute> allInformation = null;
+            SerializableSimpleGraph<String, HashMap<String, Object>> mapReceived = null;
+            SerializableSimpleGraph<String, HashMap<String, Object>> allInformation = null;
 
             try {
-                allInformation = (SerializableSimpleGraph<String, MapAttribute>) msgMapReceived.getContentObject();
+                allInformation = (SerializableSimpleGraph<String, HashMap<String, Object>>) msgMapReceived.getContentObject();
                 mapReceived = allInformation; // pour l'instant, on n'a qu'une carte, mais après on pourra envoyer d'autres informations
             } catch (UnreadableException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             assert mapReceived != null;
-            this.MyMap.mergeMap(mapReceived);
+            this.myFullMap.mergeMap(mapReceived);
 
             // update de l'action "recoit_MAP"
             ((FSMAgent) this.myAgent).setDictVoisinsMessagesAgentAction(nameExpediteur, "recoit_MAP", true);
@@ -156,16 +156,16 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
                 exitValue = 3; // aller en A : l'agent continue l'exploration
                 System.out.println(myName + " CHANGES C to A: continue exploration");
 
-            } else if (this.timerACK >= this.timerMax) {
+            } else if (this.timerACK == this.timerMax) {
                 System.out.println(myName + " [STATE C] - TIMER ACK END");
                 exitValue = 4; // aller en B : renvoyer sa carte
-                this.timerACK = 0;
                 System.out.println(myName + " CHANGES C to B: re-sending MAP");
             }
             else if (this.timerMAP >= this.timerMax) {
                 System.out.println(myName + " [STATE C] - TIMER MAP END");
                 exitValue = 3; // aller en A : l'agent continue l'exploration
                 this.timerMAP = 0;
+                this.timerACK = 0;
                 ((FSMAgent) this.myAgent).resetDictVoisinsMessages();
                 System.out.println(myName + " CHANGES C to A: continue exploration");
             }
