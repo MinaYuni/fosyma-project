@@ -48,7 +48,8 @@ public final class ConfigurationFile {
     /*
      * The environment is either manually designed, or generated with a specific generator
      */
-    public static GeneratorType GENERATOR_TYPE = GeneratorType.MANUAL;
+    //public static GeneratorType GENERATOR_TYPE = GeneratorType.MANUAL;
+    public static GeneratorType GENERATOR_TYPE = GeneratorType.GS_GRID;
 
     /*
      * 	The GateKeeper is in charge of the Platform and of the agents within, do not change its name.
@@ -102,7 +103,7 @@ public final class ConfigurationFile {
     /*
      * Size of the generated environment, mandatory
      */
-    public static Integer ENVIRONMENT_SIZE = 5;
+    public static Integer ENVIRONMENT_SIZE = 10;
 
     // Parameters required for some generators (see dedale.gitlab.io)
     public static Integer OPTIONAL_ADDITIONAL_ENVGENERATOR_PARAM1 = 1; // used by the BARABASI_ALBERT generator to know the number of childs
@@ -137,11 +138,12 @@ public final class ConfigurationFile {
      */
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = null;
 
-    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentExploCoop";
-//    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentCollectCoop";
-//    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentExploCollect";
-//    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentCollect";
+//    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentExplo";
+//    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentExplo-2";
+    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentExplo-3";
+//    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentCollect-2";
 
+//    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentCollect";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentExplo";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentExplo-2";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentExploCoop-2";

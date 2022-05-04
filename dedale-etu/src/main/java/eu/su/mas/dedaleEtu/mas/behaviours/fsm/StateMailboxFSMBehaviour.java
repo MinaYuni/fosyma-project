@@ -1,6 +1,8 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
+
 import jade.core.behaviours.OneShotBehaviour;
 import eu.su.mas.dedaleEtu.mas.agents.fsm.FSMAgent;
+
 import java.util.*;
 
 import jade.lang.acl.ACLMessage;
@@ -16,26 +18,23 @@ import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 
 //Behaviours/comportement au state C
 public class StateMailboxFSMBehaviour extends OneShotBehaviour {
-	private static final long serialVersionUID = 3567689731496787661L;
+    private static final long serialVersionUID = 3567689731496787661L;
+    private final int timerMax = 10; // temps max d'attente
+    private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
+    private MapRepresentation MyMap;
+    private int timerACK = 0;
+    private int timerMAP = 0;
+    private int exitValue;
 
-	private MapRepresentation myMap;
-	private List<String> list_agentNames;
-	private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
-	private int exitValue;
-	
-	public StateMailboxFSMBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap, List<String> agentNames, HashMap<String, HashMap<String, Boolean>> dico ) {
-		super(myagent);
-		this.myMap=myMap;
-		this.list_agentNames=agentNames;
-		this.dictVoisinsMessages = dico;
-	}
-	
-	public void action() {
-		exitValue = -1;
-		int nb_agents = this.list_agentNames.size();
-		String myName = this.myAgent.getLocalName();
+    public StateMailboxFSMBehaviour(final AbstractDedaleAgent myagent) {
+        super(myagent);
+    }
 
-		System.out.println("\n-- START state C (StateMailboxFSMBehaviour): " + myName + " starts state C --");
+    public void action() {
+        exitValue = -1;
+        String myName = this.myAgent.getLocalName();
+
+        System.out.println("\n-- START state C (StateMailboxFSMBehaviour): " + myName + " starts state C --");
 
 		// update information
 		if (this.myMap==null){
@@ -43,111 +42,139 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
 		}
 		this.dictVoisinsMessages = ((FSMAgent)this.myAgent).getDictVoisinsMessages();
 
-		// 1) ACTION : Check si l'agent a reçu un ping d'un nouveau voisin
-		MessageTemplate msgPing = MessageTemplate.and(
-				MessageTemplate.MatchProtocol("PING"),
-				MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-		
-		ACLMessage msgPingReceived = this.myAgent.receive(msgPing);
-		
-		if (msgPingReceived != null) {
-			System.out.println("STATE C : " + myName + " received PING");
-			exitValue = 4; // aller en B : "Envoie MAP"
-			System.out.println("-CHANGE C to B (StateSendMapFSMBehaviour): " + myName + " goes to state B ");
-		}
-		
-		// 2) ACTION : check si l'agent a reçu un ACK (de la carte qu'il a envoyé) de ses voisins 
-		MessageTemplate msgACK = MessageTemplate.and(
-				MessageTemplate.MatchProtocol("ACK-MAP"),
-				MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-		
-		ACLMessage msgACKMapReceived = this.myAgent.receive(msgACK);
-		
-		if (msgACKMapReceived != null && exitValue == -1) { // si l'agent a reçu un ACK-MAP et il n'a rien à faire
-			System.out.println("STATE C : " + myName + " received ACK");
+        // 1) ACTION : Check si l'agent a reçu un ping d'un nouveau voisin
+        MessageTemplate msgPing = MessageTemplate.and(
+                MessageTemplate.MatchProtocol("PING"),
+                MessageTemplate.MatchPerformative(ACLMessage.INFORM));
 
-			// Garde en memoire du ACK reçu
-			// MAJ dict_voisins : on change etat "recoit_ACK1" de l'agent par rapport a Expediteur
-			// 		=> on recupère le dico etat, puis on le met à TRUE avec key : "recoit_ACK"
+        ACLMessage msgPingReceived = this.myAgent.receive(msgPing);
 
-			String nameExpediteur = msgACKMapReceived.getSender().getLocalName(); // on récupère l'envoyeur du message (chaine de caractères)
-			HashMap<String, Boolean> etat = this.dictVoisinsMessages.get(nameExpediteur); // dico des actions de agent par rapport à l'expéditeur
-			String key = "recoit_ACK";
-			etat.put(key, true); // on met VRAI pour l'action "recoit_carte" (elle crée la clé avec value=TRUE ou update la value à TRUE)
+        if (msgPingReceived != null) {
+            System.out.println("STATE C : " + myName + " received PING");
 
-			// on a modifié le dico etat => utiliser la methode 'setDictVoisinsMessagesAgent' pour udapte !
-			((FSMAgent)this.myAgent).setDictVoisinsMessagesAgent(nameExpediteur, etat);
-		}
+            String namePingReceived = msgPingReceived.getSender().getLocalName();
 
-		// 3) ACTION : Check si l'agent a reçu une carte de ses voisins
-		MessageTemplate msgMap = MessageTemplate.and(
-				MessageTemplate.MatchProtocol("SHARE-MAP"),
-				MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+            ((FSMAgent) this.myAgent).setDictVoisinsMessagesAgentAction(namePingReceived, "recoit_PING", true);
 
-		ACLMessage msgMapReceived = this.myAgent.receive(msgMap);
+            exitValue = 4; // aller en B : "Envoie MAP"
+            System.out.println("-CHANGE C to B (StateSendMapFSMBehaviour): " + myName + " goes to state B ");
+        }
 
-		if (msgMapReceived != null && exitValue == -1) { // si l'agent a reçu une MAP et il n'a rien à faire
-			System.out.println("STATE C : " + myName + " received MAP");
+        // 2) ACTION : check si l'agent a reçu un ACK de ses voisins pour la carte qu'il a envoyé
+        MessageTemplate msgACK = MessageTemplate.and(
+                MessageTemplate.MatchProtocol("ACK-MAP"),
+                MessageTemplate.MatchPerformative(ACLMessage.INFORM));
 
-			SerializableSimpleGraph<String, MapAttribute> mapReceived = null;
-			SerializableSimpleGraph<String, MapAttribute> allInformation = null;
-			try {
-				allInformation = (SerializableSimpleGraph<String, MapAttribute>) msgMapReceived.getContentObject();
-				mapReceived = allInformation; // pour l'instant, on n'a qu'une carte, mais après on pourra envoyer d'autres informations
-			} catch (UnreadableException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			assert mapReceived != null;
-			this.myMap.mergeMap(mapReceived);
+        ACLMessage msgACKMapReceived = this.myAgent.receive(msgACK);
 
-			// MAJ dict_voisins : on change etat "recoit_carte" de l'agent par rapport à l'expéditeur
-			String nameExpediteur = msgMapReceived.getSender().getLocalName(); //au state B, on a mis le nom dans message avec 'setContent'
-			HashMap <String, Boolean> etat = this.dictVoisinsMessages.get(nameExpediteur); //dico des actions de l'agent par rapport a Expediteur
-			String key = "recoit_carte";
-			etat.put(key,true); //met VRAI pour action "recoit_carte" (elle cree la cle avec value=TRUE ou update la value a TRUE)
+        if (msgACKMapReceived != null) { // si l'agent a reçu un ACK-MAP
+            System.out.println("STATE C : " + myName + " received ACK");
 
-			// on a modifié le dico etat => utilise la methode 'setDictVoisinsMessagesAgent' pour udapte !
-			((FSMAgent)this.myAgent).setDictVoisinsMessagesAgent(nameExpediteur, etat);
+            String nameExpediteur = msgACKMapReceived.getSender().getLocalName(); // on récupère l'envoyeur du message (chaine de caractères)
 
-			exitValue = 2; // aller en D : "Envoie ACK"
-			System.out.println("-CHANGE C to D (StateSendACKFSMBehaviour): " + myName + " goes to state D ");
-		}
+            // update de l'action "recoit_ACK"
+            ((FSMAgent) this.myAgent).setDictVoisinsMessagesAgentAction(nameExpediteur, "recoit_ACK", true);
+        } else {
+            timerACK++;
+        }
 
-		// 4) Vérification si l'agent a reçu tous les ACK de la carte qu'il a envoyé
-		String key = "recoit_ACK";
-		boolean haveAllACK = false; // on part du principe qu'il a reçu 0 ACK (mais du coup il faudra ajouter un timer sinon il risque d'attendre à l'infini)
-		Set<String> setOfKeys = this.dictVoisinsMessages.keySet(); // on recupère toutes les clés (les noms des voisins)
+        // 3) ACTION : Check si l'agent a reçu une carte de ses voisins
+        MessageTemplate msgMap = MessageTemplate.and(
+                MessageTemplate.MatchProtocol("SHARE-MAP"),
+                MessageTemplate.MatchPerformative(ACLMessage.INFORM));
 
-        for(String nameNeighbor: setOfKeys){	
-			HashMap<String, Boolean> etat = this.dictVoisinsMessages.get(nameNeighbor); //dico des actions de l'agent par rapport a son voisin nameNeighbor
-			//System.out.println("STATE C (step 4): " + this.myAgent.getLocalName()+", etat: " + etat.get(key));
+        ACLMessage msgMapReceived = this.myAgent.receive(msgMap);
 
-			if (etat.get(key) != null) { // peut être null si l'agent n'a jamais envoyé de ACK
-				if (! etat.get(key)){ // il n'a pas reçu de ACK venant de l'agent nameNeighbor
-					haveAllACK = false; // donc il existe un agent dont on n'a pas reçu de ACK
-					break;
-				} else {
-					haveAllACK = true;
-				}
-			}
-		}
+        if (msgMapReceived != null && exitValue == -1) { // si l'agent a reçu une MAP et il n'a rien à faire
+            System.out.println("STATE C : " + myName + " received MAP");
 
-		if (exitValue == -1) { // si l'agent n'a rien à faire
-			if (haveAllACK) {  // si l'agent a reçu tous les ACK, alors il va en state A
-				exitValue = 3; // aller en A : "Exploration" (l'agent a reçu tous les ACK donc il continue son exploration)
-				System.out.println("-CHANGE C to A (StateExploFSMBehaviour): " + myName + " goes to state A");
+            String nameExpediteur = msgMapReceived.getSender().getLocalName();
 
-			} else { // sinon il existe un agent dont on n'a pas reçu de ACK, alors on reste au state C pour attendre son ACK
-				exitValue = 1; // rester en C
-				System.out.println("-STAY in state C (StateMailboxFSMBehaviour): " + myName + " reminds in state C");
-			}
-		}
+            SerializableSimpleGraph<String, MapAttribute> mapReceived = null;
+            SerializableSimpleGraph<String, MapAttribute> allInformation = null;
 
-		System.out.println("STATE C : " + myName + ", EXIT VALUE: " + exitValue);
-	}
+            try {
+                allInformation = (SerializableSimpleGraph<String, MapAttribute>) msgMapReceived.getContentObject();
+                mapReceived = allInformation; // pour l'instant, on n'a qu'une carte, mais après on pourra envoyer d'autres informations
+            } catch (UnreadableException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            assert mapReceived != null;
+            this.MyMap.mergeMap(mapReceived);
 
-	public int onEnd() {
-		return exitValue;
-	}
+            // update de l'action "recoit_MAP"
+            ((FSMAgent) this.myAgent).setDictVoisinsMessagesAgentAction(nameExpediteur, "recoit_MAP", true);
+
+            exitValue = 2; // aller en D : "Envoie ACK"
+            System.out.println("-CHANGE C to D (StateSendACKFSMBehaviour): " + myName + " goes to state D ");
+        } else {
+            timerMAP++;
+        }
+
+        // on récupère toutes les clés (les noms des voisins)
+        Set<String> voisins = this.dictVoisinsMessages.keySet();
+
+        // 4) Vérification si l'agent a fait toutes les actions
+        int nb_voisins = voisins.size();
+
+        int cptACKreceived = 0;
+        int cptACKsend = 0;
+        int cptMAPreceived = 0;
+        int cptMAPsend = 0;
+
+        for (String nameNeighbor : voisins) {
+            HashMap<String, Boolean> etat = this.dictVoisinsMessages.get(nameNeighbor); // dico des actions de l'agent par rapport à son voisin nameNeighbor
+
+            // vérification de la réception de l'ACK pour nameNeighbor
+            if (etat.get("recoit_ACK")) {
+                cptACKreceived++;
+            }
+
+            // vérification de l'envoie de l'ACK pour nameNeighbor
+            if (etat.get("envoie_ACK")) {
+                cptACKsend++;
+            }
+
+            // vérification de la réception de la MAP pour nameNeighbor
+            if (etat.get("recoit_MAP")) {
+                cptMAPreceived++;
+            }
+
+            // vérification de l'envoie de la MAP pour nameNeighbor
+            if (etat.get("envoie_MAP")) {
+                cptMAPsend++;
+            }
+        }
+
+        if (exitValue == -1) { // si l'agent n'a rien à faire
+            if (cptACKreceived == nb_voisins && cptACKsend == nb_voisins && cptMAPreceived == nb_voisins && cptMAPsend == nb_voisins) {
+                exitValue = 3; // aller en A : l'agent continue l'exploration
+                System.out.println("-CHANGE C to A (StateExploFSMBehaviour): " + myName + " goes to state A");
+
+            } else if (this.timerACK >= this.timerMax) {
+                System.out.println("STATE C: " + myName + " TIMER ACK END");
+                exitValue = 4; // aller en B : renvoyer sa carte
+                this.timerACK = 0;
+                System.out.println("-CHANGE C to B (StateExploFSMBehaviour): " + myName + " goes to state B");
+            }
+            else if (this.timerMAP >= this.timerMax) {
+                System.out.println("STATE C: " + myName + " TIMER MAP END");
+                exitValue = 3; // aller en A : l'agent continue l'exploration
+                this.timerMAP = 0;
+                ((FSMAgent) this.myAgent).resetDictVoisinsMessages();
+                System.out.println("-CHANGE C to A (StateExploFSMBehaviour): " + myName + " goes to state A");
+            }
+            else { // sinon il existe un agent dont on n'a pas reçu de ACK, alors on reste au state C pour attendre son ACK
+                exitValue = 1; // rester en C
+                System.out.println("-STAY in state C (StateMailboxFSMBehaviour): " + myName + " reminds in state C | timerACK: " + this.timerACK + " -- timerMAP: " + this.timerMAP);
+            }
+        }
+
+        System.out.println("STATE C : " + myName + ", EXIT VALUE: " + exitValue);
+    }
+
+    public int onEnd() {
+        return exitValue;
+    }
 }

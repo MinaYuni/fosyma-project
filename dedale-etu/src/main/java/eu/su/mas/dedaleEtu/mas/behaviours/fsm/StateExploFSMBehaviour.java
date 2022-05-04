@@ -22,40 +22,36 @@ import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 // Behaviour/comportement du state A (exploration)
 public class StateExploFSMBehaviour extends OneShotBehaviour {
     private static final long serialVersionUID = 1567689731496787661L;
-    private final List<String> list_agentNames;
+
+    private List<String> listAgentNames;
     private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
     private MapRepresentation myMap;
     private int exitValue;
 
-    public StateExploFSMBehaviour(final AbstractDedaleAgent myagent, MapRepresentation myMap, List<String> agentNames, HashMap<String, HashMap<String, Boolean>> dico) {
+    public StateExploFSMBehaviour(final AbstractDedaleAgent myagent) {
         super(myagent);
-        this.myMap = myMap;
-        this.list_agentNames = agentNames;
-        this.dictVoisinsMessages = dico;
     }
 
     public void action() {
-        int nb_agents = this.list_agentNames.size();
         String myName = this.myAgent.getLocalName();
 
         System.out.println("\n-- START state A (StateExploFSMBehaviour): " + myName + " starts exploration --");
 
         // update information
-        if (this.myMap == null) {
-            this.myMap = new MapRepresentation();
-        }
+        this.myMap = ((FSMAgent) this.myAgent).getMyMap();
         this.dictVoisinsMessages = ((FSMAgent) this.myAgent).getDictVoisinsMessages();
 
         // 0) Retrieve the current position
         String myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
-        //System.out.println("agent in position "+ myPosition);
 
         if (myPosition != null) {
+            //System.out.println("STATE A : " + myName + " - currentPosition: " + myPosition);
+
             // list of observable from the agent's current position
-            List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); //myPosition
+            List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
 
             try {
-                this.myAgent.doWait(1000);
+                this.myAgent.doWait(500);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -81,7 +77,6 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 System.out.println(myName + " - Exploration successfully done");
                 System.out.println("-END state A (StateExploFSMBehaviour): " + myName + " finished exploring, goes to state F");
             } else {
-
                 // 3.1) Select next move
                 // there exist one open node directly reachable, go for it,
                 // otherwise choose one from the openNode list, compute the shortestPath and go for it
@@ -93,14 +88,17 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                     System.out.println("nextNode notNUll - " + myName + " -- list= " + this.myMap.getOpenNodes() + " | nextNode: " + nextNode);
                 }
 
-                // 3.2) ACTION : envoie PING à chaque déplacement
+                // MAJ MAP
+                ((FSMAgent) this.myAgent).setMyMap(this.myMap);
+
+                // 3.2) ACTION : envoie un PING à tout le monde à chaque déplacement
                 ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
                 msg.setProtocol("PING");
                 //msg.setContent(myName); // mettre son nom dans le ping envoyé
-                msg.setSender(this.myAgent.getAID()); // mettre une expéditeur au message
+                msg.setSender(this.myAgent.getAID()); // mettre un expéditeur au message
 
-                // ajout des destinataires du ping (tous les autres agents, sauf moi_meme)
-                for (String receiverAgent : this.list_agentNames) { // PROBLEME : quand un autre agent meurt => il y a une boucle infinie
+                // ajout des destinataires du ping (tous les autres agents, sauf moi-meme)
+                for (String receiverAgent : this.listAgentNames) { // PROBLEME : quand un autre agent meurt => il y a une boucle infinie
                     if (!Objects.equals(myName, receiverAgent)) { // si ce n'est pas moi
                         System.out.println("STATE A : " + myName + " will send msg to " + receiverAgent);
                         msg.addReceiver(new AID(receiverAgent, false)); // on met un receveur au message
@@ -117,33 +115,22 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                         MessageTemplate.MatchPerformative(ACLMessage.INFORM));
 
                 ACLMessage msgPingReceived = this.myAgent.receive(msgPing);
+
                 // si reception PING, aller en B (envoyer sa carte),
                 // sinon continuer déplacement
-                if (msgPingReceived != null) { // réception PING, donc un autre agent est à proximité, donc MàJ dict_voisins de l'agent
+                if (msgPingReceived != null) { // réception PING, donc un autre agent est à proximité
                     System.out.println("STATE A : " + myName + " received PING");
 
-                    // ajouter le voisin au dico (voir type de list_voisin dans FSMAgent.java)
-                    String namePingReceived = msgPingReceived.getSender().getLocalName(); // récupérer le nom du voisin (nom donnée dans le message du ping reçu)
+                    String namePingReceived = msgPingReceived.getSender().getLocalName();
+                    ((FSMAgent) this.myAgent).setDictVoisinsMessagesAgentAction(namePingReceived, "recoit_PING", true);
 
-                    // si l'agent n'a pas encore rencontré l'envoyeur du ping, il est ajouté dans le dictionnaire (dict_voisins)
-                    if (!this.dictVoisinsMessages.containsKey(namePingReceived)) { //
-                        HashMap<String, Boolean> etat = new HashMap<String, Boolean>();
-                        // état de l'agent par rapport à l'envoyeur du ping : dico est vide car il n'a rien fait (on peut aussi tout initialiser à False)
-
-                        // ajout de l'envoyeur et son état dans le dico des voisins
-                        this.dictVoisinsMessages.put(namePingReceived, etat);
-                        // on a modifié le dico dictVoisinsMessages => utiliser la methode 'setDictVoisinsMessages' pour udapte !
-                        ((FSMAgent) this.myAgent).setDictVoisinsMessages(this.dictVoisinsMessages);
-                    }
-
-                    // MAJ MAP
-                    ((FSMAgent) this.myAgent).setMyMap(this.myMap);
+                    // ancien emplacement de ((FSMAgent) this.myAgent).setMyMap(this.myMap);
 
                     exitValue = 1; // aller en B : "Envoie carte"
-                    //this.myAgent.setMyMap(this.myMap);
                     System.out.println("-CHANGE A to B (StateSendMapFSMBehaviour): " + myName + " goes to state B (send MAP)");
 
                 } else { // pas reçu de PING, donc continuer à avancer dans la map
+                    ((FSMAgent) this.myAgent).resetDictVoisinsMessages();
                     ((AbstractDedaleAgent) this.myAgent).moveTo(nextNode);
                 }
             }
