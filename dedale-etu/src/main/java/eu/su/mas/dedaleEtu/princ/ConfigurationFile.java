@@ -148,7 +148,9 @@ public final class ConfigurationFile {
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentCollect-Wumpus";
 
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentCollect";
-    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentCollect-2";
+//    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentCollect-2";
+    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/wumpus";
+
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentExplo";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentExplo-2";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentExploCoop-2";
