@@ -416,10 +416,10 @@ public class FullMapRepresentation implements Serializable {
             }
         }
 
-        //4 now that all nodes are added, we can add edges
-        for (SerializableNode<String, HashMap<String, Object>> n : sgreceived.getAllNodes()) {
-            for (String s : sgreceived.getEdges(n.getNodeId())) {
-                addEdge(n.getNodeId(), s);
+        //now that all nodes are added, we can add edges
+        for (SerializableNode<String, HashMap<String, Object>> nReceived: sgreceived.getAllNodes()) {
+            for (String s : sgreceived.getEdges(nReceived.getNodeId())) {
+                addEdge(nReceived.getNodeId(), s);
             }
         }
 
