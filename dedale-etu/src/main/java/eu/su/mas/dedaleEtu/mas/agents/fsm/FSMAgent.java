@@ -16,6 +16,9 @@ import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.FSMBehaviour;
 
+//import javax.json.*;
+//import org.json.*;
+
 // Repartition des ressources de manière équitable : max du min ou indice de Gini
 
 public class FSMAgent extends AbstractDedaleAgent {
@@ -85,6 +88,8 @@ public class FSMAgent extends AbstractDedaleAgent {
     private MapRepresentation myMap;
     private FullMapRepresentation myFullMap;
     private List<String> listAgentNames = new ArrayList<String>();
+    private int valeurMin; //min v_i où v_i est la quantité récoltée par l'agent i
+    private int valeurMax; //max v_i où v_i est la quantité récoltée par l'agent i
 
     protected void setup() {
         super.setup();
@@ -258,6 +263,27 @@ public class FSMAgent extends AbstractDedaleAgent {
     public HashMap<String, List<Couple<Observation,Integer>>> getDictBackpack() {
         return this.dictBackpack;
     }
+    public void setDictBackpack(HashMap<String, List<Couple<Observation,Integer>>> dico) {
+        this.dictBackpack=dico;
+    }
+
+    public List<Couple<Observation,Integer>> getDictBackpackAgent(String agent) {
+        return (this.dictBackpack).get(agent);
+    }
+
+    public void setDictBackpackAgent(String agent, List<Couple<Observation,Integer>> listCapacity) {
+         this.dictBackpack.put(agent, listCapacity);
+    }
 
 
+    public int getValeurMin() {
+        return this.valeurMin;
+    }
+    public void setValeurMin(int v) {
+        this.valeurMin = v ;
+    }
+
+    //public void updateDictBackPath(JSONObject jsonObject) {
+
+    //}
 }

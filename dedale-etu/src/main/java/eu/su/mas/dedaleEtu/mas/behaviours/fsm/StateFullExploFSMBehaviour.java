@@ -122,8 +122,8 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
                 // 3.2) ACTION : envoie un PING à tout le monde à chaque déplacement
                 ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
                 msg.setProtocol("PING");
-                //msg.setContent(myName); // mettre son nom dans le ping envoyé
                 msg.setSender(this.myAgent.getAID()); // mettre un expéditeur au message
+                //msg.setContent(myName); // mettre son nom dans le ping envoyé
 
                 // ajout des destinataires du ping (tous les autres agents, sauf moi-meme)
                 for (String receiverAgent : this.listAgentNames) { // PROBLEME : quand un autre agent meurt => il y a une boucle infinie
