@@ -10,6 +10,7 @@ import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import org.graphstream.algorithm.Dijkstra;
 import org.graphstream.graph.*;
 import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.stream.file.FileSourceGraphML;
 import org.graphstream.ui.fx_viewer.FxViewer;
 import org.graphstream.ui.view.Viewer;
 
@@ -32,17 +33,17 @@ public class FullMapRepresentation implements Serializable {
      * Parameters for graph rendering
      ********************************/
 
-    private String defaultNodeStyle = "node {" + "fill-color: black;" + " size-mode:fit;text-alignment:under; text-size:14;text-color:white;text-background-mode:rounded-box;text-background-color:black;}";
-    private String nodeStyle_open = "node.agent {" + "fill-color: forestgreen;" + "}";
-    private String nodeStyle_agent = "node.open {" + "fill-color: red;" + "}";
-    private String nodeStyle = defaultNodeStyle + nodeStyle_agent + nodeStyle_open;
+    private final String defaultNodeStyle = "node {" + "fill-color: black;" + " size-mode:fit;text-alignment:under; text-size:14;text-color:white;text-background-mode:rounded-box;text-background-color:black;}";
+    private final String nodeStyle_agent = "node.agent {" + "fill-color: green;" + "}";
+    private final String nodeStyle_open = "node.open {" + "fill-color: red;" + "}";
+    private final String nodeStyle = defaultNodeStyle + nodeStyle_agent + nodeStyle_open;
     private Graph g; //data structure non serializable
     private Viewer viewer; //ref to the display,  non serializable
     private Integer nbEdges;//used to generate the edges ids
     private Integer nbNodes;
     private SerializableSimpleGraph<String, HashMap<String, Object>> sg;//used as a temporary dataStructure during migration
-    private HashMap<String, Integer> goldDict = new HashMap<String, Integer>(); // key: nodeId, value: quantité d'or
-    private HashMap<String, Integer> diamondDict = new HashMap<String, Integer>(); // key: nodeId, value: quantité de diamant
+    private HashMap<String, Couple<Integer, String>> goldDict = new HashMap<String, Couple<Integer, String>>(); // key: nodeId, value: quantité d'or
+    private HashMap<String, Couple<Integer, String>> diamondDict = new HashMap<String, Couple<Integer, String>>(); // key: nodeId, value: quantité de diamant
 
     public FullMapRepresentation() {
         //System.setProperty("org.graphstream.ui.renderer","org.graphstream.ui.j2dviewer.J2DGraphRenderer");
@@ -50,9 +51,7 @@ public class FullMapRepresentation implements Serializable {
         this.g = new SingleGraph("My world vision");
         this.g.setAttribute("ui.stylesheet", nodeStyle);
 
-        Platform.runLater(() -> {
-            openGui();
-        });
+        Platform.runLater(this::openGui);
         //this.viewer = this.g.display();
 
         this.nbEdges = 0;
@@ -65,25 +64,24 @@ public class FullMapRepresentation implements Serializable {
      * @author hc
      */
     public enum MapAttribute {
-        agent, open, closed;
-
+        agent, open, closed
     }
 
     /*--------------------- GET et SET ---------------------------*/
 
-    public Integer getNbEdges() {
+    public int getNbEdges() {
         return this.nbEdges;
     }
 
-    public Integer getNbNodes() {
+    public int getNbNodes() {
         return this.nbNodes;
     }
 
-    public HashMap<String, Integer> getDiamondDict() {
+    public HashMap<String, Couple<Integer, String>> getDiamondDict() {
         return diamondDict;
     }
 
-    public HashMap<String, Integer> getGoldDict() {
+    public HashMap<String, Couple<Integer, String>> getGoldDict() {
         return goldDict;
     }
 
@@ -95,6 +93,44 @@ public class FullMapRepresentation implements Serializable {
         this.sg = sgreceived;
     }
 
+    public void updateGoldDictExplo(HashMap<String, Couple<Integer, String>> dict){
+
+        if (dict != null) {
+            System.out.println("------ Update Gold Dict ");
+            for (String node : dict.keySet()) {
+
+                if (this.goldDict.containsKey(node)) {
+                    // prend la quantité de gold la plus récente
+                    int comparaison = (dict.get(node).getRight()).compareTo(this.goldDict.get(node).getRight());
+                    if (comparaison >= 0) {
+                        this.goldDict.put(node, dict.get(node));
+                        System.out.println("------ Update Gold Dict "+ node + " || "+ dict.get(node));
+                    }
+                }else{
+                    // on découvre du gold dans un noeud node
+                    this.goldDict.put(node, dict.get(node));
+                }
+            }
+        }
+    };
+    public void updateDiamondDictExplo(HashMap<String, Couple<Integer, String>> dict){
+        if (dict != null) {
+            System.out.println("------ Update Diamond Dict ");
+            for (String node : dict.keySet()) {
+                if (this.diamondDict.containsKey(node)) {
+                    // prend la quantité de gold la plus récente
+                    int comparaison = (dict.get(node).getRight()).compareTo(this.diamondDict.get(node).getRight());
+                    if (comparaison >= 0) {
+                        this.diamondDict.put(node, dict.get(node));
+                        System.out.println("------ Update Diamond Dict "+ node + " || "+ dict.get(node));
+                    }
+                }else{
+                    // on découvre du gold dans un noeud node
+                    this.diamondDict.put(node, dict.get(node));
+                }
+            }
+        }
+    };
 
     /*--------------------- Méthodes add or remove node/edge ---------------------------*/
 
@@ -107,30 +143,28 @@ public class FullMapRepresentation implements Serializable {
      * @param time              temps où le noeud a été observé
      */
     public synchronized void addNode(String id, MapAttribute mapAttribute, List<Couple<Observation, Integer>> lObservations, long time) {
-        Node n;
+        Node n = this.g.getNode(id);
 
-        if (this.g.getNode(id) == null) {
+        if ( n == null) {
             this.nbNodes++;
             n = this.g.addNode(id);
-        } else {
-            n = this.g.getNode(id);
         }
-
         n.clearAttributes();
         n.setAttribute("ui.class", mapAttribute.toString());
         n.setAttribute("ui.label", id);
-        n.setAttribute("timestamp", time);
+        n.setAttribute("timestamp", String.valueOf(time));
 
         for (Couple<Observation, Integer> o : lObservations) {
-            Observation observationType = o.getLeft();
-            Integer observationValue = o.getRight();
+            Observation observationType = o.getLeft(); // diamond ou gold
+            Integer observationValue = o.getRight();   // nombre de ressources (diamond ou gold)
+            Couple <Integer, String> value = new Couple<Integer, String>(observationValue, String.valueOf(time));
 
             switch (observationType) {
                 case DIAMOND:
-                    this.diamondDict.put(id, observationValue);
+                    this.diamondDict.put(id, value);
                     break;
                 case GOLD:
-                    this.goldDict.put(id, observationValue);
+                    this.goldDict.put(id, value);
                     break;
                 //case STENCH:
                 default:
@@ -161,8 +195,8 @@ public class FullMapRepresentation implements Serializable {
     /**
      * Add an undirect edge if not already existing.
      *
-     * @param idNode1
-     * @param idNode2
+     * @param idNode1   id of node 1
+     * @param idNode2   id of node 2
      */
     public synchronized void addEdge(String idNode1, String idNode2) {
         this.nbEdges++;
@@ -173,7 +207,7 @@ public class FullMapRepresentation implements Serializable {
             System.exit(1);
         } catch (EdgeRejectedException e2) {
             this.nbEdges--;
-        } catch (ElementNotFoundException e3) {
+        } catch (ElementNotFoundException ignored) {
 
         }
     }
@@ -223,7 +257,40 @@ public class FullMapRepresentation implements Serializable {
 
     public List<String> getOpenNodes() {
         return this.g.nodes()
-                .filter(x -> x.getAttribute("ui.class") == MapAttribute.open.toString())
+                .filter(x -> x.getAttribute("ui.class").equals(MapAttribute.open.toString()))
+                .map(Node::getId)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getClosedNodes() {
+        return this.g.nodes()
+                .filter(x -> x.getAttribute("ui.class").equals(MapAttribute.closed.toString()))
+                .map(Node::getId)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getAgentNodes() {
+        return this.g.nodes()
+                .filter(x -> x.getAttribute("ui.class").equals(MapAttribute.agent.toString()))
+                .map(Node::getId)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getOtherNodes() {
+        List<Node> list = this.g.nodes()
+                .filter(x -> ! x.getAttribute("ui.class").equals(MapAttribute.agent.toString()))
+                .filter(x -> ! x.getAttribute("ui.class").equals(MapAttribute.open.toString()))
+                .filter(x -> x.getAttribute("ui.class").equals(MapAttribute.closed.toString()))
+                .collect(Collectors.toList());
+        List<String> res = new ArrayList<>();
+        for (Node node : list){
+            res.add(node.getAttribute("ui.class").toString());
+        }
+        return res;
+    }
+
+    public List<String> getAllNodes() {
+        return this.g.nodes()
                 .map(Node::getId)
                 .collect(Collectors.toList());
     }
@@ -243,14 +310,21 @@ public class FullMapRepresentation implements Serializable {
     private void serializeGraphTopology() {
         this.sg = new SerializableSimpleGraph<>();
 
-        for (Node n : this.g) {    // on copie tous les noeuds du graphe
+
+        for (Node n : this.g) {    //on copie tous les noeuds du graphe
             //sg.addNode(n.getId(), MapAttribute.valueOf((String) n.getAttribute("ui.class")));
             HashMap<String, Object> map = new HashMap<>(); // map containing all the attributes of the node
             Object[] attributes = n.attributeKeys().toArray();
+
+            //envoie attribut du noeud n dans le graphe g
             for (Object att : attributes) {
                 String key = (String) att;
-                map.put(key, n.getAttribute(key));
+                map.put(key, n.getAttribute(key).toString());
             }
+
+            //on envoie les dictionnaires des diamonds et des golds
+            map.put("diamondDict", this.diamondDict);
+            map.put("goldDict", this.goldDict);
 
             sg.addNode(n.getId(), map);
         }
@@ -275,18 +349,19 @@ public class FullMapRepresentation implements Serializable {
      */
     public synchronized void loadSavedData() {
         //closeGui();
+
         this.g = new SingleGraph("My world vision");
         this.g.setAttribute("ui.stylesheet", nodeStyle);
 
         //openGui();
 
-        Integer nbEd = 0;
-        Integer nbNo = 0;
+        int nbEd = 0;
+        int nbNo = 0;
         for (SerializableNode<String, HashMap<String, Object>> n : this.sg.getAllNodes()) {
             this.g.addNode(n.getNodeId()).setAttribute("ui.class", n.getNodeContent().toString());
             nbNo++;
             for (String s : this.sg.getEdges(n.getNodeId())) {
-                this.g.addEdge(nbEd.toString(), n.getNodeId(), s);
+                this.g.addEdge(Integer.toString(nbEd), n.getNodeId(), s);
                 nbEd++;
             }
         }
@@ -302,13 +377,13 @@ public class FullMapRepresentation implements Serializable {
 
         //openGui();
 
-        Integer nbEd = 0;
-        Integer nbNo = 0;
+        int nbEd = 0;
+        int nbNo = 0;
         for (SerializableNode<String, HashMap<String, Object>> n : sgreceived.getAllNodes()) {
             this.g.addNode(n.getNodeId()).setAttribute("ui.class", n.getNodeContent().toString());
             nbNo++;
             for (String s : sgreceived.getEdges(n.getNodeId())) {
-                this.g.addEdge(nbEd.toString(), n.getNodeId(), s);
+                this.g.addEdge(Integer.toString(nbEd), n.getNodeId(), s);
                 nbEd++;
             }
         }
@@ -349,41 +424,53 @@ public class FullMapRepresentation implements Serializable {
     public void mergeMap(SerializableSimpleGraph<String, HashMap<String, Object>> sgreceived) {
         //System.out.println("You should decide what you want to save and how");
         //System.out.println("We currently blindy add the topology");
-
+        boolean envoyeDict = true;
+        // add node
         for (SerializableNode<String, HashMap<String, Object>> nReceived : sgreceived.getAllNodes()) {
-            //System.out.println("dans mergeMap : " + n);
             String nodeID = nReceived.getNodeId();
             HashMap<String, Object> nReceivedAttributes = nReceived.getNodeContent();
-
             Node nActual = this.g.getNode(nodeID);
 
-            if (nActual == null) {
-                nActual = this.g.addNode(nodeID); //ajout noeud mais ne mets rien comme attribut
-
-                //nActual.setAttribute("ui.label", nodeID);
-                nActual.setAttribute("ui.class", MapAttribute.open.toString());
-
-                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-                long time = timestamp.getTime();
-                nActual.setAttribute("timestamp", time);
+            //dico diamond et gold
+            //on envoit les dico diamond et gold dans le premier noeud (et pas aux autres)
+            if (envoyeDict) {
+                envoyeDict = false;
+                this.updateDiamondDictExplo((HashMap<String,Couple<Integer, String>>)nReceivedAttributes.get("diamondDict"));
+                this.updateGoldDictExplo((HashMap<String,Couple<Integer, String>>)nReceivedAttributes.get("goldDict"));
             }
 
-            // si un des noeuds (reçu ou actuel) est fermé, le noeud reste fermé
-            if (nReceived.getNodeContent().toString().equals(MapAttribute.closed.toString()) || Objects.equals(nActual.getAttribute("ui.class").toString(), MapAttribute.closed.toString()) ) {
-                nActual.setAttribute("ui.class", MapAttribute.closed.toString());
+            if (nActual == null) { // le noeud reçu n'est pas dans le graphe actuel, alors on le crée
+                nActual = this.g.addNode(nodeID);
+                // ajout des attributs du noeud reçu
+                nActual.setAttribute("ui.label", nReceivedAttributes.get("ui.label").toString());
+                nActual.setAttribute("ui.class", nReceivedAttributes.get("ui.class").toString());
+                nActual.setAttribute("timestamp", nReceivedAttributes.get("timestamp").toString());
             }
 
-            // prendre le timestamp le plus récent
-            int comparaison = (nReceived.getNodeContent().get("timestamp").toString()).compareTo(nActual.getAttribute("timestamp").toString());
-            if (comparaison >= 0){
-                nActual.setAttribute("timestamp", nReceived.getNodeContent().get("timestamp").toString());
+            // mise à jour des attributs du noeud actuel
+            for (String key: nReceivedAttributes.keySet()) {
+                if (Objects.equals(key, "timestamp")) {
+                    // prendre le timestamp le plus récent
+                    int comparaison = (nReceived.getNodeContent().get("timestamp").toString()).compareTo(nActual.getAttribute("timestamp").toString());
+                    if (comparaison >= 0) {
+                        nActual.setAttribute(key, nReceivedAttributes.get(key).toString());
+                    }
+                }else if (Objects.equals(key, "ui.class")){
+                    // mettre le noeud actuel fermé s'il l'était déjà ou si le noeud reçu est fermé
+                    if (nActual.getAttribute(key).equals(MapAttribute.closed.toString()) || nReceivedAttributes.get(key).toString().equals(MapAttribute.closed.toString()) ) {
+                        nActual.setAttribute(key, MapAttribute.closed.toString());
+                    }
+                }
+                else {
+                    nActual.setAttribute(key, nReceivedAttributes.get(key).toString());
+                }
             }
         }
 
-        //4 now that all nodes are added, we can add edges
-        for (SerializableNode<String, HashMap<String, Object>> n : sgreceived.getAllNodes()) {
-            for (String s : sgreceived.getEdges(n.getNodeId())) {
-                addEdge(n.getNodeId(), s);
+        //now that all nodes are added, we can add edges
+        for (SerializableNode<String, HashMap<String, Object>> nReceived: sgreceived.getAllNodes()) {
+            for (String s : sgreceived.getEdges(nReceived.getNodeId())) {
+                addEdge(nReceived.getNodeId(), s);
             }
         }
 
@@ -395,10 +482,8 @@ public class FullMapRepresentation implements Serializable {
      */
     public boolean hasOpenNode() {
         return (this.g.nodes()
-                .filter(n -> n.getAttribute("ui.class") == MapAttribute.open.toString())
-                .findAny()).isPresent();
+                .anyMatch(n -> n.getAttribute("ui.class").equals(MapAttribute.open.toString())));
     }
-
 
     /*--------------------- Version optimisé ---------------------------*/
 

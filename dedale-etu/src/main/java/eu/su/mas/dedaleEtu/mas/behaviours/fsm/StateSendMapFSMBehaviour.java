@@ -57,16 +57,12 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
 
             if (!etat.get("envoie_MAP")) { // envoie sa carte aux nouveaux agents
                 msg.addReceiver(new AID(receiverAgent, false));
-
                 ((FSMAgent) this.myAgent).setDictVoisinsMessagesAgentAction(receiverAgent, "envoie_MAP", true);
-
                 System.out.println(myName + " [STATE B] will send MAP to " + receiverAgent);
             }
             else if (!etat.get("recoit_ACK")) { // renvoie sa carte si pas reçu d'ACK pour la carte qu'il a déjà envoyé
                 msg.addReceiver(new AID(receiverAgent, false));
-
                 ((FSMAgent) this.myAgent).setDictVoisinsMessagesAgentAction(receiverAgent, "envoie_MAP", true);
-
                 System.out.println(myName + " [STATE B] will re-send MAP to " + receiverAgent);
             }
         }

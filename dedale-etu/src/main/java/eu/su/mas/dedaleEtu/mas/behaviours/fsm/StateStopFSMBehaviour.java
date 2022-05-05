@@ -3,8 +3,9 @@ package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.agents.fsm.FSMAgent;
 import eu.su.mas.dedaleEtu.mas.knowledge.FullMapRepresentation;
+import fileManipulations.JSonUtil;
 import jade.core.behaviours.OneShotBehaviour;
-
+import dataStructures.tuple.Couple;
 import java.util.HashMap;
 import java.util.List;
 
@@ -30,8 +31,8 @@ public class StateStopFSMBehaviour extends OneShotBehaviour {
         this.dictVoisinsMessages = ((FSMAgent) this.myAgent).getDictVoisinsMessages();
         this.listAgentNames = ((FSMAgent) this.myAgent).getListAgentNames();
 
-        HashMap<String, Integer> goldDict = this.myFullMap.getGoldDict();
-        HashMap<String, Integer> diamondDict = this.myFullMap.getDiamondDict();
+        HashMap<String, Couple<Integer, String>> goldDict = this.myFullMap.getGoldDict();
+        HashMap<String, Couple<Integer, String>> diamondDict = this.myFullMap.getDiamondDict();
 
         System.out.println(myName + " [STATE F] -- goldDict: " + goldDict);
         System.out.println(myName + " [STATE F] -- diamondDict: " + diamondDict);
