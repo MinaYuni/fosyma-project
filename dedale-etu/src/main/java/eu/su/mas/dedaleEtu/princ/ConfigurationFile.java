@@ -48,8 +48,8 @@ public final class ConfigurationFile {
     /*
      * The environment is either manually designed, or generated with a specific generator
      */
-    //public static GeneratorType GENERATOR_TYPE = GeneratorType.MANUAL;
-    public static GeneratorType GENERATOR_TYPE = GeneratorType.GS_GRID;
+    public static GeneratorType GENERATOR_TYPE = GeneratorType.MANUAL;
+//    public static GeneratorType GENERATOR_TYPE = GeneratorType.GS_GRID;
 
     /*
      * 	The GateKeeper is in charge of the Platform and of the agents within, do not change its name.
@@ -71,22 +71,25 @@ public final class ConfigurationFile {
      */
 //    public static String INSTANCE_TOPOLOGY=null;
 
+    public static String INSTANCE_TOPOLOGY="resources/topology/map-test";
+
 //    public static String INSTANCE_TOPOLOGY="resources/topology/map2020-topologyExam1-graph.dgs";
 //    public static String INSTANCE_TOPOLOGY="resources/topology/HouatTopology";
-    public static String INSTANCE_TOPOLOGY="resources/topology/map2018-topology-ica";
+//    public static String INSTANCE_TOPOLOGY="resources/topology/map2018-topology-ica";
 //    public static String INSTANCE_TOPOLOGY="resources/topology/map2021-topologyExam1-tree.dgs";
 //    public static String INSTANCE_TOPOLOGY="resources/interlocking/mapInterlocking2-topology";
 //    public static String INSTANCE_TOPOLOGY="resources/topology/map2021-topologyExam1-graph.dgs";
-//    public static String INSTANCE_TOPOLOGY="resources/map2018-topology";
-//    public static String INSTANCE_TOPOLOGY="resources/map2019-topologyExam1";
+//    public static String INSTANCE_TOPOLOGY="resources/topology/map2018-topology";
+//    public static String INSTANCE_TOPOLOGY="resources/topology/map2019-topologyExam1";
 
     /*
      * Give the elements available on the map, if any
      */
     // If the environment is loaded, but you do not want to define elements on the map
-    public static String INSTANCE_CONFIGURATION_ELEMENTS = "resources/distributedExploration/emptyMap";
+//    public static String INSTANCE_CONFIGURATION_ELEMENTS = "resources/distributedExploration/emptyMap";
 
     // otherwise
+    public static String INSTANCE_CONFIGURATION_ELEMENTS="resources/treasureHunt/elements-test";
 //    public static String INSTANCE_CONFIGURATION_ELEMENTS="resources/treasureHunt/map2019-elementsExam1";
 //    public static String INSTANCE_CONFIGURATION_ELEMENTS="resources/treasureHunt/Houat-elements";
 //    public static String INSTANCE_CONFIGURATION_ELEMENTS="resources/treasureHunt/map2018-elements-ica";
@@ -139,12 +142,13 @@ public final class ConfigurationFile {
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = null;
 
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentCollect";
-    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentCollect-2";
+//    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentCollect-2";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentExplo-2";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentExplo-3";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentCollect-Wumpus";
 
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentCollect";
+    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentCollect-2";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentExplo";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentExplo-2";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentExploCoop-2";

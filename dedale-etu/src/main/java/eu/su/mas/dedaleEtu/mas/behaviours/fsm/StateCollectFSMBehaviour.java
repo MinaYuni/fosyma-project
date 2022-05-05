@@ -39,14 +39,6 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
             List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
             System.out.println("STATE E : " + myName + " -- list of observables: " + lobs);
 
-            // Little pause to allow you to follow what is going on
-//            try {
-//                System.out.println("Press enter in the console to allow the agent " + this.myAgent.getLocalName() + " to execute its next move");
-//                System.in.read();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-
             // list of observations associated to the currentPosition
             List<Couple<Observation, Integer>> lObservations = lobs.get(0).getRight();
             System.out.println("STATE E : " + myName + "lObservations - " + lObservations);
