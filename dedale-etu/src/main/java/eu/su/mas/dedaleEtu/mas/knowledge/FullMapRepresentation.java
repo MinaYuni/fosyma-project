@@ -32,10 +32,10 @@ public class FullMapRepresentation implements Serializable {
      * Parameters for graph rendering
      ********************************/
 
-    private String defaultNodeStyle = "node {" + "fill-color: black;" + " size-mode:fit;text-alignment:under; text-size:14;text-color:white;text-background-mode:rounded-box;text-background-color:black;}";
-    private String nodeStyle_open = "node.agent {" + "fill-color: forestgreen;" + "}";
-    private String nodeStyle_agent = "node.open {" + "fill-color: red;" + "}";
-    private String nodeStyle = defaultNodeStyle + nodeStyle_agent + nodeStyle_open;
+    private final String defaultNodeStyle = "node {" + "fill-color: black;" + " size-mode:fit;text-alignment:under; text-size:14;text-color:white;text-background-mode:rounded-box;text-background-color:black;}";
+    private final String nodeStyle_agent = "node.agent {" + "fill-color: green;" + "}";
+    private final String nodeStyle_open = "node.open {" + "fill-color: red;" + "}";
+    private final String nodeStyle = defaultNodeStyle + nodeStyle_agent + nodeStyle_open;
     private Graph g; //data structure non serializable
     private Viewer viewer; //ref to the display,  non serializable
     private Integer nbEdges;//used to generate the edges ids
@@ -50,9 +50,7 @@ public class FullMapRepresentation implements Serializable {
         this.g = new SingleGraph("My world vision");
         this.g.setAttribute("ui.stylesheet", nodeStyle);
 
-        Platform.runLater(() -> {
-            openGui();
-        });
+        Platform.runLater(this::openGui);
         //this.viewer = this.g.display();
 
         this.nbEdges = 0;
@@ -65,8 +63,7 @@ public class FullMapRepresentation implements Serializable {
      * @author hc
      */
     public enum MapAttribute {
-        agent, open, closed;
-
+        agent, open, closed
     }
 
     /*--------------------- GET et SET ---------------------------*/
@@ -79,11 +76,11 @@ public class FullMapRepresentation implements Serializable {
         return this.nbNodes;
     }
 
-    public HashMap<String, Integer> getDiamondDict() {
+    public HashMap<String, Couple<Integer, String>> getDiamondDict() {
         return diamondDict;
     }
 
-    public HashMap<String, Integer> getGoldDict() {
+    public HashMap<String, Couple<Integer, String>> getGoldDict() {
         return goldDict;
     }
 
@@ -119,7 +116,7 @@ public class FullMapRepresentation implements Serializable {
         n.clearAttributes();
         n.setAttribute("ui.class", mapAttribute.toString());
         n.setAttribute("ui.label", id);
-        n.setAttribute("timestamp", time);
+        n.setAttribute("timestamp", String.valueOf(time));
 
         for (Couple<Observation, Integer> o : lObservations) {
             Observation observationType = o.getLeft();
@@ -127,7 +124,7 @@ public class FullMapRepresentation implements Serializable {
 
             switch (observationType) {
                 case DIAMOND:
-                    this.diamondDict.put(id, observationValue);
+                    this.diamondDict.put(id, value);
                     break;
                 case GOLD:
                     this.goldDict.put(id, observationValue);
@@ -161,8 +158,8 @@ public class FullMapRepresentation implements Serializable {
     /**
      * Add an undirect edge if not already existing.
      *
-     * @param idNode1
-     * @param idNode2
+     * @param idNode1   id of node 1
+     * @param idNode2   id of node 2
      */
     public synchronized void addEdge(String idNode1, String idNode2) {
         this.nbEdges++;
@@ -173,7 +170,7 @@ public class FullMapRepresentation implements Serializable {
             System.exit(1);
         } catch (EdgeRejectedException e2) {
             this.nbEdges--;
-        } catch (ElementNotFoundException e3) {
+        } catch (ElementNotFoundException ignored) {
 
         }
     }
@@ -228,6 +225,39 @@ public class FullMapRepresentation implements Serializable {
                 .collect(Collectors.toList());
     }
 
+    public List<String> getClosedNodes() {
+        return this.g.nodes()
+                .filter(x -> x.getAttribute("ui.class").equals(MapAttribute.closed.toString()))
+                .map(Node::getId)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getAgentNodes() {
+        return this.g.nodes()
+                .filter(x -> x.getAttribute("ui.class").equals(MapAttribute.agent.toString()))
+                .map(Node::getId)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getOtherNodes() {
+        List<Node> list = this.g.nodes()
+                .filter(x -> ! x.getAttribute("ui.class").equals(MapAttribute.agent.toString()))
+                .filter(x -> ! x.getAttribute("ui.class").equals(MapAttribute.open.toString()))
+                .filter(x -> x.getAttribute("ui.class").equals(MapAttribute.closed.toString()))
+                .collect(Collectors.toList());
+        List<String> res = new ArrayList<>();
+        for (Node node : list){
+            res.add(node.getAttribute("ui.class").toString());
+        }
+        return res;
+    }
+
+    public List<String> getAllNodes() {
+        return this.g.nodes()
+                .map(Node::getId)
+                .collect(Collectors.toList());
+    }
+
     /**
      * Before the migration we kill all non serializable components and store their data in a serializable form
      */
@@ -247,6 +277,8 @@ public class FullMapRepresentation implements Serializable {
             //sg.addNode(n.getId(), MapAttribute.valueOf((String) n.getAttribute("ui.class")));
             HashMap<String, Object> map = new HashMap<>(); // map containing all the attributes of the node
             Object[] attributes = n.attributeKeys().toArray();
+
+            //envoie attribut du noeud n dans le graphe g
             for (Object att : attributes) {
                 String key = (String) att;
                 map.put(key, n.getAttribute(key));
@@ -275,18 +307,19 @@ public class FullMapRepresentation implements Serializable {
      */
     public synchronized void loadSavedData() {
         //closeGui();
+
         this.g = new SingleGraph("My world vision");
         this.g.setAttribute("ui.stylesheet", nodeStyle);
 
         //openGui();
 
-        Integer nbEd = 0;
-        Integer nbNo = 0;
+        int nbEd = 0;
+        int nbNo = 0;
         for (SerializableNode<String, HashMap<String, Object>> n : this.sg.getAllNodes()) {
             this.g.addNode(n.getNodeId()).setAttribute("ui.class", n.getNodeContent().toString());
             nbNo++;
             for (String s : this.sg.getEdges(n.getNodeId())) {
-                this.g.addEdge(nbEd.toString(), n.getNodeId(), s);
+                this.g.addEdge(Integer.toString(nbEd), n.getNodeId(), s);
                 nbEd++;
             }
         }
@@ -302,13 +335,13 @@ public class FullMapRepresentation implements Serializable {
 
         //openGui();
 
-        Integer nbEd = 0;
-        Integer nbNo = 0;
+        int nbEd = 0;
+        int nbNo = 0;
         for (SerializableNode<String, HashMap<String, Object>> n : sgreceived.getAllNodes()) {
             this.g.addNode(n.getNodeId()).setAttribute("ui.class", n.getNodeContent().toString());
             nbNo++;
             for (String s : sgreceived.getEdges(n.getNodeId())) {
-                this.g.addEdge(nbEd.toString(), n.getNodeId(), s);
+                this.g.addEdge(Integer.toString(nbEd), n.getNodeId(), s);
                 nbEd++;
             }
         }
@@ -351,32 +384,35 @@ public class FullMapRepresentation implements Serializable {
         //System.out.println("We currently blindy add the topology");
 
         for (SerializableNode<String, HashMap<String, Object>> nReceived : sgreceived.getAllNodes()) {
-            //System.out.println("dans mergeMap : " + n);
             String nodeID = nReceived.getNodeId();
             HashMap<String, Object> nReceivedAttributes = nReceived.getNodeContent();
-
             Node nActual = this.g.getNode(nodeID);
 
-            if (nActual == null) {
-                nActual = this.g.addNode(nodeID); //ajout noeud mais ne mets rien comme attribut
-
-                //nActual.setAttribute("ui.label", nodeID);
-                nActual.setAttribute("ui.class", MapAttribute.open.toString());
-
-                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-                long time = timestamp.getTime();
-                nActual.setAttribute("timestamp", time);
+            if (nActual == null) { // le noeud reçu n'est pas dans le graphe actuel, alors on le crée
+                nActual = this.g.addNode(nodeID);
+                // ajout des attributs du noeud reçu
+                nActual.setAttribute("ui.label", nReceivedAttributes.get("ui.label").toString());
+                nActual.setAttribute("ui.class", nReceivedAttributes.get("ui.class").toString());
+                nActual.setAttribute("timestamp", nReceivedAttributes.get("timestamp").toString());
             }
 
-            // si un des noeuds (reçu ou actuel) est fermé, le noeud reste fermé
-            if (nReceived.getNodeContent().toString().equals(MapAttribute.closed.toString()) || Objects.equals(nActual.getAttribute("ui.class").toString(), MapAttribute.closed.toString()) ) {
-                nActual.setAttribute("ui.class", MapAttribute.closed.toString());
-            }
-
-            // prendre le timestamp le plus récent
-            int comparaison = (nReceived.getNodeContent().get("timestamp").toString()).compareTo(nActual.getAttribute("timestamp").toString());
-            if (comparaison >= 0){
-                nActual.setAttribute("timestamp", nReceived.getNodeContent().get("timestamp").toString());
+            // mise à jour des attributs du noeud actuel
+            for (String key: nReceivedAttributes.keySet()) {
+                if (Objects.equals(key, "timestamp")) {
+                    // prendre le timestamp le plus récent
+                    int comparaison = (nReceived.getNodeContent().get("timestamp").toString()).compareTo(nActual.getAttribute("timestamp").toString());
+                    if (comparaison >= 0) {
+                        nActual.setAttribute(key, nReceivedAttributes.get(key).toString());
+                    }
+                }else if (Objects.equals(key, "ui.class")){
+                    // mettre le noeud actuel fermé s'il l'était déjà ou si le noeud reçu est fermé
+                    if (nActual.getAttribute(key).equals(MapAttribute.closed.toString()) || nReceivedAttributes.get(key).toString().equals(MapAttribute.closed.toString()) ) {
+                        nActual.setAttribute(key, MapAttribute.closed.toString());
+                    }
+                }
+                else {
+                    nActual.setAttribute(key, nReceivedAttributes.get(key).toString());
+                }
             }
         }
 

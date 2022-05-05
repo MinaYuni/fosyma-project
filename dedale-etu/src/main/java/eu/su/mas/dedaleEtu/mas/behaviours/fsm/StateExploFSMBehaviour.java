@@ -158,8 +158,6 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 } else { // pas reçu de PING, donc continuer à avancer dans la map
                     ((FSMAgent) this.myAgent).resetDictVoisinsMessages();
                     ((AbstractDedaleAgent) this.myAgent).moveTo(nextNode);
-
-                    //exitValue = 3 ; //aller state G (choix prochain destination/noeud)
                 }
             }
         }
