@@ -10,6 +10,7 @@ import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import org.graphstream.algorithm.Dijkstra;
 import org.graphstream.graph.*;
 import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.stream.file.FileSourceGraphML;
 import org.graphstream.ui.fx_viewer.FxViewer;
 import org.graphstream.ui.view.Viewer;
 
@@ -41,8 +42,8 @@ public class FullMapRepresentation implements Serializable {
     private Integer nbEdges;//used to generate the edges ids
     private Integer nbNodes;
     private SerializableSimpleGraph<String, HashMap<String, Object>> sg;//used as a temporary dataStructure during migration
-    private HashMap<String, Integer> goldDict = new HashMap<String, Integer>(); // key: nodeId, value: quantité d'or
-    private HashMap<String, Integer> diamondDict = new HashMap<String, Integer>(); // key: nodeId, value: quantité de diamant
+    private HashMap<String, Couple<Integer, String>> goldDict = new HashMap<String, Couple<Integer, String>>(); // key: nodeId, value: quantité d'or
+    private HashMap<String, Couple<Integer, String>> diamondDict = new HashMap<String, Couple<Integer, String>>(); // key: nodeId, value: quantité de diamant
 
     public FullMapRepresentation() {
         //System.setProperty("org.graphstream.ui.renderer","org.graphstream.ui.j2dviewer.J2DGraphRenderer");
@@ -68,11 +69,11 @@ public class FullMapRepresentation implements Serializable {
 
     /*--------------------- GET et SET ---------------------------*/
 
-    public Integer getNbEdges() {
+    public int getNbEdges() {
         return this.nbEdges;
     }
 
-    public Integer getNbNodes() {
+    public int getNbNodes() {
         return this.nbNodes;
     }
 
@@ -92,6 +93,44 @@ public class FullMapRepresentation implements Serializable {
         this.sg = sgreceived;
     }
 
+    public void updateGoldDictExplo(HashMap<String, Couple<Integer, String>> dict){
+
+        if (dict != null) {
+            System.out.println("------ Update Gold Dict ");
+            for (String node : dict.keySet()) {
+
+                if (this.goldDict.containsKey(node)) {
+                    // prend la quantité de gold la plus récente
+                    int comparaison = (dict.get(node).getRight()).compareTo(this.goldDict.get(node).getRight());
+                    if (comparaison >= 0) {
+                        this.goldDict.put(node, dict.get(node));
+                        System.out.println("------ Update Gold Dict "+ node + " || "+ dict.get(node));
+                    }
+                }else{
+                    // on découvre du gold dans un noeud node
+                    this.goldDict.put(node, dict.get(node));
+                }
+            }
+        }
+    };
+    public void updateDiamondDictExplo(HashMap<String, Couple<Integer, String>> dict){
+        if (dict != null) {
+            System.out.println("------ Update Diamond Dict ");
+            for (String node : dict.keySet()) {
+                if (this.diamondDict.containsKey(node)) {
+                    // prend la quantité de gold la plus récente
+                    int comparaison = (dict.get(node).getRight()).compareTo(this.diamondDict.get(node).getRight());
+                    if (comparaison >= 0) {
+                        this.diamondDict.put(node, dict.get(node));
+                        System.out.println("------ Update Diamond Dict "+ node + " || "+ dict.get(node));
+                    }
+                }else{
+                    // on découvre du gold dans un noeud node
+                    this.diamondDict.put(node, dict.get(node));
+                }
+            }
+        }
+    };
 
     /*--------------------- Méthodes add or remove node/edge ---------------------------*/
 
@@ -104,30 +143,28 @@ public class FullMapRepresentation implements Serializable {
      * @param time              temps où le noeud a été observé
      */
     public synchronized void addNode(String id, MapAttribute mapAttribute, List<Couple<Observation, Integer>> lObservations, long time) {
-        Node n;
+        Node n = this.g.getNode(id);
 
-        if (this.g.getNode(id) == null) {
+        if ( n == null) {
             this.nbNodes++;
             n = this.g.addNode(id);
-        } else {
-            n = this.g.getNode(id);
         }
-
         n.clearAttributes();
         n.setAttribute("ui.class", mapAttribute.toString());
         n.setAttribute("ui.label", id);
         n.setAttribute("timestamp", String.valueOf(time));
 
         for (Couple<Observation, Integer> o : lObservations) {
-            Observation observationType = o.getLeft();
-            Integer observationValue = o.getRight();
+            Observation observationType = o.getLeft(); // diamond ou gold
+            Integer observationValue = o.getRight();   // nombre de ressources (diamond ou gold)
+            Couple <Integer, String> value = new Couple<Integer, String>(observationValue, String.valueOf(time));
 
             switch (observationType) {
                 case DIAMOND:
                     this.diamondDict.put(id, value);
                     break;
                 case GOLD:
-                    this.goldDict.put(id, observationValue);
+                    this.goldDict.put(id, value);
                     break;
                 //case STENCH:
                 default:
@@ -220,7 +257,7 @@ public class FullMapRepresentation implements Serializable {
 
     public List<String> getOpenNodes() {
         return this.g.nodes()
-                .filter(x -> x.getAttribute("ui.class") == MapAttribute.open.toString())
+                .filter(x -> x.getAttribute("ui.class").equals(MapAttribute.open.toString()))
                 .map(Node::getId)
                 .collect(Collectors.toList());
     }
@@ -273,7 +310,8 @@ public class FullMapRepresentation implements Serializable {
     private void serializeGraphTopology() {
         this.sg = new SerializableSimpleGraph<>();
 
-        for (Node n : this.g) {    // on copie tous les noeuds du graphe
+
+        for (Node n : this.g) {    //on copie tous les noeuds du graphe
             //sg.addNode(n.getId(), MapAttribute.valueOf((String) n.getAttribute("ui.class")));
             HashMap<String, Object> map = new HashMap<>(); // map containing all the attributes of the node
             Object[] attributes = n.attributeKeys().toArray();
@@ -281,8 +319,12 @@ public class FullMapRepresentation implements Serializable {
             //envoie attribut du noeud n dans le graphe g
             for (Object att : attributes) {
                 String key = (String) att;
-                map.put(key, n.getAttribute(key));
+                map.put(key, n.getAttribute(key).toString());
             }
+
+            //on envoie les dictionnaires des diamonds et des golds
+            map.put("diamondDict", this.diamondDict);
+            map.put("goldDict", this.goldDict);
 
             sg.addNode(n.getId(), map);
         }
@@ -382,11 +424,20 @@ public class FullMapRepresentation implements Serializable {
     public void mergeMap(SerializableSimpleGraph<String, HashMap<String, Object>> sgreceived) {
         //System.out.println("You should decide what you want to save and how");
         //System.out.println("We currently blindy add the topology");
-
+        boolean envoyeDict = true;
+        // add node
         for (SerializableNode<String, HashMap<String, Object>> nReceived : sgreceived.getAllNodes()) {
             String nodeID = nReceived.getNodeId();
             HashMap<String, Object> nReceivedAttributes = nReceived.getNodeContent();
             Node nActual = this.g.getNode(nodeID);
+
+            //dico diamond et gold
+            //on envoit les dico diamond et gold dans le premier noeud (et pas aux autres)
+            if (envoyeDict) {
+                envoyeDict = false;
+                this.updateDiamondDictExplo((HashMap<String,Couple<Integer, String>>)nReceivedAttributes.get("diamondDict"));
+                this.updateGoldDictExplo((HashMap<String,Couple<Integer, String>>)nReceivedAttributes.get("goldDict"));
+            }
 
             if (nActual == null) { // le noeud reçu n'est pas dans le graphe actuel, alors on le crée
                 nActual = this.g.addNode(nodeID);
@@ -431,10 +482,8 @@ public class FullMapRepresentation implements Serializable {
      */
     public boolean hasOpenNode() {
         return (this.g.nodes()
-                .filter(n -> n.getAttribute("ui.class") == MapAttribute.open.toString())
-                .findAny()).isPresent();
+                .anyMatch(n -> n.getAttribute("ui.class").equals(MapAttribute.open.toString())));
     }
-
 
     /*--------------------- Version optimisé ---------------------------*/
 
