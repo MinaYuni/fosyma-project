@@ -36,8 +36,8 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
         String myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
         System.out.println(myName + " [STATE E] -- myCurrentPosition is: " + myPosition);
 
-        HashMap<String, Integer> goldDict = this.myFullMap.getGoldDict();
-        HashMap<String, Integer> diamondDict = this.myFullMap.getDiamondDict();
+        HashMap<String, Couple<Integer, String>> goldDict = this.myFullMap.getGoldDict();
+        HashMap<String, Couple<Integer, String>> diamondDict = this.myFullMap.getDiamondDict();
         System.out.println(myName + " [STATE E] -- goldDict: " + goldDict + " | diamondDict: " + diamondDict);
 
         /*
