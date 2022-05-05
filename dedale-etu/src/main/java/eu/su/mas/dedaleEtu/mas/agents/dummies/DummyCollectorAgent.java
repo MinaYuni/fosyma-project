@@ -100,6 +100,8 @@ public class DummyCollectorAgent extends AbstractDedaleAgent{
 				System.out.println(this.myAgent.getLocalName()+" -- list of observables: "+lobs);
 
 				Set<Couple<Observation,Integer>> expertises = ((AbstractDedaleAgent) this.myAgent).getMyExpertise();
+				System.out.println(this.myAgent.getLocalName() + " -- My Expertise: " + expertises);
+
 				for (Couple<Observation, Integer> exp : expertises) {
 					switch (exp.getLeft()) {
 						case LOCKPICKING:
@@ -109,7 +111,6 @@ public class DummyCollectorAgent extends AbstractDedaleAgent{
 							System.out.println(this.myAgent.getLocalName() + " -- My Strengh: " + exp.getRight());
 							break;
 						default:
-							System.out.println(this.myAgent.getLocalName() + " -- My Expertise: " + expertises);
 							break;
 					}
 				}

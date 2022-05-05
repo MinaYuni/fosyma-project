@@ -50,31 +50,11 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
 
             // list of observable from the agent's current position
             List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
-            System.out.println(myName + " [STATE A] -- lobs: " + lobs);
+            //System.out.println(myName + " [STATE A] -- lobs: " + lobs);
 
             // list of observations associated to the currentPosition
-            List<Couple<Observation, Integer>> lObservations = lobs.get(0).getRight();
-            System.out.println(myName + " [STATE A] -- lObservations: " + lObservations);
-
-            for (Couple<Observation, Integer> o : lObservations) {
-                System.out.println(myName + " [STATE A] -- obs: " + o);
-                switch (o.getLeft()) {
-                    case DIAMOND:
-                        System.out.println(myName + " [STATE A] -- My treasure type: " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
-                        System.out.println(myName + " [STATE A] -- My current backpack capacity:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
-                        System.out.println(myName + " [STATE A] -- Value of the treasure on the current position: " + o.getLeft() + " - " + o.getRight());
-                        System.out.println(myName + " [STATE A] -- The agent grabbed: " + ((AbstractDedaleAgent) this.myAgent).pick());
-                        System.out.println(myName + " [STATE A] -- The remaining backpack capacity: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
-                    case GOLD:
-                        System.out.println(myName + " [STATE A] -- My treasure type: " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
-                        System.out.println(myName + " [STATE A] -- My current backpack capacity:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
-                        System.out.println(myName + " [STATE A] -- Value of the treasure on the current position: " + o.getLeft() + " - " + o.getRight());
-                        System.out.println(myName + " [STATE A] -- The agent grabbed: " + ((AbstractDedaleAgent) this.myAgent).pick());
-                        System.out.println(myName + " [STATE A] -- The remaining backpack capacity: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
-                    case STENCH:
-                        System.out.println(myName + " [STATE A] -- STENCH");
-                }
-            }
+            //List<Couple<Observation, Integer>> lObservations = lobs.get(0).getRight();
+            //System.out.println(myName + " [STATE A] -- lObservations: " + lObservations);
 
             try {
                 this.myAgent.doWait(500);
@@ -120,7 +100,6 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
                 // 3.2) ACTION : envoie un PING à tout le monde à chaque déplacement
                 ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
                 msg.setProtocol("PING");
-                //msg.setContent(myName); // mettre son nom dans le ping envoyé
                 msg.setSender(this.myAgent.getAID()); // mettre un expéditeur au message
 
                 // ajout des destinataires du ping (tous les autres agents, sauf moi-meme)

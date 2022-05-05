@@ -1,9 +1,9 @@
 package eu.su.mas.dedaleEtu.mas.agents.fsm;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.HashMap;
+import java.util.*;
 
+import dataStructures.tuple.Couple;
+import eu.su.mas.dedale.env.Observation;
 import eu.su.mas.dedale.mas.agent.behaviours.startMyBehaviours;
 import eu.su.mas.dedaleEtu.mas.behaviours.fsm.*;
 //import eu.su.mas.dedaleEtu.mas.behaviours.SendPingBehaviour;
@@ -59,18 +59,28 @@ public class FSMAgent extends AbstractDedaleAgent {
 
     /*
     dict_voisins est un dictionnaire sur les états des messages envoyés à chaque agent :
-        key (String) : noms des voisins
+        key (String) : nom des voisins
         value (dict) : permet de vérifier quels sont les messages qui ont été envoyé ou pas
             key (String) : type message envoyé ou reçu
                 => exemple : "reception_carte", "envoie_carte", "reception_ACK", "envoie_ACK"
-            value (bool) : si on a fait les actions correspondant à la clef
+            value (Boolean) : si on a fait les actions correspondant à la clef
     */
     HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages = new HashMap<>();
 
     /*
-        dictionnaire pour garder les cartes qui ont été envoyé aux autres agents
+    dictionnaire pour garder les cartes qui ont été envoyé aux autres agents
+        key (String) : nom des agents
+        value (FullMapRepresantation) : dernière carte envoyée à l'agent key
     */
     HashMap<String, MapRepresentation> dictMapEnvoye = new HashMap<>();
+
+    /*
+    dictionnaire gardant en mémoire les capacités du sac à dos de chaque agent (soi-même compris)
+        key (String) : nom des agents
+        value (List) : capacités du sac
+            [<Gold, 150>, <Diamond, 150>]
+     */
+    HashMap<String, List<Couple<Observation,Integer>>> dictBackpack = new HashMap<>();
 
     private MapRepresentation myMap;
     private FullMapRepresentation myFullMap;
@@ -94,6 +104,7 @@ public class FSMAgent extends AbstractDedaleAgent {
         }
 
         this.initDictVoisinsMessages();
+        this.initDictBackpack();
 
         // liste des behaviours
         List<Behaviour> listBehaviours = new ArrayList<>();
@@ -232,4 +243,21 @@ public class FSMAgent extends AbstractDedaleAgent {
     public List<String> getListAgentNames() {
         return listAgentNames;
     }
+
+    public void initDictBackpack() {
+        List<Couple<Observation,Integer>> tmp = new ArrayList<>();
+
+        for (String agent : this.listAgentNames) {
+            this.dictBackpack.put(agent, tmp);
+        }
+
+        // ajouter soi-même
+        this.dictBackpack.put(this.getLocalName(), tmp);
+    }
+
+    public HashMap<String, List<Couple<Observation,Integer>>> getDictBackpack() {
+        return this.dictBackpack;
+    }
+
+
 }

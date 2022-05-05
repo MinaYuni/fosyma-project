@@ -14,6 +14,7 @@ import java.util.Random;
 public class StateCollectFSMBehaviour extends OneShotBehaviour {
     private static final long serialVersionUID = 6567689731496787661L;
 
+    private List<String> listAgentNames;
     private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
     //private MapRepresentation myMap;
     private FullMapRepresentation myFullMap;
@@ -30,29 +31,45 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
         // update information
         this.myFullMap = ((FSMAgent) this.myAgent).getMyFullMap();
         this.dictVoisinsMessages = ((FSMAgent) this.myAgent).getDictVoisinsMessages();
+        this.listAgentNames = ((FSMAgent) this.myAgent).getListAgentNames();
 
         String myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
-        System.out.println("STATE E : " + myName + " -- myCurrentPosition is: " + myPosition);
+        System.out.println(myName + " [STATE E] -- myCurrentPosition is: " + myPosition);
+
+        HashMap<String, Integer> goldDict = this.myFullMap.getGoldDict();
+        HashMap<String, Integer> diamondDict = this.myFullMap.getDiamondDict();
+        System.out.println(myName + " [STATE E] -- goldDict: " + goldDict + " | diamondDict: " + diamondDict);
+
+        /*
+        Soit N = Nd + Ng où Nd/g = nb agent qui va récolter de diamond/gold
+        Soit R = Rd + Rg où Rd/g = nb point récolte de diamond/gold
+
+        on a donc le ratio Rd/100R
+        donc on peut avoir Nd = N*Rd/100R et Ng = N-Nd
+         */
+
+        int nbAgents = this.listAgentNames.size();
+        int nbPointGold = goldDict.size();
+        int nbPointDiamond = diamondDict.size();
+        int nbPointRessources = nbPointGold + nbPointDiamond;
+
 
         if (myPosition != null) {
             // List of observable from the agent's current position
             List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
-            System.out.println("STATE E : " + myName + " -- list of observables: " + lobs);
+            System.out.println(myName + " [STATE E] -- list of observables: " + lobs);
 
             // list of observations associated to the currentPosition
             List<Couple<Observation, Integer>> lObservations = lobs.get(0).getRight();
-            System.out.println("STATE E : " + myName + "lObservations - " + lObservations);
+            System.out.println(myName + " [STATE E] -- lObservations - " + lObservations);
 
             // example related to the use of the backpack for the treasure hunt
             boolean b = false;
 
             for (Couple<Observation, Integer> o : lObservations) {
-                System.out.println("STATE E : " + myName + "-o: " + o + "| o.getLeft(): "+ o.getLeft());
                 switch (o.getLeft()) {
                     case DIAMOND:
-                        System.out.println("STATE E : " + myName + "case DIAMOND");
                     case GOLD:
-                        System.out.println("STATE E : " + myName + "case GOLD");
                         System.out.println(this.myAgent.getLocalName() + " - My treasure type is : " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
                         System.out.println(this.myAgent.getLocalName() + " - My current backpack capacity is:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
                         System.out.println(this.myAgent.getLocalName() + " - Value of the treasure on the current position: " + o.getLeft() + ": " + o.getRight());
