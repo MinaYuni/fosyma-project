@@ -23,6 +23,7 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
     private static final long serialVersionUID = 1567689731496787661L;
 
     private List<String> listAgentNames;
+    private HashMap<String, List<Couple<Observation,Integer>>> dictBackpack;
     private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
     //private MapRepresentation myMap;
     private FullMapRepresentation myFullMap;
@@ -41,6 +42,24 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
         this.myFullMap = ((FSMAgent) this.myAgent).getMyFullMap();
         this.dictVoisinsMessages = ((FSMAgent) this.myAgent).getDictVoisinsMessages();
         this.listAgentNames = ((FSMAgent) this.myAgent).getListAgentNames();
+        this.dictBackpack = ((FSMAgent) this.myAgent).getDictBackpack();
+
+
+        ((FSMAgent) this.myAgent).setDictBackpackAgent(this.myAgent.getLocalName(), ((FSMAgent) this.myAgent).getBackPackFreeSpace());
+
+        String backpackStr = this.dictBackpack.toString();
+        System.out.println(myName + " [STATE A] -- backpackStr: " + backpackStr); // {AgentFSM_2=[], AgentFSM_1=[<Gold, 100>, <Diamond, 100>]}
+
+        //String str = "{AgentFSM_2=[], AgentFSM_1=[<Gold, 100>, <Diamond, 100>]}";
+        //HashMap<String, List<Couple<Observation,Integer>>>
+        //HashMap<String, List<Couple<String,Integer>>>
+        //System.out.println("========= ON A : " + str);
+        //HashMapSerialize stringToHashMap = new HashMapSerialize();
+        //HashMap<String, List<Couple<Observation,Integer>>> listCapacity = stringToHashMap.HashMapFrom(str);
+        //System.out.println("========= VOICI LE RESULTAT : " + listCapacity);
+
+        //HashMap<String, List<Couple<String,Integer>>> backpackDict = ((FSMAgent) this.myAgent).stringToHashMap(str);
+        //System.out.println(myName + " [STATE A] -- backpackDict: " + backpackDict);
 
         try {
             this.myAgent.doWait(1000);
@@ -77,6 +96,7 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
                         System.out.println(myName + " [STATE A] -- Value of the treasure on the current position: " + o.getLeft() + " - " + o.getRight());
                         //System.out.println(myName + " [STATE A] -- The agent grabbed: " + ((AbstractDedaleAgent) this.myAgent).pick());
                         //System.out.println(myName + " [STATE A] -- The remaining backpack capacity: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
+                        break;
                     case STENCH:
                         System.out.println(myName + " [STATE A] -- STENCH");
                     default:

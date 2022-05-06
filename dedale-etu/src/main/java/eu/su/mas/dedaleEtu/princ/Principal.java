@@ -288,6 +288,7 @@ public class Principal {
 
 
         // ---------- GOLEM ---------- //
+/*
         //1) Get the container where the agent will appear
         c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
         Assert.assertNotNull("This container does not exist", c);
@@ -301,6 +302,7 @@ public class Principal {
         //4) Give the class name of your agent to let the system instantiate it
         ag = createNewDedaleAgent(c, agentName, DummyWumpusShift2.class.getName(), entityParameters);
         agentList.add(ag);
+*/
 
 /*
         //1) Get the container where the agent will appear
@@ -409,23 +411,23 @@ public class Principal {
 
 
         // ---------- AGENT FSM ---------- //
-//        c = Principal.containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
-//        Assert.assertNotNull("This container does not exist", c);
+        c = Principal.containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
+        Assert.assertNotNull("This container does not exist", c);
 
-//        agentName = "AgentFSM_1";
-//        Object[] entityParametersExploFSM1 = {"AgentFSM_2"};
-////        Object[] entityParametersExploFSM1 = {"AgentFSM_2", "AgentFSM_3"};
-//        ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM1);
-//        agentList.add(ag);
-//
-//        agentName = "AgentFSM_2";
-//        Object[] entityParametersExploFSM2 = {"AgentFSM_1"};
-////        Object[] entityParametersExploFSM2 = {"AgentFSM_1", "AgentFSM_3"};
-//        ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM2);
-//        agentList.add(ag);
+        agentName = "AgentFSM1";
+        Object[] entityParametersExploFSM1 = {"AgentFSM2"};
+//        Object[] entityParametersExploFSM1 = {"AgentFSM2", "AgentFSM3"};
+        ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM1);
+        agentList.add(ag);
 
-//        agentName = "AgentFSM_3";
-//        Object[] entityParametersExploFSM3 = {"AgentFSM_1", "AgentFSM_2"};
+        agentName = "AgentFSM2";
+        Object[] entityParametersExploFSM2 = {"AgentFSM1"};
+//        Object[] entityParametersExploFSM2 = {"AgentFSM1", "AgentFSM3"};
+        ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM2);
+        agentList.add(ag);
+
+//        agentName = "AgentFSM3";
+//        Object[] entityParametersExploFSM3 = {"AgentFSM1", "AgentFSM2"};
 //        ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM3);
 //        agentList.add(ag);
 
@@ -435,6 +437,8 @@ public class Principal {
          */
 
         // ---------- AGENT Collect 1 ---------- //
+/*
+
         //1) Get the container where the agent will appear
         c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
         Assert.assertNotNull("This container does not exist", c);
@@ -458,6 +462,7 @@ public class Principal {
         //4) Give the class name of your agent to let the system instantiate it
         ag = createNewDedaleAgent(c, agentName, DummyCollectorAgent.class.getName(), entityParametersC2);
         agentList.add(ag);
+*/
 
         // ---------- AGENT Tanker ---------- //
 /*

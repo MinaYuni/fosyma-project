@@ -71,7 +71,7 @@ public final class ConfigurationFile {
      */
 //    public static String INSTANCE_TOPOLOGY=null;
 
-    public static String INSTANCE_TOPOLOGY="resources/topology/map-test";
+//    public static String INSTANCE_TOPOLOGY="resources/topology/map-test";
 
 //    public static String INSTANCE_TOPOLOGY="resources/topology/map2020-topologyExam1-graph.dgs";
 //    public static String INSTANCE_TOPOLOGY="resources/topology/HouatTopology";
@@ -89,7 +89,7 @@ public final class ConfigurationFile {
 //    public static String INSTANCE_CONFIGURATION_ELEMENTS = "resources/distributedExploration/emptyMap";
 
     // otherwise
-    public static String INSTANCE_CONFIGURATION_ELEMENTS="resources/treasureHunt/elements-test";
+//    public static String INSTANCE_CONFIGURATION_ELEMENTS="resources/treasureHunt/elements-test";
 //    public static String INSTANCE_CONFIGURATION_ELEMENTS="resources/treasureHunt/map2019-elementsExam1";
 //    public static String INSTANCE_CONFIGURATION_ELEMENTS="resources/treasureHunt/Houat-elements";
 //    public static String INSTANCE_CONFIGURATION_ELEMENTS="resources/treasureHunt/map2018-elements-ica";
@@ -142,14 +142,14 @@ public final class ConfigurationFile {
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = null;
 
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentCollect";
-//    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentCollect-2";
+    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentCollect-2";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentExplo-2";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentExplo-3";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/FSMagentCollect-Wumpus";
 
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentCollect";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentCollect-2";
-    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/wumpus";
+//    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/wumpus";
 
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentExplo";
 //    public static String INSTANCE_CONFIGURATION_ENTITIES = "resources/agentExplo-2";

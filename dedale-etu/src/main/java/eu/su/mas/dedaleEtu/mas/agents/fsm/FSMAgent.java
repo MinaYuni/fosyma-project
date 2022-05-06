@@ -267,23 +267,155 @@ public class FSMAgent extends AbstractDedaleAgent {
         this.dictBackpack=dico;
     }
 
+    public void setDictBackpackAgent(String agent, List<Couple<Observation,Integer>> listBackpackSpace) {
+        this.dictBackpack.put(agent, listBackpackSpace);
+    }
+
     public List<Couple<Observation,Integer>> getDictBackpackAgent(String agent) {
         return (this.dictBackpack).get(agent);
     }
 
-    public void setDictBackpackAgent(String agent, List<Couple<Observation,Integer>> listCapacity) {
-         this.dictBackpack.put(agent, listCapacity);
+    public HashMap<String, List<Couple<String,Integer>>> stringToHashMap(String listString) {
+        //{AgentFSM_2=[], AgentFSM_1=[<Gold, 100>, <Diamond, 100>]}
+        HashMap<String, List<Couple<String,Integer>>> finalDict = new HashMap<>();
+
+        //String tmpStr = listString.replaceAll("}\{", "");
+
+        return finalDict;
+
+    }
+
+    public void setDictBackPackObservationInteger(String agent, Observation o , Integer quantite ){
+        List<Couple<Observation,Integer>> l = this.dictBackpack.get(agent);
+        int i = 0;
+        for(Couple<Observation,Integer> c : l){
+            i++;
+            if(c.getLeft()==o){
+               break;
+            }
+        }
+        l.set(i, new Couple<>(o, quantite));
+        this.dictBackpack.put(agent, l);
+    }
+
+    public void updateDictBackPack(HashMap<String, List<Couple<Observation,Integer>>> dico) {
+        System.out.println("==== UPDATE Dict Back Pack ======");
+        if (dico!=null) {
+            for (String agent : dico.keySet()) {
+                List<Couple<Observation, Integer>> listCapacityNew = dico.get(agent);
+                List<Couple<Observation, Integer>> listCapacity = this.dictBackpack.get(agent);
+                Couple<Observation, Integer> cGold = listCapacity.get(0);
+                Couple<Observation, Integer> cDiamondNew = listCapacityNew.get(1);
+
+                Couple<Observation, Integer> cGoldNew = listCapacityNew.get(0);
+                Couple<Observation, Integer> cDiamond = listCapacity.get(1);
+
+                if (cGoldNew.getLeft().equals(cGold.getLeft())) { //le cas où le premier element dans les 2 listes est la meme observation
+                    // compare capacité gold de l'agent agent
+                    if (cGoldNew.getRight() > cGold.getRight()) {  // cGold et cGoldNew sont de meme observation
+                        this.setDictBackPackObservationInteger(agent, cGold.getLeft(), cGoldNew.getRight());
+                        System.out.println("[FSMAGENT] -- UPDATE -- AGENT : " + agent + "OBSERVATION : " + cGold.getLeft()+ "QUANTITE : " + cGoldNew.getRight());
+                    }
+                    // compare capacité diamond de l'agent agent
+                    if (cDiamondNew.getRight() > cDiamond.getRight()) {
+                        this.setDictBackPackObservationInteger(agent, cDiamond.getLeft(), cDiamondNew.getRight());
+                        System.out.println("[FSMAGENT] -- UPDATE -- AGENT : " + agent + "OBSERVATION : " + cDiamond.getLeft()+ "QUANTITE : " + cDiamondNew.getRight());
+
+                    }
+
+                } else { //le cas où le premier element dans les 2 listes n'est PAS la meme observation
+                    // compare capacité gold de l'agent agent
+                    if (cGoldNew.getRight() > cDiamond.getRight()) {  //cDiamond et cGoldNew sont de meme observation
+                        this.setDictBackPackObservationInteger(agent, cDiamond.getLeft(), cGoldNew.getRight());
+                        System.out.println("[FSMAGENT] -- UPDATE -- AGENT : " + agent + "OBSERVATION : " + cDiamond.getLeft()+ "QUANTITE : " + cGoldNew.getRight());
+
+                    }
+                    // compare capacité diamond de l'agent agent
+                    if (cDiamondNew.getRight() > cGold.getRight()) {
+                        this.setDictBackPackObservationInteger(agent, cGold.getLeft(), cDiamondNew.getRight());
+                        System.out.println("[FSMAGENT] -- UPDATE -- AGENT : " + agent + "OBSERVATION : " + cGold.getLeft()+ "QUANTITE : " + cDiamondNew.getRight());
+
+                    }
+
+                }
+
+            }
+        }
+    }
+    public int getId(){
+        return this.id;
+    }
+
+    public void updateQuantite(int k){
+        this.quantite = k + this.quantite;
+    }
+
+    public Observation getTypeTreasure() {
+        return typeTreasure;
+    }
+
+    public void setTypeTreasure(Observation obs){
+        this.typeTreasure = obs;
+    }
+
+    public int pick(Observation obs){
+        if (this.typeTreasure==null || this.typeTreasure==obs ){
+            int q = this.pick();
+            this.updateQuantite(q);
+            return q;
+        }
+        return 0;
+    }
+
+    public String getNodeBut(){return this.nodeBut;}
+    public void setNodeBut(String s){
+        this.nodeBut = s;
+    }
+
+    public String getNodeNext(){return this.nodeNext;}
+    public void setNodeNext(String s){
+        this.nodeNext = s;
+    }
+
+    public List<String> getPath(){
+        return this.path;
+    }
+
+    public void setPath(List<String> path){
+        this.path = path;
     }
 
 
-    public int getValeurMin() {
-        return this.valeurMin;
-    }
-    public void setValeurMin(int v) {
-        this.valeurMin = v ;
+/*
+    public static Map<String, Object> jsonToMap(JSONObject json) throws JSONException {
+        Map<String, Object> retMap = new HashMap<String, Object>();
+
+        if(json != JSONObject.NULL) {
+            retMap = toMap(json);
+        }
+        return retMap;
     }
 
-    //public void updateDictBackPath(JSONObject jsonObject) {
+    public static Map<String, Object> toMap(JSONObject object) throws JSONException {
+        Map<String, Object> map = new HashMap<String, Object>();
 
-    //}
+        Iterator<String> keysItr = object.keys();
+        while(keysItr.hasNext()) {
+            String key = keysItr.next();
+            Object value = object.get(key);
+
+            if(value instanceof JSONArray) {
+                value = toList((JSONArray) value);
+            }
+
+            else if(value instanceof JSONObject) {
+                value = toMap((JSONObject) value);
+            }
+            map.put(key, value);
+        }
+        return map;
+    }
+    */
+
+
 }
