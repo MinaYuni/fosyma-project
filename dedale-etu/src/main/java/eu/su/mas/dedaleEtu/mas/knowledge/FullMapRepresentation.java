@@ -344,6 +344,46 @@ public class FullMapRepresentation implements Serializable {
         return this.sg;
     }
 
+
+    private void serializeGraphTopology(HashMap<String, List<Couple<Observation,Integer>>> dictBackPack) {
+        this.sg = new SerializableSimpleGraph<>();
+
+
+        for (Node n : this.g) {    //on copie tous les noeuds du graphe
+            //sg.addNode(n.getId(), MapAttribute.valueOf((String) n.getAttribute("ui.class")));
+            HashMap<String, Object> map = new HashMap<>(); // map containing all the attributes of the node
+            Object[] attributes = n.attributeKeys().toArray();
+
+            //envoie attribut du noeud n dans le graphe g
+            for (Object att : attributes) {
+                String key = (String) att;
+                map.put(key, n.getAttribute(key).toString());
+                map.put("diamondDict", this.diamondDict);
+                map.put("goldDict", this.goldDict);
+                map.put("dictBackPack", dictBackPack);
+            }
+            sg.addNode(n.getId(), map);
+        }
+        //sg.addNode("diamondDict", this.diamondDict);
+        //sg.addNode("goldDict", this.goldDict);
+        //sg.addNode("dictBackPack", dictBackPack );
+
+        Iterator<Edge> iterE = this.g.edges().iterator();
+
+        while (iterE.hasNext()) {    // on copie tous les arêtes du graphe
+            Edge e = iterE.next();
+            Node sn = e.getSourceNode();
+            Node tn = e.getTargetNode();
+            sg.addEdge(e.getId(), sn.getId(), tn.getId());
+        }
+    }
+
+    public synchronized SerializableSimpleGraph<String, HashMap<String, Object>> getSerializableGraph(HashMap<String, List<Couple<Observation,Integer>>> dictBackPack) {
+        serializeGraphTopology(dictBackPack);
+        return this.sg;
+    }
+
+
     /**
      * After migration we load the serialized data and recreate the non serializable components (Gui,..)
      */
@@ -475,6 +515,69 @@ public class FullMapRepresentation implements Serializable {
         }
 
         System.out.println("Merge done");
+    }
+
+
+    public HashMap<String, List<Couple<Observation,Integer>>> mergeMapDict(SerializableSimpleGraph<String, HashMap<String, Object>> sgreceived) {
+        //System.out.println("You should decide what you want to save and how");
+        //System.out.println("We currently blindy add the topology");
+        boolean envoyeDict = true;
+        HashMap<String, List<Couple<Observation,Integer>>> dictBackPack = null ;
+        // add node
+        for (SerializableNode<String, HashMap<String, Object>> nReceived : sgreceived.getAllNodes()) {
+            String nodeID = nReceived.getNodeId();
+            HashMap<String, Object> nReceivedAttributes = nReceived.getNodeContent();
+            Node nActual = this.g.getNode(nodeID);
+
+            //if (nodeID=="dictBackPack"){
+            //   dictBackPack = nReceived.getNodeContent();
+            //}
+
+            //dico diamond et gold
+            //on envoit les dico diamond et gold dans le premier noeud (et pas aux autres)
+            if (envoyeDict) {
+                envoyeDict = false;
+                dictBackPack = (HashMap<String, List<Couple<Observation,Integer>>>) nReceivedAttributes.get("dictBackPck");
+                this.updateDiamondDictExplo((HashMap<String,Couple<Integer, String>>)nReceivedAttributes.get("diamondDict"));
+                this.updateGoldDictExplo((HashMap<String,Couple<Integer, String>>)nReceivedAttributes.get("goldDict"));
+            }
+
+            if (nActual == null) { // le noeud reçu n'est pas dans le graphe actuel, alors on le crée
+                nActual = this.g.addNode(nodeID);
+                // ajout des attributs du noeud reçu
+                nActual.setAttribute("ui.label", nReceivedAttributes.get("ui.label").toString());
+                nActual.setAttribute("ui.class", nReceivedAttributes.get("ui.class").toString());
+                nActual.setAttribute("timestamp", nReceivedAttributes.get("timestamp").toString());
+            }
+
+            // mise à jour des attributs du noeud actuel
+            for (String key: nReceivedAttributes.keySet()) {
+                if (Objects.equals(key, "timestamp")) {
+                    // prendre le timestamp le plus récent
+                    int comparaison = (nReceived.getNodeContent().get("timestamp").toString()).compareTo(nActual.getAttribute("timestamp").toString());
+                    if (comparaison >= 0) {
+                        nActual.setAttribute(key, nReceivedAttributes.get(key).toString());
+                    }
+                }else if (Objects.equals(key, "ui.class")){
+                    // mettre le noeud actuel fermé s'il l'était déjà ou si le noeud reçu est fermé
+                    if (nActual.getAttribute(key).equals(MapAttribute.closed.toString()) || nReceivedAttributes.get(key).toString().equals(MapAttribute.closed.toString()) ) {
+                        nActual.setAttribute(key, MapAttribute.closed.toString());
+                    }
+                }
+                else {
+                    nActual.setAttribute(key, nReceivedAttributes.get(key).toString());
+                }
+            }
+        }
+
+        //now that all nodes are added, we can add edges
+        for (SerializableNode<String, HashMap<String, Object>> nReceived: sgreceived.getAllNodes()) {
+            for (String s : sgreceived.getEdges(nReceived.getNodeId())) {
+                addEdge(nReceived.getNodeId(), s);
+            }
+        }
+        System.out.println("Merge done");
+        return dictBackPack;
     }
 
     /**

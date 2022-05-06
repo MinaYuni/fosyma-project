@@ -68,7 +68,8 @@ public class StateSendMapFSMBehaviour extends OneShotBehaviour {
         }
 
         // ajout de la carte de l'agent dans le message
-        SerializableSimpleGraph<String, HashMap<String, Object>> mapSent = this.myFullMap.getSerializableGraph();
+        //SerializableSimpleGraph<String, HashMap<String, Object>> mapSent = this.myFullMap.getSerializableGraph();
+        SerializableSimpleGraph<String, HashMap<String, Object>> mapSent = this.myFullMap.getSerializableGraph(((FSMAgent)this.myAgent).getDictBackpack());
 
         //this.myMap.prepareMigration(); // generer SerializableSimpleGraph (et met this.myMap.g à null => optimiser place memoire ???? )
         //SerializableSimpleGraph<String, MapAttribute> mapSent = (this.myMap).getSg();

@@ -1,5 +1,7 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 
+import dataStructures.tuple.Couple;
+import eu.su.mas.dedale.env.Observation;
 import eu.su.mas.dedaleEtu.mas.knowledge.FullMapRepresentation;
 import jade.core.behaviours.OneShotBehaviour;
 import eu.su.mas.dedaleEtu.mas.agents.fsm.FSMAgent;
@@ -105,7 +107,13 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
                 e.printStackTrace();
             }
             assert mapReceived != null;
-            this.myFullMap.mergeMap(mapReceived);
+            //this.myFullMap.mergeMap(mapReceived);
+            HashMap<String, List<Couple<Observation,Integer>>> dictBackPack = this.myFullMap.mergeMapDict(mapReceived);
+            System.out.println(myName + " [STATE C] -- AVANT MERGE DICT : " + myName + " -- TYPE : " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType() );
+            System.out.println(myName + " [STATE C] -- AVANT MERGE DICT : " + ((FSMAgent) this.myAgent).getDictBackpack());
+            ((FSMAgent)this.myAgent).updateDictBackPack(dictBackPack);
+            System.out.println(myName + " [STATE C] -- APRES MERGE DICT : " + myName + " -- TYPE : " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType() );
+            System.out.println(myName + " [STATE C] -- APRES MERGE DICT : " + ((FSMAgent) this.myAgent).getDictBackpack());
 
             // update de l'action "recoit_MAP"
             ((FSMAgent) this.myAgent).setDictVoisinsMessagesAgentAction(nameExpediteur, "recoit_MAP", true);

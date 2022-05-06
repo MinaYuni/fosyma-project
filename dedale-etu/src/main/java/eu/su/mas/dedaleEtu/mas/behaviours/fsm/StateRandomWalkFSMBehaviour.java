@@ -124,8 +124,11 @@ public class StateRandomWalkFSMBehaviour extends OneShotBehaviour {
 //            this.myFullMap.mergeMap(mapReceived);
 //        }
 
-        exitValue = 1; // reste au state G (Random Walk)
-        System.out.println(myName + " STAYS in G");
+        //exitValue = 1; // reste au state G (Random Walk)
+        //System.out.println(myName + " STAYS in G");
+        exitValue = 2; // va au state E (Collect)
+        System.out.println(myName + " -- [STATE G] -- Go to state E (collect) ");
+
     }
 
     public int onEnd() {

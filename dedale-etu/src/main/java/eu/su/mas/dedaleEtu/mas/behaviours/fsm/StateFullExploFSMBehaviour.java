@@ -5,6 +5,7 @@ import eu.su.mas.dedale.env.Observation;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.agents.fsm.FSMAgent;
 import eu.su.mas.dedaleEtu.mas.knowledge.FullMapRepresentation;
+import eu.su.mas.dedaleEtu.mas.knowledge.HashMapSerialize;
 import jade.core.AID;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -36,7 +37,7 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
     public void action() {
         String myName = this.myAgent.getLocalName();
 
-        System.out.println("\n--- START state A (StateFullExploFSMBehaviour): " + myName + " ---");
+        System.out.println("\n--- START state A (StateFullExploFSMBehaviour): " + myName + " --- ");
 
         // update information
         this.myFullMap = ((FSMAgent) this.myAgent).getMyFullMap();
@@ -61,11 +62,11 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
         //HashMap<String, List<Couple<String,Integer>>> backpackDict = ((FSMAgent) this.myAgent).stringToHashMap(str);
         //System.out.println(myName + " [STATE A] -- backpackDict: " + backpackDict);
 
-        try {
-            this.myAgent.doWait(1000);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            this.myAgent.doWait(500);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
         // 0) Retrieve the current position
         String myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
@@ -88,13 +89,13 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
                         System.out.println(myName + " [STATE A] -- My treasure type: " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
                         System.out.println(myName + " [STATE A] -- My current backpack capacity:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
                         System.out.println(myName + " [STATE A] -- Value of the treasure on the current position: " + o.getLeft() + " - " + o.getRight());
-                        //System.out.println(myName + " [STATE A] -- The agent grabbed: " + ((AbstractDedaleAgent) this.myAgent).pick());
+                        System.out.println(myName + " [STATE A] -- The agent grabbed: " + ((AbstractDedaleAgent) this.myAgent).pick());
                         //System.out.println(myName + " [STATE A] -- The remaining backpack capacity: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
                     case GOLD:
                         System.out.println(myName + " [STATE A] -- My treasure type: " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
                         System.out.println(myName + " [STATE A] -- My current backpack capacity:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
                         System.out.println(myName + " [STATE A] -- Value of the treasure on the current position: " + o.getLeft() + " - " + o.getRight());
-                        //System.out.println(myName + " [STATE A] -- The agent grabbed: " + ((AbstractDedaleAgent) this.myAgent).pick());
+                        System.out.println(myName + " [STATE A] -- The agent grabbed: " + ((AbstractDedaleAgent) this.myAgent).pick());
                         //System.out.println(myName + " [STATE A] -- The remaining backpack capacity: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
                         break;
                     case STENCH:

@@ -13,12 +13,11 @@ import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 
 import java.lang.reflect.Array;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-import java.util.ArrayList;
+import java.util.*;
 
 import java.lang.Object;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 //import javax.json.*;
 //import javax.json.Json;
 //import org.json.simple.*;
@@ -54,6 +53,7 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
         }
         this.dictBackpack = ((FSMAgent) this.myAgent).getDictBackpack();
 
+        int agentID = ((FSMAgent) this.myAgent).getId();
 
 
         String myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
@@ -78,20 +78,20 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
         int nbPointRessources = nbPointGold + nbPointDiamond;
         int nbAgentsGold = 0;
         int nbAgentsDiamond = 0;
-        if (nbPointDiamond > nbPointGold){
-            nbAgentsDiamond = nbAgents * nbPointDiamond / 100*nbPointRessources;
-            nbAgentsGold = nbAgents - nbAgentsDiamond;
-        }else{
-            nbAgentsGold = nbAgents * nbPointGold / 100*nbPointRessources;
+        if (nbPointDiamond < nbPointGold){
+            nbAgentsGold = (int) nbAgents * nbPointGold / 100*nbPointRessources;
             nbAgentsDiamond = nbAgents - nbAgentsGold;
+        }else{
+            nbAgentsDiamond = (int) nbAgents * nbPointDiamond / 100*nbPointRessources;
+            nbAgentsGold = nbAgents - nbAgentsDiamond;
         }
 
-        System.out.println("[STATE E] ------ NB AGENT : " + nbAgents + "--------------- NB AGENT GOLD : " + nbAgentsGold + "----- NB AGENT DIAMOND : " + nbAgentsDiamond);
-        System.out.println("[STATE E] -- NB RESSOURCE : " + nbPointRessources + "-- NB RESSOURCE GOLD : " + nbPointGold + "-- NB RESSOURCE DIAMOND : " + nbPointDiamond);
+        System.out.println("[STATE E] ------ NB AGENT : " + nbAgents + " ---------- NB AGENT GOLD : " + nbAgentsGold + " ----- NB AGENT DIAMOND : " + nbAgentsDiamond);
+        System.out.println("[STATE E] -- NB RESSOURCE : " + nbPointRessources + " -- NB RESSOURCE GOLD : " + nbPointGold + " -- NB RESSOURCE DIAMOND : " + nbPointDiamond);
 
         List<Couple<Observation, Integer>> listCapacity = ((FSMAgent) this.myAgent).getBackPackFreeSpace();
 
-
+/*
         // ACTION : Envoie dictBackpack
         ACLMessage msgSend = new ACLMessage(ACLMessage.INFORM);
         msgSend.setProtocol("SHARE-MIN");
@@ -130,6 +130,46 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
             //JSONObject jsonObject = (JSONObject) obj;
             //((FSMAgent) this.myAgent).updateDictBackPath(jsonObject);
         }
+*/
+        //choix type trésor : on coupe en partition
+        if(agentID<=nbAgentsGold){
+            ((FSMAgent) this.myAgent).setTypeTreasure(Observation.GOLD);
+        }else{
+            ((FSMAgent) this.myAgent).setTypeTreasure(Observation.DIAMOND);
+        }
+        System.out.println(myName +"[state E] --- Type Treasure " + ((FSMAgent) this.myAgent).getTypeTreasure());
+
+        //Suppose exploration fini
+
+        //Trier le dico Gold
+        HashMap<String, Couple<Integer, String>> dictGold = this.myFullMap.getGoldDict();
+        List<String> listG = new ArrayList<String>(dictGold.keySet());
+        List<Integer> listGold = new ArrayList<Integer>();
+        for(String s : listG){
+            // noeud s est du format 2_1
+            String mot = s.substring(0, 1) + s.substring(2);
+            int value = (int) Integer.valueOf(mot);
+
+            // noeud s est du format 21
+            //int value = (int) Integer.valueOf(s);
+            listGold.add(value);
+        }
+        Collections.sort(listGold); //trie la liste
+
+        //Trier le dico diamond
+        HashMap<String, Couple<Integer, String>> dictDiamond = this.myFullMap.getDiamondDict();
+        List<String> listD = new ArrayList<String>(dictDiamond.keySet());
+        List<Integer> listDiamond = new ArrayList<Integer>();
+        for(String s : listD){
+            // noeud s est du format 2_1
+            String mot = s.substring(0, 1) + s.substring(2);
+            int value = (int) Integer.valueOf(mot);
+
+            // noeud s est du format 21
+            //int value = (int) Integer.valueOf(s);
+            listDiamond.add(value);
+        }
+        Collections.sort(listDiamond); //trie la liste
 
 
         if (myPosition != null) {
@@ -147,11 +187,18 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
             for (Couple<Observation, Integer> o : lObservations) {
                 switch (o.getLeft()) {
                     case DIAMOND:
+                        System.out.println(this.myAgent.getLocalName() + " - My treasure type is : " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
+                        System.out.println(this.myAgent.getLocalName() + " - My current backpack capacity is:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
+                        System.out.println(this.myAgent.getLocalName() + " - Value of the treasure on the current position: " + o.getLeft() + ": " + o.getRight());
+                        //System.out.println(this.myAgent.getLocalName() + " - The agent grabbed :" + k);
+                        System.out.println(this.myAgent.getLocalName() + " - the remaining backpack capacity is: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
+                        b = true;
+                        break;
                     case GOLD:
                         System.out.println(this.myAgent.getLocalName() + " - My treasure type is : " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
                         System.out.println(this.myAgent.getLocalName() + " - My current backpack capacity is:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
                         System.out.println(this.myAgent.getLocalName() + " - Value of the treasure on the current position: " + o.getLeft() + ": " + o.getRight());
-                        System.out.println(this.myAgent.getLocalName() + " - The agent grabbed :" + ((AbstractDedaleAgent) this.myAgent).pick());
+                        //System.out.println(this.myAgent.getLocalName() + " - The agent grabbed :" + k);
                         System.out.println(this.myAgent.getLocalName() + " - the remaining backpack capacity is: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
                         b = true;
                         break;
@@ -159,22 +206,70 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
                         break;
                 }
             }
-
             // If the agent picked (part of) the treasure
             if (b) {
                 List<Couple<String, List<Couple<Observation, Integer>>>> lobs2 = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
                 System.out.println("STATE E : " + myName + " - State of the observations after trying to pick something " + lobs2);
             }
 
+            //Collecte Gold/Diamond
+            if (agentID > nbAgentsGold) {
+                int k = ((FSMAgent) this.myAgent).pick();
+                System.out.println(this.myAgent.getLocalName() + " - The agent grabbed : " + k);
+                ((FSMAgent) this.myAgent).updateQuantite(k);
+
+            }
+            else if (agentID <= nbAgentsGold) {
+                int k = ((FSMAgent) this.myAgent).pick();
+                System.out.println(this.myAgent.getLocalName() + " - The agent grabbed : " + k);
+                ((FSMAgent) this.myAgent).updateQuantite(k);
+            }
+
+
+
             // Random move from the current position
             Random r = new Random();
             int moveId = 1 + r.nextInt(lobs.size() - 1); // removing the current position from the list of target, not necessary as to stay is an action but allow quicker random move
 
+            // répartition des noeuds ressources pour chaque agent
+            String nextNode = null;
+            if (nbAgents <= nbPointRessources) {
+                // SUPPOSE QUE nbAgent <= nbRessource !!! avec ou sans Wumpus
+                int nodeBut = listGold.get(agentID-1); //les id vont de 1 à nbAgents
+                String nodeT = String.valueOf(nodeBut);
+
+                // noeud nodeT est du format 2_1
+                nodeT = nodeT.substring(0,1)+ "_" +nodeT.substring(1);
+
+                ((FSMAgent) this.myAgent).setNodeBut(nodeT);
+                System.out.println(myName + "[State E] -- nodeBut : " + nodeT);
+                List<String> path = this.myFullMap.getShortestPath(myPosition, nodeT);
+                ((FSMAgent) this.myAgent).setPath(path);
+                nextNode = path.get(0);
+            }else{
+                // SUPPOSE QUE nbAgent > nbRessource
+                if (agentID <= nbPointRessources) {   //on va faire collecte avec certains agents (pour l'instant par défaut)
+                    int nodeBut = listGold.get(agentID); // a verifier
+                    ((FSMAgent) this.myAgent).setNodeBut(String.valueOf(nodeBut));
+                    String nodeT = String.valueOf(nodeBut);
+
+                    // noeud nodeT est du format 2_1
+                    nodeT = nodeT.substring(0,1)+ "_" +nodeT.substring(1);
+
+                    List<String> path = this.myFullMap.getShortestPath(myPosition, nodeT);
+                    ((FSMAgent) this.myAgent).setPath(path);
+                    nextNode = path.get(0);
+                }else{
+                    nextNode = lobs.get(moveId).getLeft();
+                }
+            }
             // The move action (if any) should be the last action of your behaviour
-            String nextNode = lobs.get(moveId).getLeft();
-            System.out.println("STATE E : " + myName + " will move to " + nextNode);
+            System.out.println( myName + "[State E] : " + myName + " will move to " + nextNode);
             ((AbstractDedaleAgent) this.myAgent).moveTo(nextNode);
         }
+        exitValue = 1 ; //continue en state E
+        System.out.println(myName + "[State E] (StateCollectFSMBehaviour): " + myName + " --- END ---");
+
     }
 
     public int onEnd() {

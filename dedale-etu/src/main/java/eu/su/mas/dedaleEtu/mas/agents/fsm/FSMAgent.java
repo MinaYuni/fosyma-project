@@ -22,6 +22,7 @@ import jade.core.behaviours.FSMBehaviour;
 // Repartition des ressources de manière équitable : max du min ou indice de Gini
 
 public class FSMAgent extends AbstractDedaleAgent {
+    public int cpt = 0; //pour donner des identifiants aux agents pour la collecte
     private static final long serialVersionUID = -1969469610241668140L;
 
     /*
@@ -88,11 +89,22 @@ public class FSMAgent extends AbstractDedaleAgent {
     private MapRepresentation myMap;
     private FullMapRepresentation myFullMap;
     private List<String> listAgentNames = new ArrayList<String>();
-    private int valeurMin; //min v_i où v_i est la quantité récoltée par l'agent i
-    private int valeurMax; //max v_i où v_i est la quantité récoltée par l'agent i
+    private Observation typeTreasure;
+    private int id; //pour la collecte (id prend valeur entre 1 à Nb Agents)
+    private int quantite; //pour savoir la quantité de trésor récupérer
+    private String nodeBut ; //le noeud à atteindre
+    private List<String> path;
+    private String nodeNext;
 
     protected void setup() {
         super.setup();
+
+        this.cpt ++;
+        this.id = cpt; //compris entre 1 à NbAgents
+        this.quantite = 0;
+        this.typeTreasure = null;
+        this.nodeBut = "";
+        this.nodeNext = "";
 
         // get the parameters added to the agent at creation (if any)
         final Object[] args = getArguments();
@@ -110,6 +122,7 @@ public class FSMAgent extends AbstractDedaleAgent {
 
         this.initDictVoisinsMessages();
         this.initDictBackpack();
+        this.initPath();
 
         // liste des behaviours
         List<Behaviour> listBehaviours = new ArrayList<>();
@@ -138,6 +151,9 @@ public class FSMAgent extends AbstractDedaleAgent {
         fsm.registerTransition(C, B, 4);
         fsm.registerTransition(D, C, 1);
         fsm.registerTransition(G, G, 1);
+        fsm.registerTransition(G, E, 2);
+        fsm.registerTransition(E, E, 1);
+
 
         // Ajout de FSMBehaviour dans la liste des comportements
         listBehaviours.add(fsm);
@@ -172,6 +188,12 @@ public class FSMAgent extends AbstractDedaleAgent {
             etat.put("envoie_ACK", false);  // ACK à envoyer pour la carte reçue par l'agent du ping
             etat.put("recoit_ACK", false);  // attente ACK de sa carte par l'agent du ping
             this.dictVoisinsMessages.put(agent, etat);
+        }
+    }
+
+    public void initPath(){
+        if (this.path==null){
+            this.path = new ArrayList<>();
         }
     }
 

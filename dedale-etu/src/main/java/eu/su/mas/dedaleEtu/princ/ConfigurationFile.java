@@ -48,8 +48,8 @@ public final class ConfigurationFile {
     /*
      * The environment is either manually designed, or generated with a specific generator
      */
-    public static GeneratorType GENERATOR_TYPE = GeneratorType.MANUAL;
-//    public static GeneratorType GENERATOR_TYPE = GeneratorType.GS_GRID;
+//    public static GeneratorType GENERATOR_TYPE = GeneratorType.MANUAL;
+    public static GeneratorType GENERATOR_TYPE = GeneratorType.GS_GRID;
 
     /*
      * 	The GateKeeper is in charge of the Platform and of the agents within, do not change its name.
@@ -69,7 +69,7 @@ public final class ConfigurationFile {
     /*
      * Give the topology
      */
-//    public static String INSTANCE_TOPOLOGY=null;
+    public static String INSTANCE_TOPOLOGY=null;
 
 //    public static String INSTANCE_TOPOLOGY="resources/topology/map-test";
 
@@ -86,7 +86,7 @@ public final class ConfigurationFile {
      * Give the elements available on the map, if any
      */
     // If the environment is loaded, but you do not want to define elements on the map
-//    public static String INSTANCE_CONFIGURATION_ELEMENTS = "resources/distributedExploration/emptyMap";
+    public static String INSTANCE_CONFIGURATION_ELEMENTS = "resources/distributedExploration/emptyMap";
 
     // otherwise
 //    public static String INSTANCE_CONFIGURATION_ELEMENTS="resources/treasureHunt/elements-test";
@@ -106,7 +106,7 @@ public final class ConfigurationFile {
     /*
      * Size of the generated environment, mandatory
      */
-    public static Integer ENVIRONMENT_SIZE = 5;
+    public static Integer ENVIRONMENT_SIZE = 8;
 
     // Parameters required for some generators (see dedale.gitlab.io)
     public static Integer OPTIONAL_ADDITIONAL_ENVGENERATOR_PARAM1 = 1; // used by the BARABASI_ALBERT generator to know the number of childs
