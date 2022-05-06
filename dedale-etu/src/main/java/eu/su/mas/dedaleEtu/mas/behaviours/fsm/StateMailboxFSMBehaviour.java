@@ -109,11 +109,11 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
             assert mapReceived != null;
             //this.myFullMap.mergeMap(mapReceived);
             HashMap<String, List<Couple<Observation,Integer>>> dictBackPack = this.myFullMap.mergeMapDict(mapReceived);
-            System.out.println(myName + " [STATE C] -- AVANT MERGE DICT : " + myName + " -- TYPE : " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType() );
-            System.out.println(myName + " [STATE C] -- AVANT MERGE DICT : " + ((FSMAgent) this.myAgent).getDictBackpack());
+            //System.out.println(myName + " [STATE C] -- AVANT MERGE DICT : " + myName + " -- TYPE : " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType() );
+            System.out.println(myName + " [STATE C] -- AVANT MERGE DICT : " + ((FSMAgent) this.myAgent).getDictBackpack() + " -- ||-- " + dictBackPack);
             ((FSMAgent)this.myAgent).updateDictBackPack(dictBackPack);
-            System.out.println(myName + " [STATE C] -- APRES MERGE DICT : " + myName + " -- TYPE : " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType() );
-            System.out.println(myName + " [STATE C] -- APRES MERGE DICT : " + ((FSMAgent) this.myAgent).getDictBackpack());
+            //System.out.println(myName + " [STATE C] -- APRES MERGE DICT : " + myName + " -- TYPE : " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType() );
+            System.out.println(myName + " [STATE C] -- APRES MERGE DICT : " + ((FSMAgent) this.myAgent).getDictBackpack() + " -- ||-- " + dictBackPack);
 
             // update de l'action "recoit_MAP"
             ((FSMAgent) this.myAgent).setDictVoisinsMessagesAgentAction(nameExpediteur, "recoit_MAP", true);

@@ -115,14 +115,12 @@ public class FullMapRepresentation implements Serializable {
     };
     public void updateDiamondDictExplo(HashMap<String, Couple<Integer, String>> dict){
         if (dict != null) {
-            System.out.println("------ Update Diamond Dict ");
             for (String node : dict.keySet()) {
                 if (this.diamondDict.containsKey(node)) {
                     // prend la quantité de gold la plus récente
                     int comparaison = (dict.get(node).getRight()).compareTo(this.diamondDict.get(node).getRight());
                     if (comparaison >= 0) {
                         this.diamondDict.put(node, dict.get(node));
-                        System.out.println("------ Update Diamond Dict "+ node + " || "+ dict.get(node));
                     }
                 }else{
                     // on découvre du gold dans un noeud node
@@ -540,6 +538,7 @@ public class FullMapRepresentation implements Serializable {
                 dictBackPack = (HashMap<String, List<Couple<Observation,Integer>>>) nReceivedAttributes.get("dictBackPck");
                 this.updateDiamondDictExplo((HashMap<String,Couple<Integer, String>>)nReceivedAttributes.get("diamondDict"));
                 this.updateGoldDictExplo((HashMap<String,Couple<Integer, String>>)nReceivedAttributes.get("goldDict"));
+                System.out.println("== " + this.diamondDict + " --||-- "+ this.goldDict + " --||-- "+ dictBackPack + " --||-- ");
             }
 
             if (nActual == null) { // le noeud reçu n'est pas dans le graphe actuel, alors on le crée
@@ -577,6 +576,7 @@ public class FullMapRepresentation implements Serializable {
             }
         }
         System.out.println("Merge done");
+        System.out.println("== dictBackPck : " + dictBackPack);
         return dictBackPack;
     }
 

@@ -15,6 +15,7 @@ import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.FSMBehaviour;
+import org.omg.CORBA.PUBLIC_MEMBER;
 
 //import javax.json.*;
 //import org.json.*;
@@ -94,7 +95,11 @@ public class FSMAgent extends AbstractDedaleAgent {
     private int quantite; //pour savoir la quantité de trésor récupérer
     private String nodeBut ; //le noeud à atteindre
     private List<String> path;
-    private String nodeNext;
+
+    private int nbPointRecolte ; //indique le nombre de recolte deja fait
+
+    private String nextNode;
+    private List<String> listNodeRessource ; //la liste des noeuds que l'agent doit récupérer
 
     protected void setup() {
         super.setup();
@@ -104,8 +109,9 @@ public class FSMAgent extends AbstractDedaleAgent {
         this.quantite = 0;
         this.typeTreasure = null;
         this.nodeBut = "";
-        this.nodeNext = "";
-
+        this.nextNode = "";
+        this.nbPointRecolte= 0;
+        this.listNodeRessource = new ArrayList<>();
         // get the parameters added to the agent at creation (if any)
         final Object[] args = getArguments();
 
@@ -118,6 +124,7 @@ public class FSMAgent extends AbstractDedaleAgent {
                 this.listAgentNames.add((String) args[i]);
                 i++;
             }
+            System.out.println("====="+this.listAgentNames);
         }
 
         this.initDictVoisinsMessages();
@@ -289,22 +296,33 @@ public class FSMAgent extends AbstractDedaleAgent {
         this.dictBackpack=dico;
     }
 
-    public void setDictBackpackAgent(String agent, List<Couple<Observation,Integer>> listBackpackSpace) {
-        this.dictBackpack.put(agent, listBackpackSpace);
-    }
-
     public List<Couple<Observation,Integer>> getDictBackpackAgent(String agent) {
         return (this.dictBackpack).get(agent);
     }
 
+    public void setDictBackpackAgent(String agent, List<Couple<Observation,Integer>> listBackpackSpace) {
+        this.dictBackpack.put(agent, listBackpackSpace);
+    }
+
+
     public HashMap<String, List<Couple<String,Integer>>> stringToHashMap(String listString) {
         //{AgentFSM_2=[], AgentFSM_1=[<Gold, 100>, <Diamond, 100>]}
         HashMap<String, List<Couple<String,Integer>>> finalDict = new HashMap<>();
-
         //String tmpStr = listString.replaceAll("}\{", "");
-
         return finalDict;
+    }
 
+
+    public Integer getDictBackPackObservationInteger(String agent, Observation o){
+        List<Couple<Observation,Integer>> l = this.dictBackpack.get(agent);
+        int i = 0;
+        for(Couple<Observation,Integer> c : l){
+            i++;
+            if(c.getLeft()==o){
+                return c.getRight();
+            }
+        }
+        return 0;
     }
 
     public void setDictBackPackObservationInteger(String agent, Observation o , Integer quantite ){
@@ -321,7 +339,6 @@ public class FSMAgent extends AbstractDedaleAgent {
     }
 
     public void updateDictBackPack(HashMap<String, List<Couple<Observation,Integer>>> dico) {
-        System.out.println("==== UPDATE Dict Back Pack ======");
         if (dico!=null) {
             for (String agent : dico.keySet()) {
                 List<Couple<Observation, Integer>> listCapacityNew = dico.get(agent);
@@ -332,35 +349,27 @@ public class FSMAgent extends AbstractDedaleAgent {
                 Couple<Observation, Integer> cGoldNew = listCapacityNew.get(0);
                 Couple<Observation, Integer> cDiamond = listCapacity.get(1);
 
+                System.out.println("[FSMAGENT] -- UPDATE -- AVANT : " + this.dictBackpack );
                 if (cGoldNew.getLeft().equals(cGold.getLeft())) { //le cas où le premier element dans les 2 listes est la meme observation
                     // compare capacité gold de l'agent agent
                     if (cGoldNew.getRight() > cGold.getRight()) {  // cGold et cGoldNew sont de meme observation
                         this.setDictBackPackObservationInteger(agent, cGold.getLeft(), cGoldNew.getRight());
-                        System.out.println("[FSMAGENT] -- UPDATE -- AGENT : " + agent + "OBSERVATION : " + cGold.getLeft()+ "QUANTITE : " + cGoldNew.getRight());
                     }
                     // compare capacité diamond de l'agent agent
                     if (cDiamondNew.getRight() > cDiamond.getRight()) {
                         this.setDictBackPackObservationInteger(agent, cDiamond.getLeft(), cDiamondNew.getRight());
-                        System.out.println("[FSMAGENT] -- UPDATE -- AGENT : " + agent + "OBSERVATION : " + cDiamond.getLeft()+ "QUANTITE : " + cDiamondNew.getRight());
-
                     }
-
                 } else { //le cas où le premier element dans les 2 listes n'est PAS la meme observation
                     // compare capacité gold de l'agent agent
                     if (cGoldNew.getRight() > cDiamond.getRight()) {  //cDiamond et cGoldNew sont de meme observation
                         this.setDictBackPackObservationInteger(agent, cDiamond.getLeft(), cGoldNew.getRight());
-                        System.out.println("[FSMAGENT] -- UPDATE -- AGENT : " + agent + "OBSERVATION : " + cDiamond.getLeft()+ "QUANTITE : " + cGoldNew.getRight());
-
                     }
                     // compare capacité diamond de l'agent agent
                     if (cDiamondNew.getRight() > cGold.getRight()) {
                         this.setDictBackPackObservationInteger(agent, cGold.getLeft(), cDiamondNew.getRight());
-                        System.out.println("[FSMAGENT] -- UPDATE -- AGENT : " + agent + "OBSERVATION : " + cGold.getLeft()+ "QUANTITE : " + cDiamondNew.getRight());
-
                     }
-
                 }
-
+                System.out.println("[FSMAGENT] -- UPDATE -- APRES : " + this.dictBackpack );
             }
         }
     }
@@ -384,6 +393,7 @@ public class FSMAgent extends AbstractDedaleAgent {
         if (this.typeTreasure==null || this.typeTreasure==obs ){
             int q = this.pick();
             this.updateQuantite(q);
+            this.nbPointRecolte ++;
             return q;
         }
         return 0;
@@ -394,11 +404,6 @@ public class FSMAgent extends AbstractDedaleAgent {
         this.nodeBut = s;
     }
 
-    public String getNodeNext(){return this.nodeNext;}
-    public void setNodeNext(String s){
-        this.nodeNext = s;
-    }
-
     public List<String> getPath(){
         return this.path;
     }
@@ -407,8 +412,44 @@ public class FSMAgent extends AbstractDedaleAgent {
         this.path = path;
     }
 
+    public int getNbPointRecolte() {
+        return nbPointRecolte;
+    }
 
-/*
+    public void setNbPointRecolte(int nbPointRecolte) {
+        this.nbPointRecolte = nbPointRecolte;
+    }
+
+    public String getNextNode() {
+        return nextNode;
+    }
+
+    public void setNextNode(String nextNode) {
+        this.nextNode = nextNode;
+    }
+
+    public List<String> getListNodeRessource() {
+        return listNodeRessource;
+    }
+
+    public void setListNodeRessource(List<String> listNodeRessource) {
+        this.listNodeRessource = listNodeRessource;
+    }
+
+    public boolean addListNodeRessource(Integer max, String s) {
+        if( (!this.listNodeRessource.contains(s)) && this.listNodeRessource.size()<=max) {
+            this.listNodeRessource.add(s);
+            return true;
+        }
+        return false;
+    }
+
+    public void choixNext(){
+        this.nextNode = listNodeRessource.get(this.nbPointRecolte);
+    }
+
+
+    /*
     public static Map<String, Object> jsonToMap(JSONObject json) throws JSONException {
         Map<String, Object> retMap = new HashMap<String, Object>();
 

@@ -1,1 +1,1 @@
-http://minhanh-dell-5515:7778/acc
+http://192.168.0.12:7778/acc
