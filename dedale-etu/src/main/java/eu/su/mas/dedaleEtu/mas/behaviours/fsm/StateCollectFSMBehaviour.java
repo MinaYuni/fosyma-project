@@ -49,13 +49,14 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
         this.listAgentNames = ((FSMAgent) this.myAgent).getListAgentNames();
 
 
-        if(this.dictBackpack==null){
+        if (((FSMAgent) this.myAgent).getDictBackpack() == null) {
             ((FSMAgent) this.myAgent).initDictBackpack();
+            System.out.println("==== dictBackpack is NOT null :" + this.dictBackpack);
         }
         this.dictBackpack = ((FSMAgent) this.myAgent).getDictBackpack();
+        System.out.println(myName + " [STATE E] -- this.dictBackpack : " + this.dictBackpack);
 
         int agentID = ((FSMAgent) this.myAgent).getId();
-
 
         String myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
         System.out.println(myName + " [STATE E] -- myCurrentPosition is: " + myPosition);
@@ -64,42 +65,10 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
         HashMap<String, Couple<Integer, String>> diamondDict = this.myFullMap.getDiamondDict();
         System.out.println(myName + " [STATE E] -- goldDict: " + goldDict + " | diamondDict: " + diamondDict);
 
+        List<String> pathDebut = ((FSMAgent) this.myAgent).getPath();
+        System.out.println(myName + " [STATE E] -- pathDebut: " + pathDebut);
 
-        /*
-            Soit N = Nd + Ng où Nd = nb agent qui va récolter de diamond et Ng = nb agent qui va récolter de gold
-            Soit R = Rd + Rg où Rd = nb point récolte de diamond         et Rg = nb point récolte de gold
-
-            on a donc le ratio Rd/100R
-            donc on peut avoir Nd = N*Rd/100R et Ng = N-Nd
-         */
-
-        int nbAgents = this.listAgentNames.size()+1; //car listAgentName ne se compte pas lui-meme
-        int nbPointGold = goldDict.size();
-        int nbPointDiamond = diamondDict.size();
-        int nbPointRessources = nbPointGold + nbPointDiamond;
-        int nbAgentsGold = 0;
-        int nbAgentsDiamond = 0;
-
-        /*
-        if (nbPointDiamond > nbPointGold){
-            nbAgentsGold = (int) nbAgents * nbPointGold / 100*nbPointRessources;
-            nbAgentsDiamond = nbAgents - nbAgentsGold;
-            if(nbAgentsDiamond < 1 && nbPointDiamond > 0){ //on veut au moins 1 agent aille chercher diamond (et non 0 agent)
-                nbAgentsDiamond = 1;
-                nbAgentsGold = nbAgents - nbAgentsDiamond;
-            }
-        }else{
-            nbAgentsDiamond = (int) nbAgents * nbPointDiamond / 100*nbPointRessources;
-            nbAgentsGold = nbAgents - nbAgentsDiamond;
-            if(nbAgentsGold < 1 && nbAgentsGold > 0){   //on veut au moins 1 agent aille chercher gold (et non 0 agent)
-                nbAgentsGold = 1;
-                nbAgentsDiamond = nbAgents - nbAgentsGold;
-            }
-        }
-
-        System.out.println("[STATE E] -- NB AGENT : " + nbAgents + " -- NB AGENT GOLD : " + nbAgentsGold + " -- NB AGENT DIAMOND : " + nbAgentsDiamond);
-        System.out.println("[STATE E] -- NB RESSOURCE : " + nbPointRessources + " -- NB RESSOURCE GOLD : " + nbPointGold + " -- NB RESSOURCE DIAMOND : " + nbPointDiamond);
-
+/*
         List<Couple<Observation, Integer>> listCapacity = ((FSMAgent) this.myAgent).getBackPackFreeSpace();
 
         //choix type trésor : on coupe en partition
@@ -177,230 +146,490 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
             }
         }
 */
-        int maxNodeParAgent = nbPointRessources/nbAgents;
-        this.listAgentNames.add(myName);
+        if (((FSMAgent) this.myAgent).getListNodeRessource() == null) {//on va repartir les points de ressources
+            ((FSMAgent) this.myAgent).setListNodeRessource(new ArrayList<>());
+            int nbAgents = this.listAgentNames.size();
+            int nbPointGold = goldDict.size();
+            int nbPointDiamond = diamondDict.size();
+            int nbPointRessources = nbPointGold + nbPointDiamond;
+            int nbAgentsGold = 0;
+            int nbAgentsDiamond = 0;
 
-        Double min_diff = Double.POSITIVE_INFINITY;
-        HashMap<String, List<Couple<Observation,Integer>>>  listCapacity = ((FSMAgent) this.myAgent).getDictBackpack();
-        HashMap<String, Couple<Integer, String>> dictDiamond = this.myFullMap.getDiamondDict();
-        HashMap<String, Couple<Integer, String>> dictGold = this.myFullMap.getGoldDict();
+            /*
+                Soit N = Nd + Ng où Nd = nb agent qui va récolter de diamond et Ng = nb agent qui va récolter de gold
+                Soit R = Rd + Rg où Rd = nb point récolte de diamond         et Rg = nb point récolte de gold
 
-        HashMap<String, Integer> listAgent = new HashMap<>() ; //list nombre de node de chaque agent (cad agent 0 va aller voir "listAgent.get(0)" noeuds
-        for (int i = 0; i < listAgentNames.size(); i++){
-                listAgent.put(listAgentNames.get(i), 0);
+                on a donc le ratio Rd/R
+                donc on peut avoir Nd = N*Rd/R et Ng = N-Nd
+             */
+
+            if (nbPointDiamond < nbPointGold) {
+                nbAgentsGold = (int) nbAgents * nbPointGold / nbPointRessources;
+                nbAgentsDiamond = nbAgents - nbAgentsGold;
+                if (nbAgentsDiamond < 1 && nbPointDiamond > 0) { //on veut au moins 1 agent aille chercher diamond (et non 0 agent)
+                    nbAgentsDiamond = 1;
+                    nbAgentsGold = nbAgents - nbAgentsDiamond;
+                }
+            } else {
+                nbAgentsDiamond = (int) nbAgents * nbPointDiamond / nbPointRessources;
+                nbAgentsGold = nbAgents - nbAgentsDiamond;
+                if (nbAgentsGold < 1 && nbAgentsGold > 0) {   //on veut au moins 1 agent aille chercher gold (et non 0 agent)
+                    nbAgentsGold = 1;
+                    nbAgentsDiamond = nbAgents - nbAgentsGold;
+                }
+            }
+
+            System.out.println("[STATE E] -- NB AGENT : " + nbAgents + " -- NB AGENT GOLD : " + nbAgentsGold + " -- NB AGENT DIAMOND : " + nbAgentsDiamond);
+            System.out.println("[STATE E] -- NB RESSOURCE : " + nbPointRessources + " -- NB RESSOURCE GOLD : " + nbPointGold + " -- NB RESSOURCE DIAMOND : " + nbPointDiamond);
+
+            //int maxNodeParAgent = (nbPointRessources / nbAgents); //nb de ressource par agent
+            int maxNodeParAgent = (Integer.max(nbPointDiamond, nbPointGold)) / nbAgents; //nb de ressource par agent ==> permet équiter entre agent si tous les agents prennetn le meme type de ressources
+
+            HashMap<String, List<Couple<Observation, Integer>>> listCapacity = ((FSMAgent) this.myAgent).getDictBackpack();
+            HashMap<String, Couple<Integer, String>> dictDiamond = this.myFullMap.getDiamondDict();
+            HashMap<String, Couple<Integer, String>> dictGold = this.myFullMap.getGoldDict();
+
+            HashMap<String, Integer> listRepartitionNodeCoop = new HashMap<>(); //list nombre de node de chaque agent (cad agent 0 va aller voir "listAgent.get(0)" noeuds
+            for (String agent : listAgentNames) {
+                listRepartitionNodeCoop.put(agent, 0);
+            }
+            if (nbPointRessources >= nbAgents) {
+                // Par defaut, on commence par repartir les golds
+                //Répartition des golds
+                for (String nodeGold : dictGold.keySet()) {
+                    Couple<Integer, String> quantiteGold = dictGold.get(nodeGold);
+                    Double tmp = 0.0;
+                    Double minDiff = Double.POSITIVE_INFINITY;
+                    String nameAgent_min = "";
+                    for (String agent : listAgentNames) {
+                        Integer capaciteGold = ((FSMAgent) this.myAgent).getDictBackPackObservationInteger(agent, Observation.GOLD);
+                        tmp = Double.valueOf(capaciteGold - quantiteGold.getLeft());
+                        if ((0 < tmp) && (tmp < minDiff) && (listRepartitionNodeCoop.get(agent) <= maxNodeParAgent)) {
+                            // tmp est minimisé et en plus l'agent n'a pas atteint un nombre maxNodeParAgent de noeud à récuperer
+                            if (((FSMAgent) this.myAgent).getTypeTreasure() == null || ((FSMAgent) this.myAgent).getTypeTreasure() == Observation.GOLD) {
+                                minDiff = tmp;
+                                nameAgent_min = agent;
+                            }
+                        }
+                    }
+                    // à la fin de la boucle : l'agent nameAgent_min qui va récupurer une quantité minDiff de ressource Gold du noeud nodeGold
+                    if (nameAgent_min != "") {
+                        // MAJ listRepartitionNodeCoop
+                        // on a trouvé l'agent nameAgent_min qui va aller collecter le noeud nodeGold
+                        listRepartitionNodeCoop.put(nameAgent_min, listRepartitionNodeCoop.get(nameAgent_min) + 1);
+                    }
+
+                    //Ajout du noeud dans la listNodeRessource
+                    if (myName.equals(nameAgent_min) && listRepartitionNodeCoop.get(myName) <= maxNodeParAgent) {
+                        ((FSMAgent) this.myAgent).addListNodeRessource(nodeGold);
+                        ((FSMAgent) this.myAgent).setTypeTreasure(Observation.GOLD);
+                    }
+                }
+                //Répartition des diamonds
+                for (String nodeDiamond : dictDiamond.keySet()) {
+                    Couple<Integer, String> quantiteDiamond = dictDiamond.get(nodeDiamond);
+                    Double tmp = 0.0;
+                    Double minDiff = Double.POSITIVE_INFINITY;
+                    String nameAgent_min = "";
+                    for (String agent : listAgentNames) {
+                        Integer capaciteDiamond = ((FSMAgent) this.myAgent).getDictBackPackObservationInteger(agent, Observation.DIAMOND);
+                        tmp = Double.valueOf(capaciteDiamond - quantiteDiamond.getLeft());
+                        if ((0 < tmp) && (tmp < minDiff) && (listRepartitionNodeCoop.get(agent) <= maxNodeParAgent)) {
+                            // tmp est minimisé et en plus l'agent n'a pas atteint un nombre maxNodeParAgent de noeud à récuperer
+                            if (((FSMAgent) this.myAgent).getTypeTreasure() == null || ((FSMAgent) this.myAgent).getTypeTreasure() == Observation.DIAMOND) {
+                                minDiff = tmp;
+                                nameAgent_min = agent;
+                            }
+                        }
+                    }
+                    // à la fin de la boucle : l'agent nameAgent_min qui va récupurer une quantité minDiff de ressource Gold du noeud nodeGold
+                    if (nameAgent_min != "") {
+                        // MAJ listRepartitionNodeCoop
+                        // on a trouvé l'agent nameAgent_min qui va aller collecter le noeud nodeGold
+                        listRepartitionNodeCoop.put(nameAgent_min, listRepartitionNodeCoop.get(nameAgent_min) + 1);
+                    }
+
+                    //Ajout du noeud dans la listNodeRessource
+                    if (myName.equals(nameAgent_min) && listRepartitionNodeCoop.get(myName) <= maxNodeParAgent) {
+                        ((FSMAgent) this.myAgent).addListNodeRessource(nodeDiamond);
+                        ((FSMAgent) this.myAgent).setTypeTreasure(Observation.DIAMOND);
+                    }
+                }
+            } else {
+                //nbPointRessources < nbAgents
+                // Par defaut, on commence par repartir les golds
+                //Répartition des golds
+                for (String nodeGold : dictGold.keySet()) {
+                    Couple<Integer, String> quantiteGold = dictGold.get(nodeGold);
+                    Double tmp = 0.0;
+                    Double minDiff = Double.POSITIVE_INFINITY;
+                    String nameAgent_min = "";
+                    for (String agent : listAgentNames) {
+                        Integer capaciteGold = ((FSMAgent) this.myAgent).getDictBackPackObservationInteger(agent, Observation.GOLD);
+                        tmp = Double.valueOf(capaciteGold - quantiteGold.getLeft());
+                        if ((0 < tmp) && (tmp < minDiff) && (listRepartitionNodeCoop.get(agent) <= maxNodeParAgent)) {
+                            // tmp est minimisé et en plus l'agent n'a pas atteint un nombre maxNodeParAgent de noeud à récuperer
+                            if (((FSMAgent) this.myAgent).getTypeTreasure() == null || ((FSMAgent) this.myAgent).getTypeTreasure() == Observation.GOLD) {
+                                minDiff = tmp;
+                                nameAgent_min = agent;
+                            }
+                        }
+                    }
+                    // à la fin de la boucle : l'agent nameAgent_min qui va récupurer une quantité minDiff de ressource Gold du noeud nodeGold
+                    if (nameAgent_min != "") {
+                        // MAJ listRepartitionNodeCoop
+                        // on a trouvé l'agent nameAgent_min qui va aller collecter le noeud nodeGold
+                        listRepartitionNodeCoop.put(nameAgent_min, listRepartitionNodeCoop.get(nameAgent_min) + 1);
+                    }
+
+                    //Ajout du noeud dans la listNodeRessource
+                    if (myName.equals(nameAgent_min) && listRepartitionNodeCoop.get(myName) <= maxNodeParAgent) {
+                        ((FSMAgent) this.myAgent).addListNodeRessource(nodeGold);
+                        ((FSMAgent) this.myAgent).setTypeTreasure(Observation.GOLD);
+                    }
+                }
+                //Répartition des diamonds
+                for (String nodeDiamond : dictDiamond.keySet()) {
+                    Couple<Integer, String> quantiteDiamond = dictDiamond.get(nodeDiamond);
+                    Double tmp = 0.0;
+                    Double minDiff = Double.POSITIVE_INFINITY;
+                    String nameAgent_min = "";
+                    for (String agent : listAgentNames) {
+                        Integer capaciteDiamond = ((FSMAgent) this.myAgent).getDictBackPackObservationInteger(agent, Observation.DIAMOND);
+                        tmp = Double.valueOf(capaciteDiamond - quantiteDiamond.getLeft());
+                        if ((0 < tmp) && (tmp < minDiff) && (listRepartitionNodeCoop.get(agent) <= maxNodeParAgent)) {
+                            // tmp est minimisé et en plus l'agent n'a pas atteint un nombre maxNodeParAgent de noeud à récuperer
+                            if (((FSMAgent) this.myAgent).getTypeTreasure() == null || ((FSMAgent) this.myAgent).getTypeTreasure() == Observation.DIAMOND) {
+                                minDiff = tmp;
+                                nameAgent_min = agent;
+                            }
+                        }
+                    }
+                    // à la fin de la boucle : l'agent nameAgent_min qui va récupurer une quantité minDiff de ressource Gold du noeud nodeGold
+                    if (nameAgent_min != "") {
+                        // MAJ listRepartitionNodeCoop
+                        // on a trouvé l'agent nameAgent_min qui va aller collecter le noeud nodeGold
+                        listRepartitionNodeCoop.put(nameAgent_min, listRepartitionNodeCoop.get(nameAgent_min) + 1);
+                    }
+
+                    //Ajout du noeud dans la listNodeRessource
+                    if (myName.equals(nameAgent_min) && listRepartitionNodeCoop.get(myName) <= maxNodeParAgent) {
+                        ((FSMAgent) this.myAgent).addListNodeRessource(nodeDiamond);
+                        ((FSMAgent) this.myAgent).setTypeTreasure(Observation.DIAMOND);
+                    }
+                }
+            }
         }
 
-        if(nbPointRessources >= nbAgents) {
-            //Répartition des golds
-            for (String nodeGold : dictGold.keySet()) {
-                Couple<Integer, String> quantiteGold = dictGold.get(nodeGold);
-                String nameAgent = "";
-                Double tmp = min_diff ;
-                for (String s : listAgentNames) {
-                    System.out.println("==== "+ listCapacity );
-                    Integer capaciteGold = ((FSMAgent) this.myAgent).getDictBackPackObservationInteger(s , Observation.GOLD);
-                    tmp = Double.valueOf(capaciteGold - quantiteGold.getLeft());
-                    if ((tmp > 0) && tmp < min_diff && listAgent.get(s) <= maxNodeParAgent) {
-                        min_diff = tmp;
-                        nameAgent = s;
-                    }
-                }
-                //MAJ
-                listAgent.put(nameAgent, listAgent.get(nameAgent) + 1);
-
-                //Ajout du noeud dans la listNodeRessource
-                if (myName.equals(nameAgent)) {
-                    ((FSMAgent) this.myAgent).addListNodeRessource(maxNodeParAgent, nodeGold);
-                }
-            }
-            //Répartition des diamonds
-            for (String nodeDiamond : dictDiamond.keySet()) {
-                Couple<Integer, String> quantiteDiamond = dictDiamond .get(nodeDiamond);
-                String nameAgent = "";
-                Double tmp = min_diff ;
-                for (String s : listAgentNames) {
-                    Integer capaciteDiamond = ((FSMAgent) this.myAgent).getDictBackPackObservationInteger(s , Observation.GOLD);
-                    tmp = Double.valueOf(capaciteDiamond - quantiteDiamond.getLeft());
-                    if (tmp > 0 && tmp < min_diff && listAgent.get(s) <= maxNodeParAgent) {
-                        min_diff = tmp;
-
-                        nameAgent = s;
-                    }
-                }
-                //MAJ
-                listAgent.put(nameAgent, listAgent.get(nameAgent) + 1);
-
-                //Ajout du noeud dans la listNodeRessource
-                if (myName.equals(nameAgent)) {
-                    ((FSMAgent) this.myAgent).addListNodeRessource(maxNodeParAgent, nodeDiamond);
-                }
-            }
-        }else{
-            //nbPointRessources < nbAgents
-            Double max_diff = Double.NEGATIVE_INFINITY;
-            for (String nodeGold : dictGold.keySet()) {
-                Couple<Integer, String> quantiteGold = dictGold.get(nodeGold);
-                int indexAgent = 0;
-                Double tmp = max_diff ;
-                Integer sumCapacityGold = 0;
-                String nameAgent = "";
-                for (String s : listAgentNames) {
-                    Integer capaciteGold = ((FSMAgent) this.myAgent).getDictBackPackObservationInteger(s, Observation.GOLD);
-
-                    if(sumCapacityGold + capaciteGold <= quantiteGold.getLeft()) {
-                        sumCapacityGold = sumCapacityGold + capaciteGold;
-                        nameAgent = s;
-                    }
-                }
-                //MAJ
-                listAgent.put(nameAgent, listAgent.get(nameAgent) + 1);
-
-                //Ajout du noeud dans la listNodeRessource
-                if (myName.equals(listAgentNames.get(indexAgent))) {
-                    ((FSMAgent) this.myAgent).addListNodeRessource(maxNodeParAgent, nodeGold);
-                }
-            }
+        try {
+            this.myAgent.doWait(1000);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-
+        exitValue = -1;
         if (myPosition != null) {
-            // List of observable from the agent's current position
-            List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
-            System.out.println(myName + " [STATE E] -- list of observables: " + lobs);
+            if (((FSMAgent) this.myAgent).getInterblocage()) {
+                System.out.println(myName + " [STATE E] -- INTERBLOCAGE : " + ((FSMAgent) this.myAgent).getInterblocage());
 
-            // list of observations associated to the currentPosition
-            List<Couple<Observation, Integer>> lObservations = lobs.get(0).getRight();
-            System.out.println(myName + " [STATE E] -- lObservations - " + lObservations);
-
-            // example related to the use of the backpack for the treasure hunt
-            boolean b = false;
-
-            for (Couple<Observation, Integer> o : lObservations) {
-                switch (o.getLeft()) {
-                    case DIAMOND:
-                        System.out.println(this.myAgent.getLocalName() + " - My treasure type is : " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
-                        System.out.println(this.myAgent.getLocalName() + " - My current backpack capacity is:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
-                        System.out.println(this.myAgent.getLocalName() + " - Value of the treasure on the current position: " + o.getLeft() + ": " + o.getRight());
-
-                        if (myPosition == ((FSMAgent) this.myAgent).getNodeBut()) {
-                            int k = ((FSMAgent) this.myAgent).pick(); //vérifie le typeTreasure
-                            System.out.println(this.myAgent.getLocalName() + " - The agent grabbed : " + k);
-                            ((FSMAgent) this.myAgent).updateQuantite(k);
-                        }
-                        //System.out.println(this.myAgent.getLocalName() + " - The agent grabbed :" + k);
-                        System.out.println(this.myAgent.getLocalName() + " - the remaining backpack capacity is: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
-                        b = true;
-                        break;
-                    case GOLD:
-                        System.out.println(this.myAgent.getLocalName() + " - My treasure type is : " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
-                        System.out.println(this.myAgent.getLocalName() + " - My current backpack capacity is:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
-                        System.out.println(this.myAgent.getLocalName() + " - Value of the treasure on the current position: " + o.getLeft() + ": " + o.getRight());
-                        //Collecte Gold/Diamond
-                        if (myPosition == ((FSMAgent) this.myAgent).getNodeBut()) {
-                            int k = ((FSMAgent) this.myAgent).pick(); //vérifie le typeTreasure
-                            System.out.println(this.myAgent.getLocalName() + " - The agent grabbed : " + k);
-                            ((FSMAgent) this.myAgent).updateQuantite(k);
-                        }
-                        //System.out.println(this.myAgent.getLocalName() + " - The agent grabbed :" + k);
-                        System.out.println(this.myAgent.getLocalName() + " - the remaining backpack capacity is: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
-                        b = true;
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            // ACTION : Choisir le prochain noeud
-            String nextNode = null;
-            String nodeBut;
-            // If the agent picked (part of) the treasure
-            if (b) {
-                List<Couple<String, List<Couple<Observation, Integer>>>> lobs2 = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
-                System.out.println("STATE E : " + myName + " - State of the observations after trying to pick something " + lobs2);
-
-
-                // ACTION : Choisir Prochain node de ressource
-                //choix nodeBut
-                nodeBut = (((FSMAgent)this.myAgent).getListNodeRessource()).get( (((FSMAgent)this.myAgent).getNbPointRecolte()) );
-                ((FSMAgent)this.myAgent).setNodeBut(nodeBut);
-                System.out.println(myName + "[State E] -- nodeBut : " + nodeBut);
-
-                //retrouve le chemin pour aller au nodeBut
-                List<String> path = this.myFullMap.getShortestPath(myPosition, nodeBut);
-                ((FSMAgent) this.myAgent).setPath(path);
-                nextNode = ((FSMAgent) this.myAgent).getNextNode();
-
-
-            }else {
-                // on n'a PAS trouvé un noeud point de ressource
-                // Random move from the current position
+                List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
                 Random r = new Random();
-                int moveId = 1 + r.nextInt(lobs.size() - 1); // removing the current position from the list of target, not necessary as to stay is an action but allow quicker random move
-                nextNode = lobs.get(moveId).getLeft();
-            }
+                int moveId = 1 + r.nextInt(lobs.size() - 1);
+                String nodeIntermediaire = lobs.get(moveId).getLeft();
 
+                if (nodeIntermediaire != null) {
+                    if (((AbstractDedaleAgent) this.myAgent).moveTo(nodeIntermediaire)==true) {
+                        System.out.println(myName + " [State E] : -- myPosition : " + myPosition +" -- move to node " + nodeIntermediaire);
 
-            // ACTION : Envoie NEXT NODE pour interblocage
-            if (((FSMAgent) this.myAgent).getNextNode() != null) {
-                ACLMessage msgSend = new ACLMessage(ACLMessage.INFORM);
-                msgSend.setProtocol("NEXT-NODE");
-                msgSend.setSender(this.myAgent.getAID()); // on met un expéditeur au message
+                        this.myAgent.doWait(50);
+                        System.out.println(myName+" [State E] ====================================== ");
+                        ((FSMAgent) this.myAgent).setInterblocage(false);
 
-                msgSend.setContent(((FSMAgent) this.myAgent).getId()+"/"+((FSMAgent) this.myAgent).getNextNode());
-
-                for (String receiverAgent : this.listAgentNames) { // on récupère le nom d'un agent
-                    if(receiverAgent!=myName) {
-                        msgSend.addReceiver(new AID(receiverAgent, false));
                     }
                 }
-                ((AbstractDedaleAgent) this.myAgent).sendMessage(msgSend);
-                System.out.println(myName + " [STATE E] finished sending NEXT-NODE");
-            }
+            } else {
+                // List of observable from the agent's current position
+                List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
+                System.out.println(myName + " [STATE E] -- list of observables: " + lobs);
 
-            // ACTION : Check si reçu NEXT NODE pour interblocage
-            MessageTemplate msg = MessageTemplate.and(
-                    MessageTemplate.MatchProtocol("NEXT-NODE"),
-                    MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+                // list of observations associated to the currentPosition
+                List<Couple<Observation, Integer>> lObservations = lobs.get(0).getRight();
+                System.out.println(myName + " [STATE E] -- lObservations - " + lObservations);
 
-            ACLMessage msgReceived = this.myAgent.receive(msg);
-            String msgExpediteur = "";
-            String nextNodeExpediteur = "";
-            String nameExpediteur = "";
-            int idExpediteur = -1;
-            if (msgReceived != null && exitValue == -1) {
-                System.out.println(myName + " [STATE E] received NEXT-NODE");
-                nameExpediteur = msgReceived.getSender().getLocalName();
-                msgExpediteur = (String) msgReceived.getContent();
-                String[] l = msgExpediteur.split("/");
-                idExpediteur = Integer.valueOf(l[0]);
-                nextNodeExpediteur = l[1];
-            }
+                List<Couple<Observation, Integer>> listCapacity = ((FSMAgent) this.myAgent).getBackPackFreeSpace();
+                for(Couple<Observation, Integer> capacity : listCapacity){
+                    if(((FSMAgent) this.myAgent).getTypeTreasure()==capacity.getLeft()){
+                        if (capacity.getRight() <= 0){
+                            exitValue = 2; //il n'y a plus de place donc go to state G (random walk)
+                        }
+                    }
+                }
+                // example related to the use of the backpack for the treasure hunt
+                boolean reussiCollecte = false;
+                // myPosition == lobs.get(0).getLeft()
+                if (lObservations.isEmpty()){
+                    // il y n'a pas de ressource dans ce noeud
+                    if(((AbstractDedaleAgent) this.myAgent).getCurrentPosition() == ((FSMAgent) this.myAgent).getNodeBut()) {
+                        //un autre agent a récuperer la ressource, alors on passe au suivant
+                        int index = ((FSMAgent) this.myAgent).getNbPointRecolte();
+                        System.out.println(myName + " [State E] -- AVANT Changement Index -- lObservations : " + lObservations
+                                + " -- NodeBut : " + ((FSMAgent) this.myAgent).getNodeBut()
+                                + " -- Position : " + ((FSMAgent) this.myAgent).getCurrentPosition()
+                                + " -- index : " + index );
 
-            System.out.println( myName + "[State E] : " + myName + " will move to " + nextNode);
-            if(nextNode.equals(nextNodeExpediteur) && ((FSMAgent) this.myAgent).getId() > idExpediteur ){ //un des deux vont changer de nextNode
-                System.out.println( "[State E] : " + myName + " -- INTERBLOCAGE -- with : " + nameExpediteur );
-                // agent est plus grand et meme noeud next qui va laisser
-                if(((FSMAgent) this.myAgent).getNodeBut() != null) {
-                    //agent attend quelque seconde avant de repartir
-                    this.myAgent.doWait(10);
-                    System.out.println( myName + "[State E] : " + myName + " wait 10 seconde");
-                }else {
-                    //continue à marcher de façon random
+                        index++;
+                        ((FSMAgent) this.myAgent).setNbPointRecolte(index);
+                    }
+                }else{
+                    // sinon on a qqch à récuperer
+
+                    // agent fait la collecte sur le noeud actuel
+                    for (Couple<Observation, Integer> o : lObservations) {
+                        switch (o.getLeft()) {
+                            case DIAMOND:
+                                System.out.println(this.myAgent.getLocalName() + " - My position is : " + ((FSMAgent) this.myAgent).getCurrentPosition() );
+                                System.out.println(this.myAgent.getLocalName() + " - MyPosition : " + myPosition );
+                                System.out.println(this.myAgent.getLocalName() + " - My treasure type is : " + ((FSMAgent) this.myAgent).getMyTreasureType());
+                                System.out.println(this.myAgent.getLocalName() + " - My current backpack capacity is:" + ((FSMAgent) this.myAgent).getBackPackFreeSpace());
+                                System.out.println(this.myAgent.getLocalName() + " - Value of the treasure on the current position: " + o.getLeft() + ": " + o.getRight());
+
+                                if (((FSMAgent) this.myAgent).getCurrentPosition().equals(((FSMAgent) this.myAgent).getNodeBut()) ){ //&& ((FSMAgent) this.myAgent).verifyTypeTreasure(Observation.DIAMOND)) {
+                                    int k = ((FSMAgent) this.myAgent).pick(Observation.DIAMOND); //vérifie le typeTreasure
+                                    System.out.println(this.myAgent.getLocalName() + " - The agent grabbed : " + k);
+                                    //((FSMAgent) this.myAgent).setDictBackpackAgent(this.myAgent.getLocalName(), ((FSMAgent) this.myAgent).getBackPackFreeSpace());
+                                    reussiCollecte = true;
+                                    break;
+                                }
+                                //System.out.println(this.myAgent.getLocalName() + " - The agent grabbed :" + k);
+                                //System.out.println(this.myAgent.getLocalName() + " - the remaining backpack capacity is: " + ((FSMAgent) this.myAgent).getBackPackFreeSpace());
+
+                            case GOLD:
+                                System.out.println(this.myAgent.getLocalName() + " - My position is : " + ((FSMAgent) this.myAgent).getCurrentPosition() );
+                                System.out.println(this.myAgent.getLocalName() + " - MyPosition : " + myPosition );
+                                System.out.println(this.myAgent.getLocalName() + " - My treasure type is : " + ((FSMAgent) this.myAgent).getMyTreasureType());
+                                System.out.println(this.myAgent.getLocalName() + " - My current backpack capacity is:" + ((FSMAgent) this.myAgent).getBackPackFreeSpace());
+                                System.out.println(this.myAgent.getLocalName() + " - Value of the treasure on the current position: " + o.getLeft() + ": " + o.getRight());
+                                //Collecte Gold/Diamond
+                                if (((FSMAgent) this.myAgent).getCurrentPosition().equals(((FSMAgent) this.myAgent).getNodeBut()) ){ //&& ((FSMAgent) this.myAgent).verifyTypeTreasure(Observation.GOLD)) {
+                                    int k = ((FSMAgent) this.myAgent).pick(Observation.GOLD); //vérifie le typeTreasure
+                                    System.out.println(this.myAgent.getLocalName() + " - The agent grabbed : " + k);
+                                    //((FSMAgent) this.myAgent).setDictBackpackAgent(this.myAgent.getLocalName(), ((FSMAgent) this.myAgent).getBackPackFreeSpace());
+                                    reussiCollecte = true;
+                                    break;
+                                }
+                                //System.out.println(this.myAgent.getLocalName() + " - The agent grabbed :" + k);
+                                //System.out.println(this.myAgent.getLocalName() + " - the remaining backpack capacity is: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
+
+                            default:
+                                break;
+                        }
+                    }
+                }
+
+                // ACTION : Choisir le prochain noeud
+                String nextNode = null;
+                String nodeBut = null;
+
+                System.out.println(myName + " [STATE E] -- listNodeARecolter : " + ((FSMAgent) this.myAgent).getListNodeRessource() );
+
+                int indexNode = ((FSMAgent) this.myAgent).getNbPointRecolte();  //cet index est incrémenté lorsqu'on a réussi à pick()
+                int nbRessourceARecolter = ((FSMAgent) this.myAgent).getListNodeRessource().size(); //((FSMAgent) this.myAgent).getListNodeRessource().size();
+
+                if (((FSMAgent) this.myAgent).getListNodeRessource().size() <= ((FSMAgent) this.myAgent).getNbPointRecolte()){
+                    // il n'y a PLUS de point de recolte
+                    // agent a récupéré tous ses ressources
+                    ((FSMAgent) this.myAgent).setNodeBut(null);
+                    ((FSMAgent) this.myAgent).setNextNode(null);
+                    exitValue = 2; //go to in stats G (random walk
+                    System.out.println(myName + " -- [STATE E] -- Go to state G (random walk) ");
+                }else if (reussiCollecte && exitValue == -1 ){ //reussi collecte et il reste des noeuds à collecte, donc agent passe au nodeBut suivant
+                    exitValue =1;
+                    System.out.println(myName + " -- [STATE E] -- Reussi collect, prochaine : "+ nodeBut);
+                    nodeBut = (((FSMAgent) this.myAgent).getListNodeRessource()).get(indexNode);
+                    ((FSMAgent) this.myAgent).setNodeBut(nodeBut);
+
+                    List<String> path = this.myFullMap.getShortestPath(((FSMAgent) this.myAgent).getCurrentPosition(), nodeBut);
+                    while (path.size() == 0) {
+                        //path est null donc agent va aller à un nodeIntermediaire pr aller au prochain point de ressource
+                        System.out.println("====[PATH NULL]======= " + myName + " [State E] : " + myName + " path : " + path);
+                        Random r = new Random();
+                        int moveId = 1 + r.nextInt(lobs.size() - 1);
+                        String nodeIntermediaire = lobs.get(moveId).getLeft();
+                        //agent se deplace a coter
+                        if( ((FSMAgent) this.myAgent).moveTo(nodeIntermediaire)) {
+                            System.out.println("====[PATH NULL]======= " + myName + " [State E] :  MOVE TO nodeIntermediaire : " + nodeIntermediaire);
+                            path = this.myFullMap.getShortestPath(nodeIntermediaire, nodeBut);
+                            myPosition = nodeIntermediaire;
+                        }
+                        System.out.println("====[PATH NULL]======= " + myName + " [State E] : " + myName + " path : " + path);
+                    }
+                    if(path.size()>0) { // agent a trouver un chemin et va pouvoir aller au nextNode
+                        ((FSMAgent) this.myAgent).setPath(path);
+                        nextNode = path.get(0);
+                        ((FSMAgent) this.myAgent).setNextNode(nextNode);
+                     }
+                    System.out.println("== " + myName + " [State E] -- Prochaine collect -- : "+ nodeBut
+                            + " -- path : " + path
+                            + " -- getCurrentPosition() : " + (((FSMAgent) this.myAgent).getCurrentPosition())
+                            + " -- myPosition : " + myPosition
+                            + " -- nextNode : " + nextNode
+                            + " -- nodeBut : " + nodeBut );
+
+                }else if (nbRessourceARecolter > indexNode && indexNode >= 0 ){
+                    // agent n'a pas encore atteint le nodeBut
+                    exitValue = 1;
+                    nodeBut = (((FSMAgent) this.myAgent).getListNodeRessource()).get(indexNode);
+                    ((FSMAgent) this.myAgent).setNodeBut(nodeBut);
+                    List<String> path = this.myFullMap.getShortestPath(myPosition, nodeBut);
+
+                    if(path.size()>0) {
+                        ((FSMAgent) this.myAgent).setPath(path);
+                        nextNode = path.get(0);
+                        ((FSMAgent) this.myAgent).setNextNode(nextNode);
+                    }
+                    System.out.println("==" + myName + " [State E] -- PAS FINI "
+                            + " -- path : " + path
+                            + " -- getCurrentPosition() : " + (((FSMAgent) this.myAgent).getCurrentPosition())
+                            + " -- myPosition : " + myPosition
+                            + " -- nextNode : " + nextNode
+                            + " -- nodeBut : " + nodeBut );
+
+                }
+
+                if(nextNode == null){
+                    lobs = ((AbstractDedaleAgent) this.myAgent).observe();
                     Random r = new Random();
                     int moveId = 1 + r.nextInt(lobs.size() - 1); // removing the current position from the list of target, not necessary as to stay is an action but allow quicker random move
                     nextNode = lobs.get(moveId).getLeft();
-                    System.out.println( myName + "[State E] : " + myName + " is interblocking, change node : " + nextNode);
+                    ((FSMAgent) this.myAgent).setNextNode(nextNode);
+                    System.out.println("=========== " + myName + " [State E] : " + myName + " move RANDOM to node : " + nextNode);
+                }
+
+                // ACTION : Envoie PING pour interblocage
+                if (nextNode != null) {
+                    ACLMessage msgSend = new ACLMessage(ACLMessage.INFORM);
+                    msgSend.setProtocol("PING");
+                    msgSend.setSender(this.myAgent.getAID()); // on met un expéditeur au message
+
+                    //on envoie Id (pour ordre de priorité entre agent) et le nextNode
+                    msgSend.setContent(((FSMAgent) this.myAgent).getId() + "/" + ((FSMAgent) this.myAgent).getNextNode());
+
+                    for (String receiverAgent : this.listAgentNames) { // on récupère le nom d'un agent
+                        if (!receiverAgent.equals(myName)) {
+                            msgSend.addReceiver(new AID(receiverAgent, false));
+                        }
+                    }
+                    ((AbstractDedaleAgent) this.myAgent).sendMessage(msgSend);
+                    System.out.println(myName + " [STATE E] -- finished sending message PING for interblock");
+                }
+
+                // ACTION : Check si reçu PING pour interblocage
+                MessageTemplate msg = MessageTemplate.and(
+                        MessageTemplate.MatchProtocol("PING"),
+                        MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+
+                ACLMessage msgReceived = this.myAgent.receive(msg);
+                String msgExpediteur = "";
+                String nextNodeExpediteur = "";
+                String nameExpediteur = "";
+                int idExpediteur = -1;
+                String[] l;
+                if (msgReceived != null) {
+                    System.out.println(myName + " [STATE E] received message PING for interblock");
+                    nameExpediteur = msgReceived.getSender().getLocalName();
+                    msgExpediteur = (String) msgReceived.getContent();
+                    l = msgExpediteur.split("/");
+                    idExpediteur = Integer.valueOf(l[0]);
+                    nextNodeExpediteur = l[1];
+                }
+                // ACTION : Detection interblocage
+                if (nextNode.equals(nextNodeExpediteur) ){//&& ((FSMAgent) this.myAgent).getId() > idExpediteur) { //un des deux vont changer de nextNode
+                    System.out.println("[State E] : " + myName + " -- INTERBLOCAGE -- with : " + nameExpediteur);
+                    // agent est plus grand et meme noeud next qui va changer de chemin pour laisser passer
+
+                    ((FSMAgent) this.myAgent).setInterblocage(true);
+
+                    lobs = ((AbstractDedaleAgent) this.myAgent).observe();
+                    Random r = new Random();
+                    int moveId = 1 + r.nextInt(lobs.size() - 1); // removing the current position from the list of target, not necessary as to stay is an action but allow quicker random move
+                    String nodeIntermediaire = null;
+                    while(nodeIntermediaire==null){
+                        nodeIntermediaire = lobs.get(moveId).getLeft();
+                    }
+                    if (((AbstractDedaleAgent) this.myAgent).moveTo(nodeIntermediaire)==true) {
+                        System.out.println(myName + " [State E] : -- myPosition : " + myPosition +" -- move to nodeIntermediaire " + nodeIntermediaire);
+
+                        //agent s'est deplacer
+                        ((FSMAgent) this.myAgent).setInterblocage(false);
+                        if(((FSMAgent) this.myAgent).getId() > idExpediteur) {
+                            //agent va attendre pour éviter encore le meme interblocage
+                            this.myAgent.doWait(50);
+                        }
+                        if (((FSMAgent) this.myAgent).getNodeBut() != null) {
+                            //Trouver le chemin pour aller au nodeBut
+                            exitValue = 1; //reste au state E (collecte)
+                            if(!((FSMAgent) this.myAgent).getCurrentPosition().equals(((FSMAgent) this.myAgent).getNodeBut())) {
+                                List<String> path = this.myFullMap.getShortestPath(((FSMAgent) this.myAgent).getCurrentPosition(), nodeBut);
+                                ((FSMAgent) this.myAgent).setPath(path);
+                                nextNode = path.get(0);
+                                ((FSMAgent) this.myAgent).setNextNode(nextNode);
+                            }
+                        }else{ //agent n'a pas de noeud de ressource
+                            exitValue = 2; //va au state G (random walk)
+                            System.out.println(myName + " [State E] : -- myPosition : " + myPosition + " -- move to node " + nextNode);
+                        }
+                    }
+
+                }
+                if(exitValue == 1) {
+                    // agent reste au State E donc nextNode est non null
+                    if(((AbstractDedaleAgent) this.myAgent).moveTo(nextNode)==true){
+                        System.out.println("=====BLOC==================" + myName + " [State E] : -- myPosition : " + myPosition + " -- move to node " + nextNode);
+                    }else{
+                        System.out.println("=====BLOC==================" +  "[State E] : " + myName + " -- INTERBLOCAGE -- with : " + nameExpediteur);
+                        // agent est plus grand et meme noeud next qui va changer de chemin pour laisser passer
+
+                        ((FSMAgent) this.myAgent).setInterblocage(true);
+
+                        lobs = ((AbstractDedaleAgent) this.myAgent).observe();
+                        Random r = new Random();
+                        int moveId = 1 + r.nextInt(lobs.size() - 1); // removing the current position from the list of target, not necessary as to stay is an action but allow quicker random move
+                        String nodeIntermediaire = null;
+                        while(nodeIntermediaire==null){
+                            nodeIntermediaire = lobs.get(moveId).getLeft();
+                        }
+                        if (((AbstractDedaleAgent) this.myAgent).moveTo(nodeIntermediaire)==true) {
+                            System.out.println("=====BLOC==================" +  myName + " [State E] : -- myPosition : " + myPosition +" -- move to nodeIntermediaire " + nodeIntermediaire);
+
+                            //agent s'est deplacer
+                            ((FSMAgent) this.myAgent).setInterblocage(false);
+                            if(((FSMAgent) this.myAgent).getId() > idExpediteur) {
+                                //agent va attendre pour éviter encore le meme interblocage
+                                this.myAgent.doWait(50);
+                            }
+                            if (((FSMAgent) this.myAgent).getNodeBut() != null) {
+                                //Trouver le chemin pour aller au nodeBut
+                                exitValue = 1; //reste au state E (collecte)
+                                if(!((FSMAgent) this.myAgent).getCurrentPosition().equals(((FSMAgent) this.myAgent).getNodeBut())) {
+                                    List<String> path = this.myFullMap.getShortestPath(((FSMAgent) this.myAgent).getCurrentPosition(), nodeBut);
+                                    ((FSMAgent) this.myAgent).setPath(path);
+                                    nextNode = path.get(0);
+                                    ((FSMAgent) this.myAgent).setNextNode(nextNode);
+                                }
+                            }else{ //agent n'a pas de noeud de ressource
+                                exitValue = 2; //va au state G (random walk)
+                                System.out.println("=====BLOC==================" + myName + " [State E] : -- myPosition : " + myPosition + " -- move to node " + nextNode);
+                            }
+                        }
+                    }
                 }
             }
-
-            // The move action (if any) should be the last action of your behaviour
-            System.out.println( myName + "[State E] : " + myName + " will move to " + nextNode);
-            ((AbstractDedaleAgent) this.myAgent).moveTo(nextNode);
         }
-        exitValue = 1 ; //continue en state E
-        System.out.println(myName + "[State E] (StateCollectFSMBehaviour): " + myName + " --- END ---");
-
+        if(exitValue==-1) {
+            exitValue = 1; //continue en state E
+            System.out.println(myName + " [State E] (StateCollectFSMBehaviour): " + myName + " --- END ---");
+        }
     }
+
 
     public int onEnd() {
         return exitValue;

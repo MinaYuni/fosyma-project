@@ -415,13 +415,13 @@ public class Principal {
         Assert.assertNotNull("This container does not exist", c);
 
         agentName = "AgentFSM1";
-        Object[] entityParametersExploFSM1 = {"AgentFSM2"};
+        Object[] entityParametersExploFSM1 = {"AgentFSM1", "AgentFSM2"};
 //        Object[] entityParametersExploFSM1 = {"AgentFSM2", "AgentFSM3"};
         ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM1);
         agentList.add(ag);
 
         agentName = "AgentFSM2";
-        Object[] entityParametersExploFSM2 = {"AgentFSM1"};
+        Object[] entityParametersExploFSM2 = {"AgentFSM1", "AgentFSM2"};
 //        Object[] entityParametersExploFSM2 = {"AgentFSM1", "AgentFSM3"};
         ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM2);
         agentList.add(ag);

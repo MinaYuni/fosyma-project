@@ -94,9 +94,7 @@ public class FullMapRepresentation implements Serializable {
     }
 
     public void updateGoldDictExplo(HashMap<String, Couple<Integer, String>> dict){
-
         if (dict != null) {
-            System.out.println("------ Update Gold Dict ");
             for (String node : dict.keySet()) {
 
                 if (this.goldDict.containsKey(node)) {
@@ -104,7 +102,6 @@ public class FullMapRepresentation implements Serializable {
                     int comparaison = (dict.get(node).getRight()).compareTo(this.goldDict.get(node).getRight());
                     if (comparaison >= 0) {
                         this.goldDict.put(node, dict.get(node));
-                        System.out.println("------ Update Gold Dict "+ node + " || "+ dict.get(node));
                     }
                 }else{
                     // on découvre du gold dans un noeud node
@@ -346,7 +343,6 @@ public class FullMapRepresentation implements Serializable {
     private void serializeGraphTopology(HashMap<String, List<Couple<Observation,Integer>>> dictBackPack) {
         this.sg = new SerializableSimpleGraph<>();
 
-
         for (Node n : this.g) {    //on copie tous les noeuds du graphe
             //sg.addNode(n.getId(), MapAttribute.valueOf((String) n.getAttribute("ui.class")));
             HashMap<String, Object> map = new HashMap<>(); // map containing all the attributes of the node
@@ -531,16 +527,6 @@ public class FullMapRepresentation implements Serializable {
             //   dictBackPack = nReceived.getNodeContent();
             //}
 
-            //dico diamond et gold
-            //on envoit les dico diamond et gold dans le premier noeud (et pas aux autres)
-            if (envoyeDict) {
-                envoyeDict = false;
-                dictBackPack = (HashMap<String, List<Couple<Observation,Integer>>>) nReceivedAttributes.get("dictBackPck");
-                this.updateDiamondDictExplo((HashMap<String,Couple<Integer, String>>)nReceivedAttributes.get("diamondDict"));
-                this.updateGoldDictExplo((HashMap<String,Couple<Integer, String>>)nReceivedAttributes.get("goldDict"));
-                System.out.println("== " + this.diamondDict + " --||-- "+ this.goldDict + " --||-- "+ dictBackPack + " --||-- ");
-            }
-
             if (nActual == null) { // le noeud reçu n'est pas dans le graphe actuel, alors on le crée
                 nActual = this.g.addNode(nodeID);
                 // ajout des attributs du noeud reçu
@@ -548,10 +534,16 @@ public class FullMapRepresentation implements Serializable {
                 nActual.setAttribute("ui.class", nReceivedAttributes.get("ui.class").toString());
                 nActual.setAttribute("timestamp", nReceivedAttributes.get("timestamp").toString());
             }
-
             // mise à jour des attributs du noeud actuel
             for (String key: nReceivedAttributes.keySet()) {
-                if (Objects.equals(key, "timestamp")) {
+                if (Objects.equals(key, "dictBackPack") || Objects.equals(key, "diamondDict") || Objects.equals(key, "goldDict")) {
+                    if (envoyeDict) {
+                        envoyeDict = false;
+                        dictBackPack = (HashMap<String, List<Couple<Observation,Integer>>>) nReceivedAttributes.get("dictBackPack");
+                        this.updateDiamondDictExplo((HashMap<String,Couple<Integer, String>>)nReceivedAttributes.get("diamondDict"));
+                        this.updateGoldDictExplo((HashMap<String,Couple<Integer, String>>)nReceivedAttributes.get("goldDict"));
+                    }
+                }else if (Objects.equals(key, "timestamp")) {
                     // prendre le timestamp le plus récent
                     int comparaison = (nReceived.getNodeContent().get("timestamp").toString()).compareTo(nActual.getAttribute("timestamp").toString());
                     if (comparaison >= 0) {
@@ -576,7 +568,6 @@ public class FullMapRepresentation implements Serializable {
             }
         }
         System.out.println("Merge done");
-        System.out.println("== dictBackPck : " + dictBackPack);
         return dictBackPack;
     }
 

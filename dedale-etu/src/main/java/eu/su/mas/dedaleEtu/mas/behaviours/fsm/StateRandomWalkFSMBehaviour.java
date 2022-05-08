@@ -59,6 +59,7 @@ public class StateRandomWalkFSMBehaviour extends OneShotBehaviour {
         System.out.println(myName + " [STATE G] -- goldDict: " + goldDict + " | diamondDict: " + diamondDict);
 
         if (myPosition != null) {
+            exitValue = -1;
             // List of observable from the agent's current position
             List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
             System.out.println(myName + " [STATE G] -- list of observables: " + lobs
@@ -68,6 +69,19 @@ public class StateRandomWalkFSMBehaviour extends OneShotBehaviour {
                     + " | size listOtherNodes: " + this.myFullMap.getOtherNodes().size()
             );
 
+            // list of observations associated to the currentPosition
+            List<Couple<Observation, Integer>> lObservations = lobs.get(0).getRight();
+            System.out.println(myName + " [STATE E] -- lObservations - " + lObservations);
+
+            List<Couple<Observation, Integer>> listCapacity = ((FSMAgent) this.myAgent).getBackPackFreeSpace();
+            for(Couple<Observation, Integer> capacity : listCapacity){
+                if(((FSMAgent) this.myAgent).getTypeTreasure()==capacity.getLeft()||((FSMAgent) this.myAgent).getTypeTreasure()==null){
+                    if (capacity.getRight() > 0){
+                        exitValue = 2; //go to in stats E (state collect)
+                        System.out.println(myName + " -- [STATE G] -- Go to state E (collect) ");
+                    }
+                }
+            }
             // chose a random next node to go to
             Random r = new Random();
             int moveId = 1 + r.nextInt(lobs.size() - 1); // removing the current position from the list of target, not necessary as to stay is an action but allow quicker random move
@@ -117,18 +131,15 @@ public class StateRandomWalkFSMBehaviour extends OneShotBehaviour {
 //                allInformation = (SerializableSimpleGraph<String, HashMap<String, Object>>) msgMapReceived.getContentObject();
 //                mapReceived = allInformation; // pour l'instant, on n'a qu'une carte, mais après on pourra envoyer d'autres informations
 //            } catch (UnreadableException e) {
-//                // TODO Auto-generated catch block
 //                e.printStackTrace();
 //            }
 //            assert mapReceived != null;
 //            this.myFullMap.mergeMap(mapReceived);
 //        }
-
-        //exitValue = 1; // reste au state G (Random Walk)
-        //System.out.println(myName + " STAYS in G");
-        exitValue = 2; // va au state E (Collect)
-        System.out.println(myName + " -- [STATE G] -- Go to state E (collect) ");
-
+        if(exitValue==-1){
+            exitValue = 1; // reste au state G (Random Walk)
+            System.out.println(myName + " STAYS in G");
+        }
     }
 
     public int onEnd() {

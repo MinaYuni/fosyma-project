@@ -106,7 +106,7 @@ public final class ConfigurationFile {
     /*
      * Size of the generated environment, mandatory
      */
-    public static Integer ENVIRONMENT_SIZE = 8;
+    public static Integer ENVIRONMENT_SIZE = 5;
 
     // Parameters required for some generators (see dedale.gitlab.io)
     public static Integer OPTIONAL_ADDITIONAL_ENVGENERATOR_PARAM1 = 1; // used by the BARABASI_ALBERT generator to know the number of childs

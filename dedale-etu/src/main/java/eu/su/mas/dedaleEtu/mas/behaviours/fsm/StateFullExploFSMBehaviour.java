@@ -44,10 +44,11 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
         this.myFullMap = ((FSMAgent) this.myAgent).getMyFullMap();
         this.dictVoisinsMessages = ((FSMAgent) this.myAgent).getDictVoisinsMessages();
         this.listAgentNames = ((FSMAgent) this.myAgent).getListAgentNames();
-        this.dictBackpack = ((FSMAgent) this.myAgent).getDictBackpack();
 
 
+        //update le dictBackpack de l'agent agent
         ((FSMAgent) this.myAgent).setDictBackpackAgent(this.myAgent.getLocalName(), ((FSMAgent) this.myAgent).getBackPackFreeSpace());
+        this.dictBackpack = ((FSMAgent) this.myAgent).getDictBackpack();
 
         String backpackStr = this.dictBackpack.toString();
         System.out.println(myName + " [STATE A] -- backpackStr: " + backpackStr); // {AgentFSM_2=[], AgentFSM_1=[<Gold, 100>, <Diamond, 100>]}
@@ -59,159 +60,179 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
         //HashMapSerialize stringToHashMap = new HashMapSerialize();
         //HashMap<String, List<Couple<Observation,Integer>>> listCapacity = stringToHashMap.HashMapFrom(str);
         //System.out.println("========= VOICI LE RESULTAT : " + listCapacity);
-
-//        try {
-//            this.myAgent.doWait(500);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-
+/*
+        try {
+            this.myAgent.doWait(500);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+ */
         // 0) Retrieve the current position
         String myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
 
         if (myPosition != null) {
-            System.out.println(myName + " [STATE A] -- currentPosition: " + myPosition ); //+ "-- list= " + this.myFullMap.getOpenNodes()
+            if (((FSMAgent) this.myAgent).getInterblocage()) {
+                System.out.println(myName + " [STATE A] -- INTERBLOCAGE : "+((FSMAgent) this.myAgent).getInterblocage());
 
-            // list of observable from the agent's current position
-            List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
-            //System.out.println(myName + " [STATE A] -- lobs: " + lobs);
+                List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
+                Random r = new Random();
+                int moveId = 1 + r.nextInt(lobs.size() - 1);
+                String nextNode = lobs.get(moveId).getLeft();
+                ((FSMAgent) this.myAgent).setNextNode(nextNode);
 
-            // list of observations associated to the currentPosition
-            List<Couple<Observation, Integer>> lObservations = lobs.get(0).getRight();
-            //System.out.println(myName + " [STATE A] -- lObservations: " + lObservations);
-
-            for (Couple<Observation, Integer> o : lObservations) {
-                System.out.println(myName + " [STATE A] -- obs: " + o);
-                switch (o.getLeft()) {
-                    case DIAMOND:
-                        System.out.println(myName + " [STATE A] -- My treasure type: " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
-                        System.out.println(myName + " [STATE A] -- My current backpack capacity:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
-                        System.out.println(myName + " [STATE A] -- Value of the treasure on the current position: " + o.getLeft() + " - " + o.getRight());
-                        //System.out.println(myName + " [STATE A] -- The agent grabbed: " + ((AbstractDedaleAgent) this.myAgent).pick());
-                        //System.out.println(myName + " [STATE A] -- The remaining backpack capacity: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
-                    case GOLD:
-                        System.out.println(myName + " [STATE A] -- My treasure type: " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
-                        System.out.println(myName + " [STATE A] -- My current backpack capacity:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
-                        System.out.println(myName + " [STATE A] -- Value of the treasure on the current position: " + o.getLeft() + " - " + o.getRight());
-                        //System.out.println(myName + " [STATE A] -- The agent grabbed: " + ((AbstractDedaleAgent) this.myAgent).pick());
-                        //System.out.println(myName + " [STATE A] -- The remaining backpack capacity: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
-                        break;
-                    case STENCH:
-                        System.out.println(myName + " [STATE A] -- STENCH");
-                    default:
-                        break;
+                if (((AbstractDedaleAgent) this.myAgent).moveTo(nextNode)){
+                    ((FSMAgent) this.myAgent).setInterblocage(false);
+                    System.out.println(myName + " [STATE A] -- INTERBLOCAGE : "+ ((FSMAgent) this.myAgent).getInterblocage());
                 }
-            }
+            }else{
+                System.out.println(myName + " [STATE A] -- currentPosition: " + myPosition); //+ "-- list= " + this.myFullMap.getOpenNodes()
 
-            // 1) remove the current node from openlist and add it to closedNodes
-            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            long time = timestamp.getTime();
-            this.myFullMap.addNode(myPosition, FullMapRepresentation.MapAttribute.closed, lObservations, time);
+                // list of observable from the agent's current position
+                List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
+                //System.out.println(myName + " [STATE A] -- lobs: " + lobs);
 
-            // 2) get the surrounding nodes and, if not in closedNodes, add them to open nodes
-            String nextNode = null;
-            for (Couple<String, List<Couple<Observation, Integer>>> lob : lobs) {
-                String nodeId = lob.getLeft();
-                boolean isNewNode = this.myFullMap.addNewNode(nodeId, lob.getRight(), time);
-                // the node may exist, but not necessarily the edge
-                if (!myPosition.equals(nodeId)) {
-                    this.myFullMap.addEdge(myPosition, nodeId);
-                    if (nextNode == null && isNewNode) nextNode = nodeId;
-                }
-            }
+                // list of observations associated to the currentPosition
+                List<Couple<Observation, Integer>> lObservations = lobs.get(0).getRight();
+                //System.out.println(myName + " [STATE A] -- lObservations: " + lObservations);
 
-            //3) while openNodes is not empty, continues
-            if (!this.myFullMap.hasOpenNode()) { // si exploration finie
-                exitValue = 2; // aller en G : "Random Walk"
-                System.out.println(myName + " [STATE A] - Exploration successfully done");
-                System.out.println(myName + " CHANGES A to G : ranwom walk");
-            } else {
-                // 3.1) Select next move
-                // there exist one open node directly reachable, go for it,
-                // otherwise choose one from the openNode list, compute the shortestPath and go for it
-                if (nextNode == null) { // if no directly accessible openNode
-                    // chose one, compute the path and take the first step
-                    //nextNode = this.myFullMap.getShortestPathToClosestOpenNode(myPosition).get(0); //getShortestPath(myPosition,this.openNodes.get(0)).get(0);
-                    List<String>path = this.myFullMap.getShortestPathToClosestOpenNode(myPosition); //getShortestPath(myPosition,this.openNodes.get(0)).get(0);
-                    ((FSMAgent)this.myAgent).setPath(path);
-                    nextNode = path.get(0);
-                    ((FSMAgent)this.myAgent).setNextNode(nextNode);
-                    System.out.println(myName + " - currentPosition: " + myPosition + " -- list= " + this.myFullMap.getOpenNodes() + " | nextNode: " + nextNode);
-                } else {
-                    System.out.println("nextNode notNUll - " + myName + " -- list= " + this.myFullMap.getOpenNodes() + " | nextNode: " + nextNode);
-                }
-
-                // MAJ MAP
-                ((FSMAgent) this.myAgent).setMyFullMap(this.myFullMap);
-
-                // 3.2) ACTION : envoie un PING à tout le monde à chaque déplacement
-                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-                msg.setProtocol("PING");
-                msg.setSender(this.myAgent.getAID()); // mettre un expéditeur au message
-                msg.setContent(((FSMAgent) this.myAgent).getId()+"/"+((FSMAgent) this.myAgent).getNextNode());
-
-                // ajout des destinataires du ping (tous les autres agents, sauf moi-meme)
-                for (String receiverAgent : this.listAgentNames) { // PROBLEME : quand un autre agent meurt => il y a une boucle infinie
-                    if (!Objects.equals(myName, receiverAgent)) { // si ce n'est pas moi
-                        System.out.println(myName + " [STATE A] will send msg to " + receiverAgent);
-                        msg.addReceiver(new AID(receiverAgent, false)); // on met un receveur au message
+                for (Couple<Observation, Integer> o : lObservations) {
+                    System.out.println(myName + " [STATE A] -- obs: " + o);
+                    switch (o.getLeft()) {
+                        case DIAMOND:
+                            System.out.println(myName + " [STATE A] -- My treasure type: " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
+                            System.out.println(myName + " [STATE A] -- My current backpack capacity:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
+                            System.out.println(myName + " [STATE A] -- Value of the treasure on the current position: " + o.getLeft() + " - " + o.getRight());
+                            //System.out.println(myName + " [STATE A] -- The agent grabbed: " + ((AbstractDedaleAgent) this.myAgent).pick());
+                            //System.out.println(myName + " [STATE A] -- The remaining backpack capacity: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
+                        case GOLD:
+                            System.out.println(myName + " [STATE A] -- My treasure type: " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
+                            System.out.println(myName + " [STATE A] -- My current backpack capacity:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
+                            System.out.println(myName + " [STATE A] -- Value of the treasure on the current position: " + o.getLeft() + " - " + o.getRight());
+                            //System.out.println(myName + " [STATE A] -- The agent grabbed: " + ((AbstractDedaleAgent) this.myAgent).pick());
+                            //System.out.println(myName + " [STATE A] -- The remaining backpack capacity: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
+                            break;
+                        case STENCH:
+                            System.out.println(myName + " [STATE A] -- STENCH");
+                        default:
+                            break;
                     }
                 }
-                // envoie du ping à tous les agents
-                ((AbstractDedaleAgent) this.myAgent).sendMessage(msg);
-                System.out.println(myName + " [STATE A] finished sending PING");
 
-                // 3.3) At each time step, the agent check if he received a ping from a teammate
-                // ACTION : Check reception PING
-                MessageTemplate msgPing = MessageTemplate.and(
-                        MessageTemplate.MatchProtocol("PING"),
-                        MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+                // 1) remove the current node from openlist and add it to closedNodes
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                long time = timestamp.getTime();
+                this.myFullMap.addNode(myPosition, FullMapRepresentation.MapAttribute.closed, lObservations, time);
 
-                ACLMessage msgPingReceived = this.myAgent.receive(msgPing);
+                // 2) get the surrounding nodes and, if not in closedNodes, add them to open nodes
+                String nextNode = null;
+                for (Couple<String, List<Couple<Observation, Integer>>> lob : lobs) {
+                    String nodeId = lob.getLeft();
+                    boolean isNewNode = this.myFullMap.addNewNode(nodeId, lob.getRight(), time);
+                    // the node may exist, but not necessarily the edge
+                    if (!myPosition.equals(nodeId)) {
+                        this.myFullMap.addEdge(myPosition, nodeId);
+                        if (nextNode == null && isNewNode) {
+                            nextNode = nodeId;
+                            ((FSMAgent) this.myAgent).setNextNode(nextNode);
 
-                String msgExpediteur = "";
-                String nextNodeExpediteur = "";
-                int idExpediteur = -1;
-                // si reception PING, aller en B (envoyer sa carte),
-                // sinon continuer déplacement
-                if (msgPingReceived != null) { // réception PING, donc un autre agent est à proximité
-                    System.out.println(myName + " [STATE A] received PING");
-
-                    String namePingReceived = msgPingReceived.getSender().getLocalName();
-                    ((FSMAgent) this.myAgent).setDictVoisinsMessagesAgentAction(namePingReceived, "recoit_PING", true);
-
-                    // ancien emplacement de ((FSMAgent) this.myAgent).setMyMap(this.myMap);
-
-                    //récupérer les éléments du message qui est l'id et nextNode de l'expéditeur
-                    msgExpediteur = (String) msgPingReceived.getContent();
-                    String[] l = msgExpediteur.split("/");
-                    idExpediteur = Integer.valueOf(l[0]);
-                    if (l.length>1) {
-                        nextNodeExpediteur = l[1];
-
-                        if (nextNode.equals(nextNodeExpediteur) && ((FSMAgent) this.myAgent).getId() > idExpediteur) { //un des deux vont changer de nextNode
-                            System.out.println("[State A] : " + myName + " -- INTERBLOCAGE -- with : " + namePingReceived);
-                            // agent est plus grand et meme noeud next qui va laisser
-                            if (this.myFullMap.getOpenNodes().size() == 1) {
-                                //agent attend quelque seconde avant de repartir
-                                this.myAgent.doWait(10);
-                            }else{
-                                //continue à marcher de façon random
-                                Random r = new Random();
-                                int moveId = 1 + r.nextInt(lobs.size() - 1); // removing the current position from the list of target, not necessary as to stay is an action but allow quicker random move
-                                nextNode = lobs.get(moveId).getLeft();
-                                ((FSMAgent)this.myAgent).setNextNode(nextNode);
-                                System.out.println( myName + "[State E] : " + myName + " is interblocking, change node : " + nextNode);
-                            }
-                                System.out.println(myName + "[State A] : " + myName + " is interblocking, change node : " + nextNode);
                         }
                     }
-                    exitValue = 1; // aller en B : "Envoie carte"
-                    System.out.println(myName + " CHANGES A to B : send MAP");
+                }
 
-                } else { // pas reçu de PING, donc continuer à avancer dans la map
-                    ((FSMAgent) this.myAgent).resetDictVoisinsMessages();
-                    ((AbstractDedaleAgent) this.myAgent).moveTo(nextNode);
+                //3) while openNodes is not empty, continues
+                if (!this.myFullMap.hasOpenNode()) { // si exploration finie
+                    exitValue = 2; // aller en G : "Random Walk"
+                    System.out.println(myName + " [STATE A] - Exploration successfully done");
+                    System.out.println(myName + " CHANGES A to G : ranwom walk");
+                } else {
+                    // 3.1) Select next move
+                    // there exist one open node directly reachable, go for it,
+                    // otherwise choose one from the openNode list, compute the shortestPath and go for it
+                    if (nextNode == null) { // if no directly accessible openNode
+                        // chose one, compute the path and take the first step
+                        //nextNode = this.myFullMap.getShortestPathToClosestOpenNode(myPosition).get(0); //getShortestPath(myPosition,this.openNodes.get(0)).get(0);
+                        List<String> path = this.myFullMap.getShortestPathToClosestOpenNode(myPosition); //getShortestPath(myPosition,this.openNodes.get(0)).get(0);
+                        ((FSMAgent) this.myAgent).setPath(path);
+                        nextNode = path.get(0);
+                        ((FSMAgent) this.myAgent).setNextNode(nextNode);
+                        System.out.println(myName + " - currentPosition: " + myPosition + " -- list= " + this.myFullMap.getOpenNodes() + " | nextNode: " + nextNode);
+                    } else {
+                        ((FSMAgent) this.myAgent).setNextNode(nextNode);
+                        System.out.println("nextNode notNUll - " + myName + " -- list= " + this.myFullMap.getOpenNodes() + " | nextNode: " + nextNode);
+                    }
+
+                    // MAJ MAP
+                    ((FSMAgent) this.myAgent).setMyFullMap(this.myFullMap);
+
+                    // 3.2) ACTION : envoie un PING à tout le monde à chaque déplacement
+                    ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+                    msg.setProtocol("PING");
+                    msg.setSender(this.myAgent.getAID()); // mettre un expéditeur au message
+                    msg.setContent(((FSMAgent) this.myAgent).getId() + "/" + ((FSMAgent) this.myAgent).getNextNode());
+
+                    // ajout des destinataires du ping (tous les autres agents, sauf moi-meme)
+                    for (String receiverAgent : this.listAgentNames) { // PROBLEME : quand un autre agent meurt => il y a une boucle infinie
+                        if (!Objects.equals(myName, receiverAgent)) { // si ce n'est pas moi
+                            System.out.println(myName + " [STATE A] will send msg to " + receiverAgent);
+                            msg.addReceiver(new AID(receiverAgent, false)); // on met un receveur au message
+                        }
+                    }
+                    // envoie du ping à tous les agents
+                    ((AbstractDedaleAgent) this.myAgent).sendMessage(msg);
+                    System.out.println(myName + " [STATE A] finished sending PING");
+
+                    // 3.3) At each time step, the agent check if he received a ping from a teammate
+                    // ACTION : Check reception PING
+                    MessageTemplate msgPing = MessageTemplate.and(
+                            MessageTemplate.MatchProtocol("PING"),
+                            MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+
+                    ACLMessage msgPingReceived = this.myAgent.receive(msgPing);
+                    String nameExpediteur = "";
+                    String msgExpediteur = "";
+                    String nextNodeExpediteur = "";
+                    int idExpediteur = -1;
+                    // si reception PING, aller en B (envoyer sa carte),
+                    // sinon continuer déplacement
+                    if (msgPingReceived != null) { // réception PING, donc un autre agent est à proximité
+                        System.out.println(myName + " [STATE A] received PING");
+
+                        nameExpediteur = msgPingReceived.getSender().getLocalName();
+                        ((FSMAgent) this.myAgent).setDictVoisinsMessagesAgentAction(nameExpediteur, "recoit_PING", true);
+
+                        // ancien emplacement de ((FSMAgent) this.myAgent).setMyMap(this.myMap);
+
+                        //récupérer les éléments du message qui est l'id et nextNode de l'expéditeur
+                        msgExpediteur = (String) msgPingReceived.getContent();
+                        String[] l = msgExpediteur.split("/");
+                        idExpediteur = Integer.valueOf(l[0]);
+                        if (l.length > 1) {
+                            nextNodeExpediteur = l[1];
+
+                            if (nextNode.equals(nextNodeExpediteur)) {
+                                ((FSMAgent) this.myAgent).setInterblocage(true);
+                                System.out.println(myName + " [STATE A] -- INTERBLOCAGE : "+ ((FSMAgent) this.myAgent).getInterblocage());
+                                System.out.println("[State E] : " + myName + " -- INTERBLOCAGE -- with : " + nameExpediteur);
+                                Random r = new Random();
+                                int moveId = 1 + r.nextInt(lobs.size() - 1);
+                                nextNode = lobs.get(moveId).getLeft();
+                                ((FSMAgent) this.myAgent).setNextNode(nextNode);
+                                if (nextNode != null){
+                                    if(((AbstractDedaleAgent) this.myAgent).moveTo(nextNode)){
+                                        //agent se deplace pour laisser l'autre
+                                        ((FSMAgent) this.myAgent).setInterblocage(false);
+                                        System.out.println(myName + " [STATE A] -- INTERBLOCAGE : "+ ((FSMAgent) this.myAgent).getInterblocage());
+                                    }
+                                }
+                            }
+                        }
+                        exitValue = 1; // aller en B : "Envoie carte"
+                        System.out.println(myName + " CHANGES A to B : send MAP");
+
+                    } else { // pas reçu de PING, donc continuer à avancer dans la map
+                        ((FSMAgent) this.myAgent).resetDictVoisinsMessages();
+                        ((AbstractDedaleAgent) this.myAgent).moveTo(nextNode);
+                    }
                 }
             }
         }
