@@ -153,7 +153,7 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
 
             /*
                 Soit N = Nd + Ng où Nd = nb agent qui va récolter de diamond et Ng = nb agent qui va récolter de gold
-                Soit R = Rd + Rg où Rd = nb point récolte de diamond         et Rg = nb point récolte de gold
+                Soit R = Rd + Rg où Rd = nb point récolte de diamond et Rg = nb point récolte de gold
 
                 on a donc le ratio Rd/R
                 donc on peut avoir Nd = N*Rd/R et Ng = N-Nd

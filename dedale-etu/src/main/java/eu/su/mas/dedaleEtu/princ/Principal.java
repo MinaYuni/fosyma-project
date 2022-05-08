@@ -288,13 +288,12 @@ public class Principal {
 
 
         // ---------- GOLEM ---------- //
-/*
         //1) Get the container where the agent will appear
         c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
         Assert.assertNotNull("This container does not exist", c);
 
         //2) Give the name of your agent, MUST be the same as the one given in the entities file.
-        agentName = "Golem1";
+        agentName = "G1";
 
         //3) If you want to give specific parameters to your agent, add them here
         Object[] entityParameters = {"My parameters"};
@@ -302,15 +301,13 @@ public class Principal {
         //4) Give the class name of your agent to let the system instantiate it
         ag = createNewDedaleAgent(c, agentName, DummyWumpusShift2.class.getName(), entityParameters);
         agentList.add(ag);
-*/
 
-/*
         //1) Get the container where the agent will appear
         c = containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
         Assert.assertNotNull("This container does not exist", c);
 
         //2) Give the name of your agent, MUST be the same as the one given in the entities file.
-        agentName = "Golem2";
+        agentName = "G2";
 
         //3) If you want to give specific parameters to your agent, add them here
         Object[] entityParametersg2 = {"My parameters"};
@@ -318,7 +315,6 @@ public class Principal {
         //4) Give the class name of your agent to let the system instantiate it
         ag = createNewDedaleAgent(c, agentName, DummyWumpusShift.class.getName(), entityParametersg2);
         agentList.add(ag);
-*/
 
         // ---------- AGENT Explo1 ---------- //
 /*
@@ -414,22 +410,35 @@ public class Principal {
         c = Principal.containerList.get(ConfigurationFile.LOCAL_CONTAINER2_NAME);
         Assert.assertNotNull("This container does not exist", c);
 
-        agentName = "AgentFSM1";
-        Object[] entityParametersExploFSM1 = {"AgentFSM1", "AgentFSM2"};
-//        Object[] entityParametersExploFSM1 = {"AgentFSM2", "AgentFSM3"};
+        agentName = "A1";
+        Object[] entityParametersExploFSM1 = {"A2", "A3", "A4", "A5", "A6"};
         ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM1);
         agentList.add(ag);
 
-        agentName = "AgentFSM2";
-        Object[] entityParametersExploFSM2 = {"AgentFSM1", "AgentFSM2"};
-//        Object[] entityParametersExploFSM2 = {"AgentFSM1", "AgentFSM3"};
+        agentName = "A2";
+        Object[] entityParametersExploFSM2 = {"A1", "A3", "A4", "A5", "A6"};
         ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM2);
         agentList.add(ag);
 
-//        agentName = "AgentFSM3";
-//        Object[] entityParametersExploFSM3 = {"AgentFSM1", "AgentFSM2"};
-//        ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM3);
-//        agentList.add(ag);
+        agentName = "A3";
+        Object[] entityParametersExploFSM3 = {"A1", "A2", "A4", "A5", "A6"};
+        ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM3);
+        agentList.add(ag);
+
+        agentName = "A4";
+        Object[] entityParametersExploFSM4 = {"A1", "A2", "A3", "A5", "A6"};
+        ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM4);
+        agentList.add(ag);
+
+        agentName = "A5";
+        Object[] entityParametersExploFSM5 = {"A1", "A2", "A3", "A4", "A6"};
+        ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM5);
+        agentList.add(ag);
+
+        agentName = "A6";
+        Object[] entityParametersExploFSM6 = {"A1", "A2", "A3", "A4", "A5"};
+        ag = createNewDedaleAgent(c, agentName, FSMAgent.class.getName(), entityParametersExploFSM6);
+        agentList.add(ag);
 
 
         /*

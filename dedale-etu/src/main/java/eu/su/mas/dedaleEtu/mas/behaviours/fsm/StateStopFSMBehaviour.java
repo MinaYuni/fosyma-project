@@ -37,6 +37,7 @@ public class StateStopFSMBehaviour extends OneShotBehaviour {
         System.out.println(myName + " [STATE F] -- goldDict: " + goldDict);
         System.out.println(myName + " [STATE F] -- diamondDict: " + diamondDict);
 
+        //super.takeDown();
     }
 
     public int onEnd() {

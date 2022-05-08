@@ -26,7 +26,7 @@ public class FSMAgent extends AbstractDedaleAgent {
     public int cpt = 0; //pour donner des identifiants aux agents pour la collecte
     private static final long serialVersionUID = -1969469610241668140L;
 
-    /*
+    /* PAS A JOUR
     A (exploration): à chaque déplacement, envoie PING + check boite aux lettres
         if reception "ping" --> B (arc 1)
         if reception carte --> B (arc 1)
@@ -58,8 +58,8 @@ public class FSMAgent extends AbstractDedaleAgent {
     private static final String B = "Envoie carte";
     private static final String C = "Check Mailbox";
     private static final String D = "Envoie ACK";
-    private static final String E = "Collecte"; // pas encore d'arcs
-    private static final String G = "Random Walk"; // pas encore d'arcs
+    private static final String E = "Collecte";
+    private static final String G = "Random Walk";
     private static final String F = "Etat final";
 
     /*

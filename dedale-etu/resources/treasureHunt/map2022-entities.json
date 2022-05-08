@@ -2,7 +2,7 @@
 { 
   "agentType":"agentCollect",
   "agentName": "A1",
-  "communicationRange": 3,
+  "communicationRange": 2,
   "initialLocation": "M30",
   "backPackCapacityGold": 20,
   "backPackCapacityDiamond":20, 
@@ -13,7 +13,7 @@
 { 
   "agentType":"agentCollect",
   "agentName": "A2",
-  "communicationRange": 4,
+  "communicationRange": 2,
   "initialLocation": "94",
   "backPackCapacityGold": 5,
   "backPackCapacityDiamond":30, 
@@ -35,7 +35,7 @@
 { 
   "agentType":"agentCollect",
   "agentName": "A4",
-  "communicationRange": 3,
+  "communicationRange": 2,
   "initialLocation": "M7",
   "backPackCapacityGold": 10,
   "backPackCapacityDiamond":40, 

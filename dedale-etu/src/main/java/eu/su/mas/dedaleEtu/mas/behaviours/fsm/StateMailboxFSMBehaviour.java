@@ -42,11 +42,11 @@ public class StateMailboxFSMBehaviour extends OneShotBehaviour {
         this.myFullMap = ((FSMAgent) this.myAgent).getMyFullMap();
         this.dictVoisinsMessages = ((FSMAgent) this.myAgent).getDictVoisinsMessages();
 
-//        try {
-//            this.myAgent.doWait(500);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        try {
+            this.myAgent.doWait(1000);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // 1) ACTION : Check si l'agent a reçu un ping d'un nouveau voisin
         MessageTemplate msgPing = MessageTemplate.and(
