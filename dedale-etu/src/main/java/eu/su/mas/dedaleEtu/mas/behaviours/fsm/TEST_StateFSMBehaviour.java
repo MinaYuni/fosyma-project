@@ -2,11 +2,11 @@ package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 import jade.core.behaviours.OneShotBehaviour;
 import java.lang.Math;
 
-public class StateFSMBehaviourTest extends OneShotBehaviour {
+public class TEST_StateFSMBehaviour extends OneShotBehaviour {
 	private final int exitValueMax ;
 	private int exitValue;
 	
-	public StateFSMBehaviourTest(int max) {
+	public TEST_StateFSMBehaviour(int max) {
 		super(); 
 		exitValueMax = max;
 	}

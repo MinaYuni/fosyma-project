@@ -20,7 +20,7 @@ import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 
 
 // Behaviour/comportement du state A (exploration)
-public class StateExploFSMBehaviour extends OneShotBehaviour {
+public class OBSOLETE_StateExploFSMBehaviour extends OneShotBehaviour {
     private static final long serialVersionUID = 1567689731496787661L;
 
     private List<String> listAgentNames;
@@ -28,7 +28,7 @@ public class StateExploFSMBehaviour extends OneShotBehaviour {
     private MapRepresentation myMap;
     private int exitValue;
 
-    public StateExploFSMBehaviour(final AbstractDedaleAgent myagent) {
+    public OBSOLETE_StateExploFSMBehaviour(final AbstractDedaleAgent myagent) {
         super(myagent);
     }
 

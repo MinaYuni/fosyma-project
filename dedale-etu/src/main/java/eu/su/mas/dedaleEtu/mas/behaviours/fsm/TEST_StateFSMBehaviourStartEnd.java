@@ -1,13 +1,8 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 import jade.core.behaviours.OneShotBehaviour;
-import java.lang.Math;
-import java.util.List;
 
-import eu.su.mas.dedale.mas.AbstractDedaleAgent;
-import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
-
-public class StateFSMBehaviourStartEnd extends OneShotBehaviour {
-	public StateFSMBehaviourStartEnd() {
+public class TEST_StateFSMBehaviourStartEnd extends OneShotBehaviour {
+	public TEST_StateFSMBehaviourStartEnd() {
 		super(); 
 	}
 	
