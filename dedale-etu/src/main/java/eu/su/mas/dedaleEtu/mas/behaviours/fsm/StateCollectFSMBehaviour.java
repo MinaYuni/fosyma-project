@@ -1,35 +1,34 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.fsm;
 
-import dataStructures.serializableGraph.SerializableSimpleGraph;
+//import dataStructures.serializableGraph.SerializableSimpleGraph;
 import dataStructures.tuple.Couple;
+
 import eu.su.mas.dedale.env.Observation;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.agents.fsm.FSMAgent;
 import eu.su.mas.dedaleEtu.mas.knowledge.FullMapRepresentation;
+
 import jade.core.AID;
 import jade.core.behaviours.OneShotBehaviour;
+
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import jade.lang.acl.UnreadableException;
-import org.glassfish.pfl.basic.fsm.FSM;
+//import jade.lang.acl.UnreadableException;
+//import java.lang.Object;
+//import java.lang.reflect.Array;
 
-import java.lang.reflect.Array;
+//import org.glassfish.pfl.basic.fsm.FSM;
+
 import java.util.*;
+//import java.util.stream.Collector;
+//import java.util.stream.Collectors;
 
-import java.lang.Object;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-//import javax.json.*;
-//import javax.json.Json;
-//import org.json.simple.*;
-//import org.json.*;
-//import org.json.simple.JSONValue;
 
 public class StateCollectFSMBehaviour extends OneShotBehaviour {
     private static final long serialVersionUID = 6567689731496787661L;
 
     private List<String> listAgentNames;
-    private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
+    //private HashMap<String, HashMap<String, Boolean>> dictVoisinsMessages;
     //private MapRepresentation myMap;
     private FullMapRepresentation myFullMap;
     private HashMap<String, List<Couple<Observation,Integer>>> dictBackpack;
@@ -45,7 +44,6 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
 
         // update information
         this.myFullMap = ((FSMAgent) this.myAgent).getMyFullMap();
-        this.dictVoisinsMessages = ((FSMAgent) this.myAgent).getDictVoisinsMessages();
         this.listAgentNames = ((FSMAgent) this.myAgent).getListAgentNames();
 
 
@@ -55,8 +53,6 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
         }
         this.dictBackpack = ((FSMAgent) this.myAgent).getDictBackpack();
         System.out.println(myName + " [STATE E] -- this.dictBackpack : " + this.dictBackpack);
-
-        int agentID = ((FSMAgent) this.myAgent).getId();
 
         String myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
         System.out.println(myName + " [STATE E] -- myCurrentPosition is: " + myPosition);
@@ -152,8 +148,8 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
             int nbPointGold = goldDict.size();
             int nbPointDiamond = diamondDict.size();
             int nbPointRessources = nbPointGold + nbPointDiamond;
-            int nbAgentsGold = 0;
-            int nbAgentsDiamond = 0;
+            int nbAgentsGold ;
+            int nbAgentsDiamond ;
 
             /*
                 Soit N = Nd + Ng où Nd = nb agent qui va récolter de diamond et Ng = nb agent qui va récolter de gold
@@ -164,19 +160,11 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
              */
 
             if (nbPointDiamond < nbPointGold) {
-                nbAgentsGold = (int) nbAgents * nbPointGold / nbPointRessources;
+                nbAgentsGold = nbAgents * nbPointGold / nbPointRessources;
                 nbAgentsDiamond = nbAgents - nbAgentsGold;
-                if (nbAgentsDiamond < 1 && nbPointDiamond > 0) { //on veut au moins 1 agent aille chercher diamond (et non 0 agent)
-                    nbAgentsDiamond = 1;
-                    nbAgentsGold = nbAgents - nbAgentsDiamond;
-                }
             } else {
-                nbAgentsDiamond = (int) nbAgents * nbPointDiamond / nbPointRessources;
+                nbAgentsDiamond = nbAgents * nbPointDiamond / nbPointRessources;
                 nbAgentsGold = nbAgents - nbAgentsDiamond;
-                if (nbAgentsGold < 1 && nbAgentsGold > 0) {   //on veut au moins 1 agent aille chercher gold (et non 0 agent)
-                    nbAgentsGold = 1;
-                    nbAgentsDiamond = nbAgents - nbAgentsGold;
-                }
             }
 
             System.out.println("[STATE E] -- NB AGENT : " + nbAgents + " -- NB AGENT GOLD : " + nbAgentsGold + " -- NB AGENT DIAMOND : " + nbAgentsDiamond);
@@ -185,7 +173,6 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
             //int maxNodeParAgent = (nbPointRessources / nbAgents); //nb de ressource par agent
             int maxNodeParAgent = (Integer.max(nbPointDiamond, nbPointGold)) / nbAgents; //nb de ressource par agent ==> permet équiter entre agent si tous les agents prennetn le meme type de ressources
 
-            HashMap<String, List<Couple<Observation, Integer>>> listCapacity = ((FSMAgent) this.myAgent).getDictBackpack();
             HashMap<String, Couple<Integer, String>> dictDiamond = this.myFullMap.getDiamondDict();
             HashMap<String, Couple<Integer, String>> dictGold = this.myFullMap.getGoldDict();
 
@@ -195,11 +182,12 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
             }
             if (nbPointRessources >= nbAgents) {
                 // Par defaut, on commence par repartir les golds
+                Double tmp;
+                Double minDiff;
                 //Répartition des golds
                 for (String nodeGold : dictGold.keySet()) {
                     Couple<Integer, String> quantiteGold = dictGold.get(nodeGold);
-                    Double tmp = 0.0;
-                    Double minDiff = Double.POSITIVE_INFINITY;
+                    minDiff = Double.POSITIVE_INFINITY;
                     String nameAgent_min = "";
                     for (String agent : listAgentNames) {
                         Integer capaciteGold = ((FSMAgent) this.myAgent).getDictBackPackObservationInteger(agent, Observation.GOLD);
@@ -213,7 +201,7 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
                         }
                     }
                     // à la fin de la boucle : l'agent nameAgent_min qui va récupurer une quantité minDiff de ressource Gold du noeud nodeGold
-                    if (nameAgent_min != "") {
+                    if (!nameAgent_min.equals("")) {
                         // MAJ listRepartitionNodeCoop
                         // on a trouvé l'agent nameAgent_min qui va aller collecter le noeud nodeGold
                         listRepartitionNodeCoop.put(nameAgent_min, listRepartitionNodeCoop.get(nameAgent_min) + 1);
@@ -222,14 +210,13 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
                     //Ajout du noeud dans la listNodeRessource
                     if (myName.equals(nameAgent_min) && listRepartitionNodeCoop.get(myName) <= maxNodeParAgent) {
                         ((FSMAgent) this.myAgent).addListNodeRessource(nodeGold);
-                        ((FSMAgent) this.myAgent).setTypeTreasure(Observation.GOLD);
+                        //((FSMAgent) this.myAgent).setTypeTreasure(Observation.GOLD);
                     }
                 }
                 //Répartition des diamonds
                 for (String nodeDiamond : dictDiamond.keySet()) {
                     Couple<Integer, String> quantiteDiamond = dictDiamond.get(nodeDiamond);
-                    Double tmp = 0.0;
-                    Double minDiff = Double.POSITIVE_INFINITY;
+                    minDiff = Double.POSITIVE_INFINITY;
                     String nameAgent_min = "";
                     for (String agent : listAgentNames) {
                         Integer capaciteDiamond = ((FSMAgent) this.myAgent).getDictBackPackObservationInteger(agent, Observation.DIAMOND);
@@ -243,7 +230,7 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
                         }
                     }
                     // à la fin de la boucle : l'agent nameAgent_min qui va récupurer une quantité minDiff de ressource Gold du noeud nodeGold
-                    if (nameAgent_min != "") {
+                    if (!nameAgent_min.equals("")) {
                         // MAJ listRepartitionNodeCoop
                         // on a trouvé l'agent nameAgent_min qui va aller collecter le noeud nodeGold
                         listRepartitionNodeCoop.put(nameAgent_min, listRepartitionNodeCoop.get(nameAgent_min) + 1);
@@ -252,17 +239,18 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
                     //Ajout du noeud dans la listNodeRessource
                     if (myName.equals(nameAgent_min) && listRepartitionNodeCoop.get(myName) <= maxNodeParAgent) {
                         ((FSMAgent) this.myAgent).addListNodeRessource(nodeDiamond);
-                        ((FSMAgent) this.myAgent).setTypeTreasure(Observation.DIAMOND);
+                        //((FSMAgent) this.myAgent).setTypeTreasure(Observation.DIAMOND);
                     }
                 }
             } else {
                 //nbPointRessources < nbAgents
+                Double minDiff;
+                Double tmp;
                 // Par defaut, on commence par repartir les golds
                 //Répartition des golds
                 for (String nodeGold : dictGold.keySet()) {
                     Couple<Integer, String> quantiteGold = dictGold.get(nodeGold);
-                    Double tmp = 0.0;
-                    Double minDiff = Double.POSITIVE_INFINITY;
+                    minDiff = Double.POSITIVE_INFINITY;
                     String nameAgent_min = "";
                     for (String agent : listAgentNames) {
                         Integer capaciteGold = ((FSMAgent) this.myAgent).getDictBackPackObservationInteger(agent, Observation.GOLD);
@@ -276,7 +264,7 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
                         }
                     }
                     // à la fin de la boucle : l'agent nameAgent_min qui va récupurer une quantité minDiff de ressource Gold du noeud nodeGold
-                    if (nameAgent_min != "") {
+                    if (!nameAgent_min.equals("")) {
                         // MAJ listRepartitionNodeCoop
                         // on a trouvé l'agent nameAgent_min qui va aller collecter le noeud nodeGold
                         listRepartitionNodeCoop.put(nameAgent_min, listRepartitionNodeCoop.get(nameAgent_min) + 1);
@@ -291,8 +279,7 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
                 //Répartition des diamonds
                 for (String nodeDiamond : dictDiamond.keySet()) {
                     Couple<Integer, String> quantiteDiamond = dictDiamond.get(nodeDiamond);
-                    Double tmp = 0.0;
-                    Double minDiff = Double.POSITIVE_INFINITY;
+                    minDiff = Double.POSITIVE_INFINITY;
                     String nameAgent_min = "";
                     for (String agent : listAgentNames) {
                         Integer capaciteDiamond = ((FSMAgent) this.myAgent).getDictBackPackObservationInteger(agent, Observation.DIAMOND);
@@ -306,7 +293,7 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
                         }
                     }
                     // à la fin de la boucle : l'agent nameAgent_min qui va récupurer une quantité minDiff de ressource Gold du noeud nodeGold
-                    if (nameAgent_min != "") {
+                    if (!nameAgent_min.equals("")){
                         // MAJ listRepartitionNodeCoop
                         // on a trouvé l'agent nameAgent_min qui va aller collecter le noeud nodeGold
                         listRepartitionNodeCoop.put(nameAgent_min, listRepartitionNodeCoop.get(nameAgent_min) + 1);
@@ -340,10 +327,8 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
                     if (((AbstractDedaleAgent) this.myAgent).moveTo(nodeIntermediaire)==true) {
                         System.out.println(myName + " [State E] : -- myPosition : " + myPosition +" -- move to node " + nodeIntermediaire);
 
-                        this.myAgent.doWait(50);
-                        System.out.println(myName+" [State E] ====================================== ");
+                        this.myAgent.doWait(10);
                         ((FSMAgent) this.myAgent).setInterblocage(false);
-
                     }
                 }
             } else {
@@ -368,7 +353,7 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
                 // myPosition == lobs.get(0).getLeft()
                 if (lObservations.isEmpty()){
                     // il y n'a pas de ressource dans ce noeud
-                    if(((AbstractDedaleAgent) this.myAgent).getCurrentPosition() == ((FSMAgent) this.myAgent).getNodeBut()) {
+                    if(((AbstractDedaleAgent) this.myAgent).getCurrentPosition().equals(((FSMAgent) this.myAgent).getNodeBut())) {
                         //un autre agent a récuperer la ressource, alors on passe au suivant
                         int index = ((FSMAgent) this.myAgent).getNbPointRecolte();
                         System.out.println(myName + " [State E] -- AVANT Changement Index -- lObservations : " + lObservations
@@ -448,6 +433,7 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
                     ((FSMAgent) this.myAgent).setNodeBut(nodeBut);
 
                     List<String> path = this.myFullMap.getShortestPath(((FSMAgent) this.myAgent).getCurrentPosition(), nodeBut);
+
                     while (path.size() == 0) {
                         //path est null donc agent va aller à un nodeIntermediaire pr aller au prochain point de ressource
                         System.out.println("====[PATH NULL]======= " + myName + " [State E] : " + myName + " path : " + path);
@@ -462,11 +448,17 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
                         }
                         System.out.println("====[PATH NULL]======= " + myName + " [State E] : " + myName + " path : " + path);
                     }
+                    ((FSMAgent) this.myAgent).setPath(path);
+                    nextNode = path.get(0);
+                    ((FSMAgent) this.myAgent).setNextNode(nextNode);
+                    /*
                     if(path.size()>0) { // agent a trouver un chemin et va pouvoir aller au nextNode
                         ((FSMAgent) this.myAgent).setPath(path);
                         nextNode = path.get(0);
                         ((FSMAgent) this.myAgent).setNextNode(nextNode);
                      }
+                     */
+
                     System.out.println("== " + myName + " [State E] -- Prochaine collect -- : "+ nodeBut
                             + " -- path : " + path
                             + " -- getCurrentPosition() : " + (((FSMAgent) this.myAgent).getCurrentPosition())
@@ -501,7 +493,6 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
                     int moveId = 1 + r.nextInt(lobs.size() - 1); // removing the current position from the list of target, not necessary as to stay is an action but allow quicker random move
                     nextNode = lobs.get(moveId).getLeft();
                     ((FSMAgent) this.myAgent).setNextNode(nextNode);
-                    System.out.println("=========== " + myName + " [State E] : " + myName + " move RANDOM to node : " + nextNode);
                 }
 
                 // ACTION : Envoie PING pour interblocage
@@ -536,7 +527,7 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
                 if (msgReceived != null) {
                     System.out.println(myName + " [STATE E] received message PING for interblock");
                     nameExpediteur = msgReceived.getSender().getLocalName();
-                    msgExpediteur = (String) msgReceived.getContent();
+                    msgExpediteur = msgReceived.getContent();
                     l = msgExpediteur.split("/");
                     idExpediteur = Integer.valueOf(l[0]);
                     nextNodeExpediteur = l[1];
@@ -562,7 +553,7 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
                         ((FSMAgent) this.myAgent).setInterblocage(false);
                         if(((FSMAgent) this.myAgent).getId() > idExpediteur) {
                             //agent va attendre pour éviter encore le meme interblocage
-                            this.myAgent.doWait(50);
+                            this.myAgent.doWait(10);
                         }
                         if (((FSMAgent) this.myAgent).getNodeBut() != null) {
                             //Trouver le chemin pour aller au nodeBut
@@ -604,7 +595,7 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
                             ((FSMAgent) this.myAgent).setInterblocage(false);
                             if(((FSMAgent) this.myAgent).getId() > idExpediteur) {
                                 //agent va attendre pour éviter encore le meme interblocage
-                                this.myAgent.doWait(50);
+                                this.myAgent.doWait(10);
                             }
                             if (((FSMAgent) this.myAgent).getNodeBut() != null) {
                                 //Trouver le chemin pour aller au nodeBut

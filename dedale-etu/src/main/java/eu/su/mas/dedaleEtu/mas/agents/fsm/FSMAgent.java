@@ -418,9 +418,7 @@ public class FSMAgent extends AbstractDedaleAgent {
         if (this.verifyTypeTreasure(obs)){
             int q = this.pick();
             this.updateQuantite(q);
-            System.out.println("=========== UPDATE nbPointRecolte AVANT ===== : " + this.nbPointRecolte );
             this.nbPointRecolte = this.nbPointRecolte + 1;
-            System.out.println("=========== UPDATE nbPointRecolte APRES ===== : " + this.nbPointRecolte );
             return q;
         }
         return 0;

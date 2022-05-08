@@ -39,7 +39,7 @@ public class StateRandomWalkFSMBehaviour extends OneShotBehaviour {
         System.out.println("\n--- START state G (StateRandomWalkFSMBehaviour): " + myName + " ---");
 
         try {
-            this.myAgent.doWait(2000);
+            this.myAgent.doWait(1000);
         } catch (Exception e) {
             e.printStackTrace();
         }
