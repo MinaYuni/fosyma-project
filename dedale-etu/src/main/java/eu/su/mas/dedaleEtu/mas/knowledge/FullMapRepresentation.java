@@ -250,6 +250,8 @@ public class FullMapRepresentation implements Serializable {
         return getShortestPath(myPosition, closest.get().getLeft());
     }
 
+
+
     public List<String> getOpenNodes() {
         return this.g.nodes()
                 .filter(x -> x.getAttribute("ui.class").equals(MapAttribute.open.toString()))

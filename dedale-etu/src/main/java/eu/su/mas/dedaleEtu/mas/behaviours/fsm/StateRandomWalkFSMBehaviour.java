@@ -71,7 +71,7 @@ public class StateRandomWalkFSMBehaviour extends OneShotBehaviour {
 
             // list of observations associated to the currentPosition
             List<Couple<Observation, Integer>> lObservations = lobs.get(0).getRight();
-            System.out.println(myName + " [STATE E] -- lObservations - " + lObservations);
+            System.out.println(myName + " [STATE G] -- lObservations - " + lObservations);
 
             List<Couple<Observation, Integer>> listCapacity = ((FSMAgent) this.myAgent).getBackPackFreeSpace();
             for(Couple<Observation, Integer> capacity : listCapacity){
@@ -136,6 +136,7 @@ public class StateRandomWalkFSMBehaviour extends OneShotBehaviour {
 //            assert mapReceived != null;
 //            this.myFullMap.mergeMap(mapReceived);
 //        }
+
         if(exitValue==-1){
             exitValue = 1; // reste au state G (Random Walk)
             System.out.println(myName + " STAYS in G");
