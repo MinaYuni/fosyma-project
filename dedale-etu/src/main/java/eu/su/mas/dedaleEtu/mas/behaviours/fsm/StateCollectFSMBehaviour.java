@@ -244,65 +244,49 @@ public class StateCollectFSMBehaviour extends OneShotBehaviour {
                 }
             } else {
                 //nbPointRessources < nbAgents
-                Double minDiff;
                 Double tmp;
+                Double sum;
                 // Par defaut, on commence par repartir les golds
                 //Répartition des golds
                 for (String nodeGold : dictGold.keySet()) {
                     Couple<Integer, String> quantiteGold = dictGold.get(nodeGold);
-                    minDiff = Double.POSITIVE_INFINITY;
-                    String nameAgent_min = "";
+                    sum = 0.0;
                     for (String agent : listAgentNames) {
                         Integer capaciteGold = ((FSMAgent) this.myAgent).getDictBackPackObservationInteger(agent, Observation.GOLD);
                         tmp = Double.valueOf(capaciteGold - quantiteGold.getLeft());
-                        if ((0 < tmp) && (tmp < minDiff) && (listRepartitionNodeCoop.get(agent) <= maxNodeParAgent)) {
-                            // tmp est minimisé et en plus l'agent n'a pas atteint un nombre maxNodeParAgent de noeud à récuperer
+                        //max par glouton
+                        if ((0 < tmp) && (sum + tmp < quantiteGold.getLeft()) && (listRepartitionNodeCoop.get(agent) <= maxNodeParAgent)) {
                             if (((FSMAgent) this.myAgent).getTypeTreasure() == null || ((FSMAgent) this.myAgent).getTypeTreasure() == Observation.GOLD) {
-                                minDiff = tmp;
-                                nameAgent_min = agent;
+                                sum = sum + tmp;
+                                listRepartitionNodeCoop.put(agent, listRepartitionNodeCoop.get(agent) + 1);
+                                //Ajout du noeud dans la listNodeRessource
+                                if (myName.equals(agent)) {
+                                    ((FSMAgent) this.myAgent).addListNodeRessource(nodeGold);
+                                    ((FSMAgent) this.myAgent).setTypeTreasure(Observation.GOLD);
+                                }
                             }
                         }
-                    }
-                    // à la fin de la boucle : l'agent nameAgent_min qui va récupurer une quantité minDiff de ressource Gold du noeud nodeGold
-                    if (!nameAgent_min.equals("")) {
-                        // MAJ listRepartitionNodeCoop
-                        // on a trouvé l'agent nameAgent_min qui va aller collecter le noeud nodeGold
-                        listRepartitionNodeCoop.put(nameAgent_min, listRepartitionNodeCoop.get(nameAgent_min) + 1);
-                    }
-
-                    //Ajout du noeud dans la listNodeRessource
-                    if (myName.equals(nameAgent_min) && listRepartitionNodeCoop.get(myName) <= maxNodeParAgent) {
-                        ((FSMAgent) this.myAgent).addListNodeRessource(nodeGold);
-                        ((FSMAgent) this.myAgent).setTypeTreasure(Observation.GOLD);
                     }
                 }
                 //Répartition des diamonds
                 for (String nodeDiamond : dictDiamond.keySet()) {
-                    Couple<Integer, String> quantiteDiamond = dictDiamond.get(nodeDiamond);
-                    minDiff = Double.POSITIVE_INFINITY;
-                    String nameAgent_min = "";
+                    Couple<Integer, String> quantiteDiamond = dictGold.get(nodeDiamond);
+                    sum = 0.0;
                     for (String agent : listAgentNames) {
                         Integer capaciteDiamond = ((FSMAgent) this.myAgent).getDictBackPackObservationInteger(agent, Observation.DIAMOND);
                         tmp = Double.valueOf(capaciteDiamond - quantiteDiamond.getLeft());
-                        if ((0 < tmp) && (tmp < minDiff) && (listRepartitionNodeCoop.get(agent) <= maxNodeParAgent)) {
-                            // tmp est minimisé et en plus l'agent n'a pas atteint un nombre maxNodeParAgent de noeud à récuperer
+                        //max par glouton
+                        if ((0 < tmp) && (sum + tmp < quantiteDiamond.getLeft()) && (listRepartitionNodeCoop.get(agent) <= maxNodeParAgent)) {
                             if (((FSMAgent) this.myAgent).getTypeTreasure() == null || ((FSMAgent) this.myAgent).getTypeTreasure() == Observation.DIAMOND) {
-                                minDiff = tmp;
-                                nameAgent_min = agent;
+                                sum = sum + tmp;
+                                listRepartitionNodeCoop.put(agent, listRepartitionNodeCoop.get(agent) + 1);
+                                //Ajout du noeud dans la listNodeRessource
+                                if (myName.equals(agent)) {
+                                    ((FSMAgent) this.myAgent).addListNodeRessource(nodeDiamond);
+                                    ((FSMAgent) this.myAgent).setTypeTreasure(Observation.DIAMOND);
+                                }
                             }
                         }
-                    }
-                    // à la fin de la boucle : l'agent nameAgent_min qui va récupurer une quantité minDiff de ressource Gold du noeud nodeGold
-                    if (!nameAgent_min.equals("")){
-                        // MAJ listRepartitionNodeCoop
-                        // on a trouvé l'agent nameAgent_min qui va aller collecter le noeud nodeGold
-                        listRepartitionNodeCoop.put(nameAgent_min, listRepartitionNodeCoop.get(nameAgent_min) + 1);
-                    }
-
-                    //Ajout du noeud dans la listNodeRessource
-                    if (myName.equals(nameAgent_min) && listRepartitionNodeCoop.get(myName) <= maxNodeParAgent) {
-                        ((FSMAgent) this.myAgent).addListNodeRessource(nodeDiamond);
-                        ((FSMAgent) this.myAgent).setTypeTreasure(Observation.DIAMOND);
                     }
                 }
             }

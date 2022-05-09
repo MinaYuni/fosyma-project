@@ -250,6 +250,107 @@ public class FullMapRepresentation implements Serializable {
         return getShortestPath(myPosition, closest.get().getLeft());
     }
 
+    public List<String> getPathBack(String myPosition, Integer degreeMax){
+
+        Node root = this.g.getNode(myPosition);
+        List<Node> pile = new ArrayList<>();
+        pile.add(root);
+        Node noeud = pile.get(0);
+        Integer max = 0;
+        while( !noeud.equals(null) ){
+            pile.remove(noeud);
+            max = noeud.getDegree();
+            if (max > degreeMax && !root.equals(noeud)){
+                break;
+            }
+            Iterator<Edge> iterE = this.g.edges().iterator();
+            while (iterE.hasNext()) {
+                Edge e = iterE.next();
+                Node sn = e.getSourceNode();
+                Node tn = e.getTargetNode();
+                if(sn == noeud || tn == noeud){
+                    if (!pile.contains(tn)){
+                        pile.add(tn);
+                    }else if (!pile.contains(sn)){
+                        pile.add(sn);
+                    }
+                }
+            }
+            noeud = pile.get(0);
+        }
+        return this.getShortestPath(myPosition, noeud.getId());
+    }
+
+    public List<String> getPathBack(String myPosition, Integer degreeMax, String notNode){
+        Node root = this.g.getNode(myPosition);
+        List<Node> pile = new ArrayList<>();
+        pile.add(root);
+        Node noeud = pile.get(0);
+        Integer max = 0;
+        while( !noeud.equals(null) ){
+            pile.remove(noeud);
+            max = noeud.getDegree();
+            if (max > degreeMax && !noeud.equals(notNode) && !root.equals(noeud)){
+                break;
+            }
+            Iterator<Edge> iterE = this.g.edges().iterator();
+            while (iterE.hasNext()) {
+                Edge e = iterE.next();
+                Node sn = e.getSourceNode();
+                Node tn = e.getTargetNode();
+                if(sn == noeud || tn == noeud){
+                    if (!pile.contains(tn)){
+                        pile.add(tn);
+                    }else if (!pile.contains(sn)){
+                        pile.add(sn);
+                    }
+                }
+            }
+            noeud = pile.get(0);
+        }
+        return this.getShortestPath(myPosition, noeud.getId());
+    }
+
+    public int getDistanceLeaf(String myPosition){
+        Node root = this.g.getNode(myPosition);
+        List<Node> pile = new ArrayList<>();
+        pile.add(root);
+        Node nodeFeuille=null;
+        Node noeud = pile.get(0);
+        while( !noeud.equals(null) ){
+            pile.remove(noeud);
+            int fils = 0;
+            Iterator<Edge> iterE = this.g.edges().iterator();
+            while (iterE.hasNext()) {
+                Edge e = iterE.next();
+                Node sn = e.getSourceNode();
+                Node tn = e.getTargetNode();
+                if(sn == noeud || tn == noeud){
+                    if (!pile.contains(tn)){
+                        fils ++;
+                        pile.add(tn);
+                    }else if (!pile.contains(sn)){
+                        pile.add(sn);
+                        fils ++;
+                    }
+                }
+            }
+            if(fils==0){
+                nodeFeuille=noeud;
+                break;
+            }
+            noeud = pile.get(0);
+        }
+
+        if(!nodeFeuille.equals(null)){
+            List<String> chemin = this.getShortestPath(myPosition, nodeFeuille.getId());
+            if(chemin.isEmpty()){
+                return 0;
+            }
+            return chemin.size();
+        }
+        return -1;
+    }
 
 
     public List<String> getOpenNodes() {
@@ -265,6 +366,7 @@ public class FullMapRepresentation implements Serializable {
                 .map(Node::getId)
                 .collect(Collectors.toList());
     }
+
 
     public List<String> getAgentNodes() {
         return this.g.nodes()

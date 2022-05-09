@@ -61,7 +61,8 @@ public class FSMAgent extends AbstractDedaleAgent {
     private static final String E = "Collecte";
     private static final String G = "Random Walk";
     private static final String F = "Etat final";
-
+    private static final String I = "Interblocage";
+    private static final String J = "Back";
     /*
     dict_voisins est un dictionnaire sur les états des messages envoyés à chaque agent :
         key (String) : nom des voisins
@@ -96,7 +97,7 @@ public class FSMAgent extends AbstractDedaleAgent {
 
     private String nodeBut ; //le noeud à atteindre
     private List<String> path;
-
+    private List<String> pathBack;
     private String nextNode;
     private String predNode;
     private List<String> listNodeRessource ; //la liste des noeuds que l'agent doit récupérer
@@ -104,6 +105,7 @@ public class FSMAgent extends AbstractDedaleAgent {
 
     private boolean interblocage = false;
     private boolean culdesac = false;
+    private String positionGolem;
 
     protected void setup() {
         super.setup();
@@ -134,7 +136,7 @@ public class FSMAgent extends AbstractDedaleAgent {
         this.initDictVoisinsMessages();
         this.initDictBackpack();
         this.initPath();
-
+        this.initPathBack();
         // liste des behaviours
         List<Behaviour> listBehaviours = new ArrayList<>();
 
@@ -148,6 +150,8 @@ public class FSMAgent extends AbstractDedaleAgent {
         fsm.registerState(new StateSendACKFSMBehaviour(this), D);
         fsm.registerState(new StateCollectFSMBehaviour(this), E);
         fsm.registerState(new StateRandomWalkFSMBehaviour(this), G);
+        fsm.registerState(new StateInterblocageFSMBehaviour(this), I);
+        fsm.registerState(new StateBackFSMBehaviour(this), J);
         fsm.registerLastState(new StateStopFSMBehaviour(this), F);
 
         // Register the transitions
@@ -155,6 +159,7 @@ public class FSMAgent extends AbstractDedaleAgent {
         fsm.registerTransition(A, B, 1);
         fsm.registerTransition(A, G, 2);
         fsm.registerTransition(A, F, 3);
+        fsm.registerTransition(A, I, 4);
         fsm.registerTransition(B, C, 1);
         fsm.registerTransition(C, D, 2);
         fsm.registerTransition(C, C, 1);
@@ -165,6 +170,10 @@ public class FSMAgent extends AbstractDedaleAgent {
         fsm.registerTransition(G, E, 2);
         fsm.registerTransition(E, E, 1);
         fsm.registerTransition(E, G, 2);
+        fsm.registerTransition(I, I, 1);
+        fsm.registerTransition(I, J, 2);
+        fsm.registerTransition(J, J, 1);
+        fsm.registerTransition(J, I, 1);
 
         // Ajout de FSMBehaviour dans la liste des comportements
         listBehaviours.add(fsm);
@@ -205,6 +214,11 @@ public class FSMAgent extends AbstractDedaleAgent {
     public void initPath(){
         if (this.path==null){
             this.path = new ArrayList<>();
+        }
+    }
+    public void initPathBack(){
+        if (this.pathBack==null){
+            this.pathBack = new ArrayList<>();
         }
     }
 
@@ -505,6 +519,22 @@ public class FSMAgent extends AbstractDedaleAgent {
             return true;
         }
         return false;
+    }
+
+    public List<String> getPathBack() {
+        return pathBack;
+    }
+
+    public void setPathBack(List<String> pathBack) {
+        this.pathBack = pathBack;
+    }
+
+    public String getPositionGolem() {
+        return positionGolem;
+    }
+
+    public void setPositionGolem(String position) {
+        this.positionGolem = position;
     }
 
     /*
