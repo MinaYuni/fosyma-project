@@ -98,10 +98,12 @@ public class FSMAgent extends AbstractDedaleAgent {
     private List<String> path;
 
     private String nextNode;
+    private String predNode;
     private List<String> listNodeRessource ; //la liste des noeuds que l'agent doit récupérer
     private int nbPointRecolte ; //indique le nombre de recolte deja fait => va servie d'index dans listNodeRessource
 
     private boolean interblocage = false;
+    private boolean culdesac = false;
 
     protected void setup() {
         super.setup();
@@ -114,6 +116,7 @@ public class FSMAgent extends AbstractDedaleAgent {
         this.nextNode = "";
         this.nbPointRecolte= 0;
         this.listNodeRessource = null;
+
         // get the parameters added to the agent at creation (if any)
         final Object[] args = getArguments();
 
@@ -446,11 +449,19 @@ public class FSMAgent extends AbstractDedaleAgent {
     }
 
     public String getNextNode() {
-        return nextNode;
+        return this.nextNode;
     }
 
     public void setNextNode(String nextNode) {
         this.nextNode = nextNode;
+    }
+
+    public String getPredNode() {
+        return this.predNode;
+    }
+
+    public void setPredNode(String predNode) {
+        this.nextNode = predNode;
     }
 
     public List<String> getListNodeRessource() {
@@ -477,8 +488,16 @@ public class FSMAgent extends AbstractDedaleAgent {
         return this.interblocage;
     }
 
-    public void setInterblocage(boolean interblocage) {
-        this.interblocage = interblocage;
+    public void setInterblocage(boolean flag) {
+        this.interblocage = flag;
+    }
+
+    public boolean getCuldesac(){
+        return this.culdesac;
+    }
+
+    public void setCuldesac(boolean flag) {
+        this.interblocage = flag;
     }
 
     public boolean verifyTypeTreasure(Observation o) {

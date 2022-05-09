@@ -11,6 +11,7 @@ import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
@@ -69,26 +70,27 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
  */
         // 0) Retrieve the current position
         String myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
+        String predPosition = ((FSMAgent) this.myAgent).getPredNode();
 
         if (myPosition != null) {
             if (((FSMAgent) this.myAgent).getInterblocage()) {
                 System.out.println(myName + " [STATE A] -- INTERBLOCAGE : "+((FSMAgent) this.myAgent).getInterblocage());
 
-                List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
-                Random r = new Random();
-                int moveId = 1 + r.nextInt(lobs.size() - 1);
-                String nextNode = lobs.get(moveId).getLeft();
-                ((FSMAgent) this.myAgent).setNextNode(nextNode);
+                String nextNode = ((FSMAgent) this.myAgent).getNextNode();
 
-                if (((AbstractDedaleAgent) this.myAgent).moveTo(nextNode)){
+                boolean bouge = ((AbstractDedaleAgent) this.myAgent).moveTo(nextNode);
+                if (bouge) {
+                    ((FSMAgent) this.myAgent).setPredNode(myPosition);
+                    ((FSMAgent) this.myAgent).resetDictVoisinsMessages();
                     ((FSMAgent) this.myAgent).setInterblocage(false);
-                    System.out.println(myName + " [STATE A] -- INTERBLOCAGE : "+ ((FSMAgent) this.myAgent).getInterblocage());
                 }
-            }else{
+            }
+            else {
                 System.out.println(myName + " [STATE A] -- currentPosition: " + myPosition); //+ "-- list= " + this.myFullMap.getOpenNodes()
 
                 // list of observable from the agent's current position
                 List<Couple<String, List<Couple<Observation, Integer>>>> lobs = ((AbstractDedaleAgent) this.myAgent).observe(); // myPosition
+                ((FSMAgent) this.myAgent).setCuldesac(lobs.size() == 2);
                 //System.out.println(myName + " [STATE A] -- lobs: " + lobs);
 
                 // list of observations associated to the currentPosition
@@ -98,21 +100,16 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
                 for (Couple<Observation, Integer> o : lObservations) {
                     System.out.println(myName + " [STATE A] -- obs: " + o);
                     switch (o.getLeft()) {
-                        case DIAMOND:
-                            System.out.println(myName + " [STATE A] -- My treasure type: " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
-                            System.out.println(myName + " [STATE A] -- My current backpack capacity:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
-                            System.out.println(myName + " [STATE A] -- Value of the treasure on the current position: " + o.getLeft() + " - " + o.getRight());
-                            //System.out.println(myName + " [STATE A] -- The agent grabbed: " + ((AbstractDedaleAgent) this.myAgent).pick());
-                            //System.out.println(myName + " [STATE A] -- The remaining backpack capacity: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
-                        case GOLD:
-                            System.out.println(myName + " [STATE A] -- My treasure type: " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
-                            System.out.println(myName + " [STATE A] -- My current backpack capacity:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
+                        case DIAMOND: case GOLD:
+                            //System.out.println(myName + " [STATE A] -- My treasure type: " + ((AbstractDedaleAgent) this.myAgent).getMyTreasureType());
+                            //System.out.println(myName + " [STATE A] -- My current backpack capacity:" + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
                             System.out.println(myName + " [STATE A] -- Value of the treasure on the current position: " + o.getLeft() + " - " + o.getRight());
                             //System.out.println(myName + " [STATE A] -- The agent grabbed: " + ((AbstractDedaleAgent) this.myAgent).pick());
                             //System.out.println(myName + " [STATE A] -- The remaining backpack capacity: " + ((AbstractDedaleAgent) this.myAgent).getBackPackFreeSpace());
                             break;
                         case STENCH:
-                            System.out.println(myName + " [STATE A] -- STENCH");
+                            System.out.println(myName + " [STATE A] -- STENCH: " + myPosition);
+                            break;
                         default:
                             break;
                     }
@@ -143,7 +140,7 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
                 if (!this.myFullMap.hasOpenNode()) { // si exploration finie
                     exitValue = 2; // aller en G : "Random Walk"
                     System.out.println(myName + " [STATE A] - Exploration successfully done");
-                    System.out.println(myName + " CHANGES A to G : ranwom walk");
+                    System.out.println(myName + " CHANGES A to G : random walk");
                 } else {
                     // 3.1) Select next move
                     // there exist one open node directly reachable, go for it,
@@ -168,7 +165,9 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
                     ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
                     msg.setProtocol("PING");
                     msg.setSender(this.myAgent.getAID()); // mettre un expéditeur au message
-                    msg.setContent(((FSMAgent) this.myAgent).getId() + "/" + ((FSMAgent) this.myAgent).getNextNode());
+                    // envoyer son ID, sa position actuelle, son prochain noeud, s'il est dans un cul-de-sac ou pas
+                    boolean myCuldesac = ((FSMAgent) this.myAgent).getCuldesac();
+                    msg.setContent(((FSMAgent) this.myAgent).getId() + "/" + myPosition + "/" + ((FSMAgent) this.myAgent).getNextNode() + "/" + String.valueOf(myCuldesac));
 
                     // ajout des destinataires du ping (tous les autres agents, sauf moi-meme)
                     for (String receiverAgent : this.listAgentNames) { // PROBLEME : quand un autre agent meurt => il y a une boucle infinie
@@ -188,10 +187,15 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
                             MessageTemplate.MatchPerformative(ACLMessage.INFORM));
 
                     ACLMessage msgPingReceived = this.myAgent.receive(msgPing);
+
                     String nameExpediteur = "";
                     String msgExpediteur = "";
                     String nextNodeExpediteur = "";
+                    String actualNodeExpediteur = "";
+                    String culdesacExpediteur = "";
+
                     int idExpediteur = -1;
+
                     // si reception PING, aller en B (envoyer sa carte),
                     // sinon continuer déplacement
                     if (msgPingReceived != null) { // réception PING, donc un autre agent est à proximité
@@ -200,38 +204,54 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
                         nameExpediteur = msgPingReceived.getSender().getLocalName();
                         ((FSMAgent) this.myAgent).setDictVoisinsMessagesAgentAction(nameExpediteur, "recoit_PING", true);
 
-                        // ancien emplacement de ((FSMAgent) this.myAgent).setMyMap(this.myMap);
-
                         //récupérer les éléments du message qui est l'id et nextNode de l'expéditeur
                         msgExpediteur = (String) msgPingReceived.getContent();
-                        String[] l = msgExpediteur.split("/");
-                        idExpediteur = Integer.valueOf(l[0]);
-                        if (l.length > 1) {
-                            nextNodeExpediteur = l[1];
+                        String[] msgSlipt = msgExpediteur.split("/");
 
-                            if (nextNode.equals(nextNodeExpediteur)) {
-                                ((FSMAgent) this.myAgent).setInterblocage(true);
-                                System.out.println(myName + " [STATE A] -- INTERBLOCAGE : "+ ((FSMAgent) this.myAgent).getInterblocage());
-                                System.out.println("[State E] : " + myName + " -- INTERBLOCAGE -- with : " + nameExpediteur);
-                                Random r = new Random();
-                                int moveId = 1 + r.nextInt(lobs.size() - 1);
-                                nextNode = lobs.get(moveId).getLeft();
+                        idExpediteur = Integer.parseInt(msgSlipt[0]);
+                        actualNodeExpediteur = msgSlipt[1];
+                        nextNodeExpediteur = msgSlipt[2];
+                        culdesacExpediteur = msgSlipt[3];
+
+                        // interblocage face à face avec des directions opposées
+                         if (myPosition.equals(nextNodeExpediteur) && nextNode.equals(actualNodeExpediteur)) {
+                            ((FSMAgent) this.myAgent).setInterblocage(true);
+                            System.out.println(myName + " [STATE A] -- INTERBLOCAGE : "+ ((FSMAgent) this.myAgent).getInterblocage() + " -- with : " + nameExpediteur);
+
+                            // si l'expéditeur est dans un cul-de-sac, alors reculer
+                            if (Objects.equals(culdesacExpediteur, "true")) {
+                                if (predPosition != null) {
+                                    nextNode = predPosition; // reculer
+                                } // on devrait faire un else dans le cas où des agents spawn direct dans un cul-de-sac (donc interblocage sans avoir bougé donc predPosition==null)
+
                                 ((FSMAgent) this.myAgent).setNextNode(nextNode);
-                                if (nextNode != null){
-                                    if(((AbstractDedaleAgent) this.myAgent).moveTo(nextNode)){
-                                        //agent se deplace pour laisser l'autre
-                                        ((FSMAgent) this.myAgent).setInterblocage(false);
-                                        System.out.println(myName + " [STATE A] -- INTERBLOCAGE : "+ ((FSMAgent) this.myAgent).getInterblocage());
-                                    }
+                            }
+                            // sinon celui qui bouge est l'agent avec l'ID le plus grand (donc si l'ID de l'expéditeur est plus petit que le mien, alors je bouge)
+                            else if (idExpediteur < ((FSMAgent) this.myAgent).getId()){
+                                String newNextNode = nextNode;
+
+                                // choisir un autre prochain noeud différent de nextNode
+                                while (newNextNode.equals(nextNode) && lobs.size() > 2) {
+                                    Random r = new Random();
+                                    int moveId = 1 + r.nextInt(lobs.size() - 1);
+                                    newNextNode = lobs.get(moveId).getLeft();
                                 }
+
+                                nextNode = newNextNode;
+                                ((FSMAgent) this.myAgent).setNextNode(nextNode);
                             }
                         }
+
                         exitValue = 1; // aller en B : "Envoie carte"
                         System.out.println(myName + " CHANGES A to B : send MAP");
 
                     } else { // pas reçu de PING, donc continuer à avancer dans la map
-                        ((FSMAgent) this.myAgent).resetDictVoisinsMessages();
-                        ((AbstractDedaleAgent) this.myAgent).moveTo(nextNode);
+                        boolean bouge = ((AbstractDedaleAgent) this.myAgent).moveTo(nextNode);
+                        if (bouge) {
+                            ((FSMAgent) this.myAgent).setPredNode(myPosition);
+                            ((FSMAgent) this.myAgent).resetDictVoisinsMessages();
+                            ((FSMAgent) this.myAgent).setInterblocage(false);
+                        }
                     }
                 }
             }
