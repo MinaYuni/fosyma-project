@@ -105,7 +105,7 @@ public class FSMAgent extends AbstractDedaleAgent {
 
     private boolean interblocage = false;
     private boolean culdesac = false;
-    private String positionGolem;
+    private String positionGolem=null;
 
     protected void setup() {
         super.setup();
@@ -170,6 +170,7 @@ public class FSMAgent extends AbstractDedaleAgent {
         fsm.registerTransition(G, E, 2);
         fsm.registerTransition(E, E, 1);
         fsm.registerTransition(E, G, 2);
+        fsm.registerTransition(E, A, 3);
         fsm.registerTransition(I, I, 1);
         fsm.registerTransition(I, J, 2);
         fsm.registerTransition(J, J, 1);

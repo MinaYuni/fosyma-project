@@ -250,7 +250,7 @@ public class FullMapRepresentation implements Serializable {
         return getShortestPath(myPosition, closest.get().getLeft());
     }
 
-    public List<String> getPathBack(String myPosition, Integer degreeMax){
+    public List<String> getPathBack(String myPosition, Integer degreeMin){
 
         Node root = this.g.getNode(myPosition);
         List<Node> pile = new ArrayList<>();
@@ -260,7 +260,7 @@ public class FullMapRepresentation implements Serializable {
         while( !noeud.equals(null) ){
             pile.remove(noeud);
             max = noeud.getDegree();
-            if (max > degreeMax && !root.equals(noeud)){
+            if (max > degreeMin && !root.equals(noeud)){
                 break;
             }
             Iterator<Edge> iterE = this.g.edges().iterator();
@@ -281,7 +281,7 @@ public class FullMapRepresentation implements Serializable {
         return this.getShortestPath(myPosition, noeud.getId());
     }
 
-    public List<String> getPathBack(String myPosition, Integer degreeMax, String notNode){
+    public List<String> getPathBack(String myPosition, Integer degreeMin, String notNode){
         Node root = this.g.getNode(myPosition);
         List<Node> pile = new ArrayList<>();
         pile.add(root);
@@ -290,7 +290,7 @@ public class FullMapRepresentation implements Serializable {
         while( !noeud.equals(null) ){
             pile.remove(noeud);
             max = noeud.getDegree();
-            if (max > degreeMax && !noeud.equals(notNode) && !root.equals(noeud)){
+            if (max > degreeMin && !noeud.equals(notNode) && !root.equals(noeud)){
                 break;
             }
             Iterator<Edge> iterE = this.g.edges().iterator();

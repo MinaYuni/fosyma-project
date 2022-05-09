@@ -32,6 +32,7 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
     private FullMapRepresentation myFullMap;
     private final int timerWaitMax = 3;
     private final int maxOpenNode = 5;
+    private final int maxClosedNode = 70;
     private int timerWait = 0;
     private int exitValue;
 
@@ -76,7 +77,7 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
         String predPosition = ((FSMAgent) this.myAgent).getPredNode();
 
         if (myPosition != null) {
-            if(timerWait<=timerWaitMax && myPosition.equals(predPosition)){
+            if(timerWait>=timerWaitMax && myPosition.equals(predPosition)){
                 this.timerWait = 0;
                 ((FSMAgent) this.myAgent).setCuldesac(true);
                 System.out.println(" [STATE A] --- " + myName + " -- bloquer avec golem " + ((FSMAgent) this.myAgent).getPositionGolem());
@@ -90,24 +91,8 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
                     ((FSMAgent) this.myAgent).setPredNode(myPosition);
                 }
             }
-            if(((FSMAgent) this.myAgent).getCuldesac()){
-                List<String> pathBack = ((FSMAgent) this.myAgent).getPathBack();
-                String nextNode = ((FSMAgent) this.myAgent).getNextNode();
-                // agent sait qu'il doit reculer et il continue de reculer
-                if(pathBack.size()>0){
-                    if(pathBack.size()==1){
-                        ((FSMAgent) this.myAgent).setCuldesac(false);
-                        //this.myAgent.doWait(10);
-                    }
-                    nextNode = pathBack.get(0);
-                    ((FSMAgent) this.myAgent).setPathBack( pathBack.subList(1,pathBack.size()) );
-                    ((FSMAgent) this.myAgent).setPredNode(myPosition);
-                    ((FSMAgent) this.myAgent).setNextNode(nextNode);
-                }
-                ((AbstractDedaleAgent) this.myAgent).moveTo(nextNode);
-                System.out.println(" [STATE A] - " + myName + " -- list= " + this.myFullMap.getOpenNodes() + " -- nextNode: " + nextNode+" -- END -- ");
-            }
-            else if (((FSMAgent) this.myAgent).getInterblocage()) {
+
+             if (((FSMAgent) this.myAgent).getInterblocage()) {
                 System.out.println(myName + " [STATE A] -- INTERBLOCAGE : "+((FSMAgent) this.myAgent).getInterblocage());
 
                 String nextNode = ((FSMAgent) this.myAgent).getNextNode();
@@ -121,8 +106,23 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
                     exitValue = 4; //go to state I (inteblocage)
                     System.out.println(myName + " [STATE A] -- go to state I (inteblocage) --- END -- ");
                 }
-            }
-            else {
+            }else if(((FSMAgent) this.myAgent).getCuldesac()){
+                 List<String> pathBack = ((FSMAgent) this.myAgent).getPathBack();
+                 String nextNode = ((FSMAgent) this.myAgent).getNextNode();
+                 // agent sait qu'il doit reculer et il continue de reculer
+                 if(pathBack.size()>0){
+                     if(pathBack.size()==1){
+                         ((FSMAgent) this.myAgent).setCuldesac(false);
+                         //this.myAgent.doWait(10);
+                     }
+                     nextNode = pathBack.get(0);
+                     ((FSMAgent) this.myAgent).setPathBack( pathBack.subList(1,pathBack.size()) );
+                     ((FSMAgent) this.myAgent).setNextNode(nextNode);
+                     ((FSMAgent) this.myAgent).setPredNode(myPosition);
+                 }
+                 ((AbstractDedaleAgent) this.myAgent).moveTo(nextNode);
+                 System.out.println(" [STATE A] - " + myName + " -- list= " + this.myFullMap.getOpenNodes() + " -- nextNode: " + nextNode+" -- END -- ");
+            } else {
                 //System.out.println(myName + " [STATE A] -- currentPosition: " + myPosition); //+ "-- list= " + this.myFullMap.getOpenNodes()
 
                 // list of observable from the agent's current position
@@ -169,12 +169,15 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
                         if (nextNode == null && isNewNode) {
                             nextNode = nodeId;
                             ((FSMAgent) this.myAgent).setNextNode(nextNode);
+                            ((FSMAgent) this.myAgent).setPredNode(myPosition);
                         }
                     }
                 }
 
                 //3) while openNodes is not empty, continues
-                if (!this.myFullMap.hasOpenNode()) { // si exploration finie
+                if (!this.myFullMap.hasOpenNode()
+                        || (this.myFullMap.getClosedNodes().size() >= maxClosedNode && this.myFullMap.getOpenNodes().size() <= maxOpenNode && this.myFullMap.getGoldDict().size()>2)
+                        ) { // si exploration finie
                     exitValue = 2; // aller en G : "Random Walk"
                     System.out.println(myName + " [STATE A] - Exploration successfully done");
                     System.out.println(myName + " [STATE A] - CHANGES A to G : random walk");
@@ -185,13 +188,35 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
                     if (nextNode == null) { // if no directly accessible openNode
                         // chose one, compute the path and take the first step
                         //nextNode = this.myFullMap.getShortestPathToClosestOpenNode(myPosition).get(0); //getShortestPath(myPosition,this.openNodes.get(0)).get(0);
-                        List<String> path = this.myFullMap.getShortestPathToClosestOpenNode(myPosition); //getShortestPath(myPosition,this.openNodes.get(0)).get(0);
-                        ((FSMAgent) this.myAgent).setPath(path);
-                        nextNode = path.get(0);
-                        ((FSMAgent) this.myAgent).setNextNode(nextNode);
-                        System.out.println(myName + " [STATE A] - currentPosition: " + myPosition + " -- list= " + this.myFullMap.getOpenNodes() + " | nextNode: " + nextNode);
+
+                        if(timerWait>=timerWaitMax && myPosition.equals(predPosition)){
+                            this.timerWait = 0;
+                            ((FSMAgent) this.myAgent).setCuldesac(true);
+                            System.out.println(" [STATE A] --- " + myName + " -- bloquer avec golem " + ((FSMAgent) this.myAgent).getPositionGolem());
+                            // agent premiere fois qu'il recule
+                            List<String> cheminBack = this.myFullMap.getPathBack(myPosition, 3, ((FSMAgent) this.myAgent).getPositionGolem());
+                            if (cheminBack.size() > 0) {
+                                ((FSMAgent) this.myAgent).setPathBack(cheminBack);
+                                List<String> pathBack = ((FSMAgent) this.myAgent).getPathBack();
+                                String nextPosition = pathBack.get(0);
+                                ((FSMAgent) this.myAgent).setNextNode(nextPosition);
+                                ((FSMAgent) this.myAgent).setPredNode(myPosition);
+                            }
+                        }else {
+                            List<String> path = this.myFullMap.getShortestPathToClosestOpenNode(myPosition); //getShortestPath(myPosition,this.openNodes.get(0)).get(0);
+                            ((FSMAgent) this.myAgent).setPath(path);
+                            if(path.get(0).equals(((FSMAgent) this.myAgent).getPositionGolem())){
+                                nextNode = path.get(1);
+                            }else {
+                                nextNode = path.get(0);
+                            }
+                            ((FSMAgent) this.myAgent).setNextNode(nextNode);
+                            ((FSMAgent) this.myAgent).setPredNode(myPosition);
+                            System.out.println(myName + " [STATE A] - currentPosition: " + myPosition + " -- list= " + this.myFullMap.getOpenNodes() + " | nextNode: " + nextNode);
+                        }
                     } else {
                         ((FSMAgent) this.myAgent).setNextNode(nextNode);
+                        ((FSMAgent) this.myAgent).setPredNode(myPosition);
                         System.out.println(" [STATE A] - nextNode notNUll - " + myName + " -- list= " + this.myFullMap.getOpenNodes() + " | nextNode: " + nextNode);
                     }
 
@@ -201,6 +226,7 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
                         ((FSMAgent) this.myAgent).setPath(path);
                         nextNode = path.get(0);
                         ((FSMAgent) this.myAgent).setNextNode(nextNode);
+                        ((FSMAgent) this.myAgent).setPredNode(myPosition);
                         System.out.println(myName + " [STATE A] - currentPosition: " + myPosition + " -- list= " + this.myFullMap.getOpenNodes() + " | nextNode: " + nextNode);
                     }
 
@@ -272,6 +298,7 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
                                 } // on devrait faire un else dans le cas où des agents spawn direct dans un cul-de-sac (donc interblocage sans avoir bougé donc predPosition==null)
 
                                 ((FSMAgent) this.myAgent).setNextNode(nextNode);
+                                ((FSMAgent) this.myAgent).setPredNode(myPosition);
                             }
                             // sinon celui qui bouge est l'agent avec l'ID le plus grand (donc si l'ID de l'expéditeur est plus petit que le mien, alors je bouge)
                             else if (idExpediteur < ((FSMAgent) this.myAgent).getId()){
@@ -286,8 +313,13 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
 
                                 nextNode = newNextNode;
                                 ((FSMAgent) this.myAgent).setNextNode(nextNode);
+                                ((FSMAgent) this.myAgent).setPredNode(myPosition);
                             }
-                        }
+                        }else if (nextNode.equals(actualNodeExpediteur)){
+                             ((FSMAgent) this.myAgent).setInterblocage(true);
+                             nextNode = ((FSMAgent) this.myAgent).getPredNode();
+                             ((FSMAgent) this.myAgent).setNextNode(nextNode);
+                         }
 
                         exitValue = 1; // aller en B : "Envoie carte"
                         System.out.println(myName + " [STATE A]  CHANGES A to B : send MAP -- END -- ");
@@ -300,7 +332,7 @@ public class StateFullExploFSMBehaviour extends OneShotBehaviour {
                             ((FSMAgent) this.myAgent).setInterblocage(false);
                         }else{
                             // agent n'a pas reussi a bougé
-                            if(timerWait<=timerWaitMax && myPosition.equals(predPosition)){
+                            if(timerWait>=timerWaitMax && myPosition.equals(predPosition)){
                                 this.timerWait = 0;
                                 ((FSMAgent) this.myAgent).setCuldesac(true);
                                 System.out.println(" [STATE A] - " + myName + " -- listOpenNode : " + this.myFullMap.getOpenNodes() + " -- nextNode: " + nextNode);
